@@ -1,0 +1,225 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Dicom">
+      <UniqueIdentifier>{462a5ddc-988d-47b5-b697-a80724ef0930}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StudySeriesInstance">
+      <UniqueIdentifier>{16290369-4ba4-405a-aafc-8a5037fb5d74}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI">
+      <UniqueIdentifier>{d4fdd3a3-5ea8-44b5-8ef3-aa60b18ff29d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Util">
+      <UniqueIdentifier>{4daf84d4-e062-4db0-a2ef-d7e1ab979f59}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Localizer">
+      <UniqueIdentifier>{5a17770c-053d-47ee-8d6b-75dda619a3f5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GeometryMath">
+      <UniqueIdentifier>{58c6e933-862c-41d2-9765-f98c3306b814}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Localizer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MainFrm.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LocalizerDoc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LocalizerView.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DicomParser.h">
+      <Filter>Dicom</Filter>
+    </ClInclude>
+    <ClInclude Include="MyDicomLanguage.h">
+      <Filter>Dicom</Filter>
+    </ClInclude>
+    <ClInclude Include="DicomFileDialog.h">
+      <Filter>Dicom</Filter>
+    </ClInclude>
+    <ClInclude Include="Study.h">
+      <Filter>StudySeriesInstance</Filter>
+    </ClInclude>
+    <ClInclude Include="Series.h">
+      <Filter>StudySeriesInstance</Filter>
+    </ClInclude>
+    <ClInclude Include="Instance.h">
+      <Filter>StudySeriesInstance</Filter>
+    </ClInclude>
+    <ClInclude Include="DicomImage.h">
+      <Filter>Dicom</Filter>
+    </ClInclude>
+    <ClInclude Include="LayoutManager.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="StudyViewer.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="DicomImageProcessor.h">
+      <Filter>Dicom</Filter>
+    </ClInclude>
+    <ClInclude Include="template_image_process.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LLDicomDS.h">
+      <Filter>Dicom</Filter>
+    </ClInclude>
+    <ClInclude Include="OleDataSourceEx.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="LocalizerCore.h">
+      <Filter>Localizer</Filter>
+    </ClInclude>
+    <ClInclude Include="CoordinatorUtill.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="OleDropTargetEx.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="GeometryMath.h">
+      <Filter>GeometryMath</Filter>
+    </ClInclude>
+    <ClInclude Include="Line.h">
+      <Filter>GeometryMath</Filter>
+    </ClInclude>
+    <ClInclude Include="Plane.h">
+      <Filter>GeometryMath</Filter>
+    </ClInclude>
+    <ClInclude Include="Vectors.h">
+      <Filter>GeometryMath</Filter>
+    </ClInclude>
+    <ClInclude Include="OverLayImage.h">
+      <Filter>Dicom</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Localizer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MainFrm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LocalizerDoc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LocalizerView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DicomParser.cpp">
+      <Filter>Dicom</Filter>
+    </ClCompile>
+    <ClCompile Include="MyDicomLanguage.cpp">
+      <Filter>Dicom</Filter>
+    </ClCompile>
+    <ClCompile Include="DicomFileDialog.cpp">
+      <Filter>Dicom</Filter>
+    </ClCompile>
+    <ClCompile Include="Study.cpp">
+      <Filter>StudySeriesInstance</Filter>
+    </ClCompile>
+    <ClCompile Include="Series.cpp">
+      <Filter>StudySeriesInstance</Filter>
+    </ClCompile>
+    <ClCompile Include="Instance.cpp">
+      <Filter>StudySeriesInstance</Filter>
+    </ClCompile>
+    <ClCompile Include="DicomImage.cpp">
+      <Filter>Dicom</Filter>
+    </ClCompile>
+    <ClCompile Include="LayoutManager.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="StudyViewer.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="DicomImageProcessor.cpp">
+      <Filter>Dicom</Filter>
+    </ClCompile>
+    <ClCompile Include="LLDicomDS.cpp">
+      <Filter>Dicom</Filter>
+    </ClCompile>
+    <ClCompile Include="OleDataSourceEx.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="LocalizerCore.cpp">
+      <Filter>Localizer</Filter>
+    </ClCompile>
+    <ClCompile Include="CoordinatorUtill.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="OleDropTargetEx.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="GeometryMath.cpp">
+      <Filter>GeometryMath</Filter>
+    </ClCompile>
+    <ClCompile Include="Line.cpp">
+      <Filter>GeometryMath</Filter>
+    </ClCompile>
+    <ClCompile Include="Plane.cpp">
+      <Filter>GeometryMath</Filter>
+    </ClCompile>
+    <ClCompile Include="OverLayImage.cpp">
+      <Filter>Dicom</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Localizer.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="UserImages.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\LocalizerDoc.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Localizer.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Toolbar.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Toolbar256.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\Localizer.rc2">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+</Project>
