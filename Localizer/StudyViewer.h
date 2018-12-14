@@ -103,11 +103,14 @@ private:
 			
 	BYTE* m_pDisplayImage;				// image processed image
 	BYTE* m_pScreenImage;				// Screen image
+	//BYTE& m_pRoiImage;					// image for ROI
 
 	CRect m_rtImage;
-	CRect m_rtCanvas;
 	CRect m_rtImageOnCanvas;
-
+	CRect m_rtCanvas;
+	CRect m_rtDisplayedROIOnImage;
+	CRect m_rtDisplayedROIOnCanvas;
+	
 	double m_dCanvasPerImageRatio;
 	double m_dZoomValue;
 
@@ -183,6 +186,7 @@ protected:
 	virtual DIBINFO* GetDibInfo();
 	virtual BOOL CalcLayout();
 	virtual INT_PTR CalcImageRect(CDicomImage* imageInfo);
+	virtual BOOL CalcDisplayROI(CDicomImage * pImageInfo);
 	virtual BOOL CalcImageOnCanvasRect(CDicomImage* imageInfo);
 	virtual void CalcZoomAndPan();
 	virtual BOOL AllocDisplayImage();

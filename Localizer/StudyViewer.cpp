@@ -607,20 +607,22 @@ BOOL CStudyViewer::DrawInstanceImage(CDC* pDC)
 		return FALSE;
 	}
 
+	UpdateScreenData();
+
+	// TEST1
+
 	BITMAPINFOHEADER& bih = GetDibInfo()->bmiHeader;
 	bih.biSize = sizeof(BITMAPINFOHEADER);
-	bih.biWidth = m_stInterpolatedImg.nWidth;
-	bih.biHeight = -m_stInterpolatedImg.nHeight;
+	bih.biWidth = m_rtDisplayedROIOnCanvas.Width();
+	bih.biHeight = -m_rtDisplayedROIOnCanvas.Height();
 	bih.biPlanes = 1;
 	bih.biBitCount = 8 * m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).m_stImageInfo.m_nSamplesPerPixel;
 	bih.biCompression = BI_RGB;
-	bih.biSizeImage = m_stInterpolatedImg.nWidth * m_stInterpolatedImg.nHeight;
+	bih.biSizeImage = m_rtDisplayedROIOnCanvas.Width() * m_rtDisplayedROIOnCanvas.Height();
 	bih.biXPelsPerMeter = 0;
 	bih.biYPelsPerMeter = 0;
 	bih.biClrUsed = 0;
 	bih.biClrImportant = 0;
-
-	UpdateScreenData();
 
 	::SetStretchBltMode(pDC->GetSafeHdc(), COLORONCOLOR);
 	::StretchDIBits(pDC->GetSafeHdc(),
@@ -636,6 +638,62 @@ BOOL CStudyViewer::DrawInstanceImage(CDC* pDC)
 		(BITMAPINFO*)GetDibInfo(),
 		DIB_RGB_COLORS,
 		SRCCOPY);
+
+
+	//TEST2
+
+// 	BITMAPINFOHEADER& bih = GetDibInfo()->bmiHeader;
+// 	bih.biSize = sizeof(BITMAPINFOHEADER);
+// 	bih.biWidth = m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).m_stImageInfo.m_nWidth;
+// 	bih.biHeight = -m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).m_stImageInfo.m_nHeight;
+// 	bih.biPlanes = 1;
+// 	bih.biBitCount = 8 * m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).m_stImageInfo.m_nSamplesPerPixel;
+// 	bih.biCompression = BI_RGB;
+// 	bih.biSizeImage = m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).BytesPerLine((UINT)((double)m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).m_stImageInfo.m_nWidth*(double)m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).m_stImageInfo.m_nSamplesPerPixel), 8) * m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).m_stImageInfo.m_nHeight;
+// 	bih.biXPelsPerMeter = 0;
+// 	bih.biYPelsPerMeter = 0;
+// 	bih.biClrUsed = 0;
+// 	bih.biClrImportant = 0;
+// 
+// 	Graphics g(pDC->GetSafeHdc());
+// 
+// 	// 나중에 시간날떄 한번씩 써보자. enum InterpolationMode
+// 	g.SetInterpolationMode(InterpolationModeBilinear);
+// 
+// 	Gdiplus::Bitmap bitmap((BITMAPINFO*)GetDibInfo(), m_pDisplayImage);
+// 
+// 	m_rtImage.OffsetRect(0, 0);
+// 
+// 	INT nSrcWidth = m_rtImage.Width();
+// 	INT nSrcHeight = m_rtImage.Height();
+// 
+// 	//
+// 	g.DrawImage(&bitmap,
+// 		Rect(m_rtCanvas.left, m_rtCanvas.top, m_rtCanvas.Width(), m_rtCanvas.Height()),
+// 		m_rtImage.left,
+// 		m_rtImage.top,
+// 		nSrcWidth,
+// 		nSrcHeight,
+// 		UnitPixel);
+
+	//
+
+
+
+// 	::SetStretchBltMode(pDC->GetSafeHdc(), COLORONCOLOR);
+// 	::StretchDIBits(pDC->GetSafeHdc(),
+// 		m_rtCanvas.left,
+// 		m_rtCanvas.top,
+// 		m_rtCanvas.Width(),
+// 		m_rtCanvas.Height(),
+// 		m_rtImageOnCanvas.left,
+// 		m_rtImageOnCanvas.top,
+// 		m_rtImageOnCanvas.Width(),
+// 		m_rtImageOnCanvas.Height(),
+// 		(void*)m_pScreenImage,
+// 		(BITMAPINFO*)GetDibInfo(),
+// 		DIB_RGB_COLORS,
+// 		SRCCOPY);
 
 
 	//
@@ -1116,14 +1174,14 @@ BOOL CStudyViewer::CalcLayout()
 	{
 		CalcImageRect(&m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex));
 
-		if (!m_rtCanvas.EqualRect(rtOldCanvas))
-		{
-			FreeScreenBuffer();
-			if (CalcImageOnCanvasRect(&m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex)));
-			{
-				AllocScreenBuffer();
-			}
-		}
+// 		if (!m_rtCanvas.EqualRect(rtOldCanvas))
+// 		{
+// 			FreeScreenBuffer();
+// 			if (CalcImageOnCanvasRect(&m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex)));
+// 			{
+// 				AllocScreenBuffer();
+// 			}
+// 		}
 	}
 
 	return bRes;
@@ -1206,83 +1264,297 @@ INT_PTR CStudyViewer::CalcImageRect(CDicomImage* pImageInfo)
 	return nRetCode;
 }
 
-BOOL CStudyViewer::CalcImageOnCanvasRect(CDicomImage * pImageInfo)
+BOOL CStudyViewer::CalcDisplayROI(CDicomImage * pImageInfo)
 {
 	if (!pImageInfo)
 		return FALSE;
 
-	double dImgWidth = 0., dImgHeight = 0.;
-	double dCanvasWidth = 0., dCanvasHeight = 0.;
-	double dCanvasRatio = 0.;
-	double dImgRatio = 0.;
-	double dExpectLength = 0.;
+	INT_PTR nImageWidth = (INT_PTR)pImageInfo->m_stImageInfo.m_nWidth;
+	INT_PTR nImageHeight = (INT_PTR)pImageInfo->m_stImageInfo.m_nHeight;
 
-	INT_PTR nWidth = 0;
-	INT_PTR nHeight = 0;
+	CCoordinatorUtill util;
+	CPoint ptLtRoiOnImg = util.ConvertScreen2ImageCoordinate(m_rtCanvas.TopLeft(), m_rtCanvas, m_rtImage);
+	CPoint ptRbRoiOnImg = util.ConvertScreen2ImageCoordinate(m_rtCanvas.BottomRight(), m_rtCanvas, m_rtImage);
+	ptLtRoiOnImg.y = nImageHeight - ptLtRoiOnImg.y;
+	ptRbRoiOnImg.y = nImageHeight - ptRbRoiOnImg.y;
 
-	//
-	dImgWidth = pImageInfo->m_stImageInfo.m_nWidth;
-	dImgHeight = pImageInfo->m_stImageInfo.m_nHeight;
-	dCanvasWidth = (double)m_rtCanvas.Width();
-	dCanvasHeight = (double)m_rtCanvas.Height();
-
-	if (dCanvasWidth >= dCanvasHeight)
+	if (m_rtImage.left < 0)
 	{
-		dImgRatio = dImgWidth / dImgHeight;
-		dExpectLength = dCanvasHeight * dImgRatio;
-
-		if (dExpectLength >= dCanvasWidth)
-		{
-			nWidth = dCanvasWidth;
-			nHeight = dCanvasWidth / dImgRatio;
-		}
-		else
-		{
-			nWidth = dExpectLength;
-			nHeight = dCanvasHeight;
-		}
+		m_rtDisplayedROIOnImage.left = 0;
 	}
 	else
 	{
-		dImgRatio = dImgHeight / dImgWidth;
-		dExpectLength = dCanvasWidth * dImgRatio;
-
-		if (dExpectLength >= dCanvasHeight)
+		m_rtDisplayedROIOnImage.left = m_rtImage.left;
+	}
+	//
+	if (m_rtImage.right > ptRbRoiOnImg.x)
+	{
+		m_rtDisplayedROIOnImage.right = ptRbRoiOnImg.x;
+	}
+	else
+	{
+		if (m_rtImage.left > 0)
 		{
-			nWidth = dExpectLength;
-			nHeight = dCanvasHeight;
+			m_rtDisplayedROIOnImage.right = nImageWidth;
 		}
 		else
 		{
-			nWidth = dCanvasWidth;
-			nHeight = dCanvasWidth * dImgRatio;
+			m_rtDisplayedROIOnImage.right = nImageWidth - m_rtDisplayedROIOnImage.left;
 		}
 	}
+	//
+	if (m_rtImage.top < 0)
+	{
+		m_rtDisplayedROIOnImage.top = 0;
+	}
+	else
+	{
+		m_rtDisplayedROIOnImage.top = m_rtImage.top;
+	}
+	//
+	if (m_rtImage.bottom > ptRbRoiOnImg.y)
+	{
+		m_rtDisplayedROIOnImage.bottom = ptRbRoiOnImg.y;
+	}
+	else
+	{
+		if (m_rtImage.top > 0)
+		{
+			m_rtDisplayedROIOnImage.bottom = nImageHeight;
+		}
+		else
+		{
+			m_rtDisplayedROIOnImage.bottom = nImageHeight - m_rtDisplayedROIOnImage.top;
+		}
+		
+	}
 
-	nWidth = BytesPerLine(nWidth, 8);
-	nHeight = BytesPerLine(nHeight, 8);
 
-	INT_PTR nWidthSpare = (int)((m_rtCanvas.Width() - nWidth) / 2);
-	INT_PTR nHeightSpare = (int)((m_rtCanvas.Height() - nHeight) / 2);
+	CPoint ptLtRoiOnCanvas = m_rtDisplayedROIOnImage.TopLeft();
+	CPoint ptRbRoiOnCanvas = m_rtDisplayedROIOnImage.BottomRight();
 
-	if (nWidthSpare < 0)
-		nWidthSpare = 0;
+// 	ptLtRoiOnCanvas.y = nImageHeight - ptLtRoiOnCanvas.y;
+// 	ptRbRoiOnCanvas.y = nImageHeight - ptRbRoiOnCanvas.y;
 
-	if (nHeightSpare < 0)
-		nHeightSpare = 0;
+	ptLtRoiOnCanvas = util.ConvertImage2ScreenCoordinate(ptLtRoiOnCanvas, m_rtCanvas, m_rtImage);
+	ptRbRoiOnCanvas = util.ConvertImage2ScreenCoordinate(ptRbRoiOnCanvas, m_rtCanvas, m_rtImage);
 
-	m_rtImageOnCanvas.left = nWidthSpare * -1;
-	m_rtImageOnCanvas.top = nHeightSpare * -1;
-	m_rtImageOnCanvas.right = m_rtImageOnCanvas.left + m_rtCanvas.Width();
-	m_rtImageOnCanvas.bottom = m_rtImageOnCanvas.top + m_rtCanvas.Height();
+	m_rtDisplayedROIOnCanvas.TopLeft() = ptLtRoiOnCanvas;
+	m_rtDisplayedROIOnCanvas.BottomRight() = ptRbRoiOnCanvas;
+
+	INT_PTR nRoiCanvasWidth = m_rtDisplayedROIOnCanvas.Width();
+	INT_PTR nRoiCanvasHeight = m_rtDisplayedROIOnCanvas.Height();
+
+	m_rtDisplayedROIOnCanvas.left = ptLtRoiOnCanvas.x;
+	m_rtDisplayedROIOnCanvas.top = ptLtRoiOnCanvas.y;
+	m_rtDisplayedROIOnCanvas.right = m_rtDisplayedROIOnCanvas.left + BytesPerLine(nRoiCanvasWidth, 8);
+	m_rtDisplayedROIOnCanvas.bottom = m_rtDisplayedROIOnCanvas.top + BytesPerLine(nRoiCanvasHeight, 8);
 
 	m_stInterpolatedImg.Init();
 	m_stInterpolatedImg.nChannel = 1;
-	m_stInterpolatedImg.nWidth = nWidth;
-	m_stInterpolatedImg.nHeight = nHeight;
+	m_stInterpolatedImg.nWidth = m_rtDisplayedROIOnCanvas.Width();
+	m_stInterpolatedImg.nHeight = m_rtDisplayedROIOnCanvas.Height();
+
+	
+	return TRUE;
+}
+
+BOOL CStudyViewer::CalcImageOnCanvasRect(CDicomImage * pImageInfo)
+{
+	if (!pImageInfo)
+		return FALSE;
+// 
+// 	double dImgWidth = 0., dImgHeight = 0.;
+// 	double dCanvasWidth = 0., dCanvasHeight = 0.;
+// 	double dCanvasRatio = 0.;
+// 	double dImgRatio = 0.;
+// 	double dExpectLength = 0.;
+// 
+// 	INT_PTR nWidth = 0;
+// 	INT_PTR nHeight = 0;
+// 
+// 	//
+// 	dImgWidth = (double)m_rtDisplayROI.Width();
+// 	dImgHeight = (double)m_rtDisplayROI.Height();
+// 	dCanvasWidth = (double)m_rtCanvas.Width();
+// 	dCanvasHeight = (double)m_rtCanvas.Height();
+// 
+// 	if (dCanvasWidth >= dCanvasHeight)
+// 	{
+// 		dImgRatio = dImgWidth / dImgHeight;
+// 		dExpectLength = dCanvasHeight * dImgRatio;
+// 
+// 		if (dExpectLength >= dCanvasWidth)
+// 		{
+// 			nWidth = dCanvasWidth;
+// 			nHeight = dCanvasWidth / dImgRatio;
+// 		}
+// 		else
+// 		{
+// 			nWidth = dExpectLength;
+// 			nHeight = dCanvasHeight;
+// 		}
+// 	}
+// 	else
+// 	{
+// 		dImgRatio = dImgHeight / dImgWidth;
+// 		dExpectLength = dCanvasWidth * dImgRatio;
+// 
+// 		if (dExpectLength >= dCanvasHeight)
+// 		{
+// 			nWidth = dExpectLength;
+// 			nHeight = dCanvasHeight;
+// 		}
+// 		else
+// 		{
+// 			nWidth = dCanvasWidth;
+// 			nHeight = dCanvasWidth * dImgRatio;
+// 		}
+// 	}
+// 
+// 	nWidth = BytesPerLine(nWidth, 8);
+// 	nHeight = BytesPerLine(nHeight, 8);
+// 
+// 	INT_PTR nWidthSpare = (int)((m_rtCanvas.Width() - nWidth) / 2);
+// 	INT_PTR nHeightSpare = (int)((m_rtCanvas.Height() - nHeight) / 2);
+// 
+// 	if (nWidthSpare < 0)
+// 		nWidthSpare = 0;
+// 
+// 	if (nHeightSpare < 0)
+// 		nHeightSpare = 0;
+// 
+// 	m_rtImageOnCanvas.left = nWidthSpare * -1;
+// 	m_rtImageOnCanvas.top = nHeightSpare * -1;
+// 	m_rtImageOnCanvas.right = m_rtImageOnCanvas.left + m_rtCanvas.Width();
+// 	m_rtImageOnCanvas.bottom = m_rtImageOnCanvas.top + m_rtCanvas.Height();
+// 
+// 	m_stInterpolatedImg.Init();
+// 	m_stInterpolatedImg.nChannel = 1;
+// 	m_stInterpolatedImg.nWidth = nWidth;
+// 	m_stInterpolatedImg.nHeight = nHeight;
+
+	INT_PTR nLeftOffset = m_rtDisplayedROIOnCanvas.left * -1;
+	INT_PTR nRightOffset = m_rtCanvas.Width() - m_rtDisplayedROIOnCanvas.left - m_rtDisplayedROIOnCanvas.Width();
+	INT_PTR nTopOffset = m_rtDisplayedROIOnCanvas.top * -1;
+	INT_PTR nBottomOffset = m_rtCanvas.Height() - m_rtDisplayedROIOnCanvas.top - m_rtDisplayedROIOnCanvas.Height();
+
+	if (m_rtDisplayedROIOnCanvas.left > 0)
+	{
+		m_rtImageOnCanvas.left = nLeftOffset;
+	}
+	else
+	{
+		m_rtImageOnCanvas.left = 0;
+	}
+
+	if (m_rtDisplayedROIOnCanvas.right > 0)
+	{
+		m_rtImageOnCanvas.right = m_rtDisplayedROIOnCanvas.Width() + nRightOffset;
+	}
+	else
+	{
+		m_rtImageOnCanvas.right = 0;
+	}
+
+	if (m_rtDisplayedROIOnCanvas.top > 0)
+	{
+		m_rtImageOnCanvas.top = nTopOffset;
+	}
+	else
+	{
+		m_rtImageOnCanvas.top = 0;
+	}
+
+	if (m_rtDisplayedROIOnCanvas.bottom > 0)
+	{
+		m_rtImageOnCanvas.bottom = m_rtDisplayedROIOnCanvas.Height() + nBottomOffset;
+	}
+	else
+	{
+		m_rtImageOnCanvas.bottom = 0;
+	}
 
 	return TRUE;
 }
+
+// BOOL CStudyViewer::CalcImageOnCanvasRect(CDicomImage * pImageInfo)
+// {
+// 	if (!pImageInfo)
+// 		return FALSE;
+// 
+// 	double dImgWidth = 0., dImgHeight = 0.;
+// 	double dCanvasWidth = 0., dCanvasHeight = 0.;
+// 	double dCanvasRatio = 0.;
+// 	double dImgRatio = 0.;
+// 	double dExpectLength = 0.;
+// 
+// 	INT_PTR nWidth = 0;
+// 	INT_PTR nHeight = 0;
+// 
+// 	//
+// 	dImgWidth = pImageInfo->m_stImageInfo.m_nWidth;
+// 	dImgHeight = pImageInfo->m_stImageInfo.m_nHeight;
+// 	dCanvasWidth = (double)m_rtCanvas.Width();
+// 	dCanvasHeight = (double)m_rtCanvas.Height();
+// 
+// 	if (dCanvasWidth >= dCanvasHeight)
+// 	{
+// 		dImgRatio = dImgWidth / dImgHeight;
+// 		dExpectLength = dCanvasHeight * dImgRatio;
+// 
+// 		if (dExpectLength >= dCanvasWidth)
+// 		{
+// 			nWidth = dCanvasWidth;
+// 			nHeight = dCanvasWidth / dImgRatio;
+// 		}
+// 		else
+// 		{
+// 			nWidth = dExpectLength;
+// 			nHeight = dCanvasHeight;
+// 		}
+// 	}
+// 	else
+// 	{
+// 		dImgRatio = dImgHeight / dImgWidth;
+// 		dExpectLength = dCanvasWidth * dImgRatio;
+// 
+// 		if (dExpectLength >= dCanvasHeight)
+// 		{
+// 			nWidth = dExpectLength;
+// 			nHeight = dCanvasHeight;
+// 		}
+// 		else
+// 		{
+// 			nWidth = dCanvasWidth;
+// 			nHeight = dCanvasWidth * dImgRatio;
+// 		}
+// 	}
+// 
+// 	nWidth = BytesPerLine(nWidth, 8);
+// 	nHeight = BytesPerLine(nHeight, 8);
+// 
+// 	INT_PTR nWidthSpare = (int)((m_rtCanvas.Width() - nWidth) / 2);
+// 	INT_PTR nHeightSpare = (int)((m_rtCanvas.Height() - nHeight) / 2);
+// 
+// 	if (nWidthSpare < 0)
+// 		nWidthSpare = 0;
+// 
+// 	if (nHeightSpare < 0)
+// 		nHeightSpare = 0;
+// 
+// 	m_rtImageOnCanvas.left = nWidthSpare * -1;
+// 	m_rtImageOnCanvas.top = nHeightSpare * -1;
+// 	m_rtImageOnCanvas.right = m_rtImageOnCanvas.left + m_rtCanvas.Width();
+// 	m_rtImageOnCanvas.bottom = m_rtImageOnCanvas.top + m_rtCanvas.Height();
+// 
+// 	m_stInterpolatedImg.Init();
+// 	m_stInterpolatedImg.nChannel = 1;
+// 	m_stInterpolatedImg.nWidth = nWidth;
+// 	m_stInterpolatedImg.nHeight = nHeight;
+// 
+// 	return TRUE;
+// }
 
 void CStudyViewer::CalcZoomAndPan()
 {
@@ -1366,7 +1638,7 @@ BOOL CStudyViewer::AllocScreenBuffer()
 {
 	BOOL bRes = TRUE;
 
-	INT_PTR nSceenSize = m_stInterpolatedImg.nWidth * m_stInterpolatedImg.nHeight;
+	INT_PTR nSceenSize = m_rtDisplayedROIOnCanvas.Width() * m_rtDisplayedROIOnCanvas.Height();
 
 	if (nSceenSize <= 0)
 		return FALSE;
@@ -1406,79 +1678,68 @@ void CStudyViewer::UpdateScreenData()
 	if (!m_pDisplayImage)
 		return;
 
-	if (!m_pScreenImage)
-		return;
-
 	CDicomImage imageDisplayInfo;	// different with DICOM information
 	imageDisplayInfo = m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex);
 
 	INT_PTR nOrgWidth = BytesPerLine((UINT)imageDisplayInfo.m_stImageInfo.m_nWidth, 8) ;
 	INT_PTR nOrgHeight = BytesPerLine((UINT)imageDisplayInfo.m_stImageInfo.m_nHeight, 8);
-	INT_PTR nImgROIWidth = 0; 
-	INT_PTR nImgROIHeight = 0; 
 	INT_PTR nImgWidthOnCanvas = m_rtCanvas.Width();;
 	INT_PTR nImgHeightOnCanvas = m_rtCanvas.Height();;
 
 // 	if (m_rtImage.left <= 0)
 // 	{
-// 		nImgROIWidth = m_rtImage.right + m_rtImage.left;
+// 		nImgROIWidth = BytesPerLine(m_rtImage.right + m_rtImage.left, 8) ;
 // 	}
 // 	else
 // 	{
-// 		nImgROIWidth = m_rtImage.right - m_rtImage.left;
+// 		nImgROIWidth = BytesPerLine(m_rtImage.right - m_rtImage.left, 8) ;
 // 	}
-// 	
+// 
 // 	if (m_rtImage.top <= 0)
 // 	{
-// 		nImgROIHeight = m_rtImage.bottom + m_rtImage.top;
+// 		nImgROIHeight = BytesPerLine(m_rtImage.bottom + m_rtImage.top, 8) ;
 // 	}
 // 	else
 // 	{
-// 		nImgROIHeight = m_rtImage.bottom - m_rtImage.top;
+// 		nImgROIHeight = BytesPerLine(m_rtImage.bottom - m_rtImage.top, 8) ;
 // 	}
+// 	
+// 
+// 	if (nImgROIWidth > imageDisplayInfo.m_stImageInfo.m_nWidth)
+// 		nImgROIWidth = nOrgWidth;
+// 	
+// 	if (nImgROIHeight > imageDisplayInfo.m_stImageInfo.m_nHeight)
+// 		nImgROIHeight = nOrgHeight;
 
-	if (m_rtImage.left <= 0)
-	{
-		nImgROIWidth = BytesPerLine(m_rtImage.right + m_rtImage.left, 8) ;
-	}
-	else
-	{
-		nImgROIWidth = BytesPerLine(m_rtImage.right - m_rtImage.left, 8) ;
-	}
+	CalcDisplayROI(&imageDisplayInfo);
 
-	if (m_rtImage.top <= 0)
-	{
-		nImgROIHeight = BytesPerLine(m_rtImage.bottom + m_rtImage.top, 8) ;
-	}
-	else
-	{
-		nImgROIHeight = BytesPerLine(m_rtImage.bottom - m_rtImage.top, 8) ;
-	}
-	
-
-	if (nImgROIWidth > imageDisplayInfo.m_stImageInfo.m_nWidth)
-		nImgROIWidth = nOrgWidth;
-	
-	if (nImgROIHeight > imageDisplayInfo.m_stImageInfo.m_nHeight)
-		nImgROIHeight = nOrgHeight;
-
-
-	BYTE* pOriginROIImg = new BYTE[nImgROIWidth * nImgROIHeight];
+	BYTE* pOriginROIImg = new BYTE[m_rtDisplayedROIOnImage.Width() * m_rtDisplayedROIOnImage.Height()];
 
 	m_stROIImg.Init();
 	m_stROIImg.nChannel = 1;
-	m_stROIImg.nWidth = nImgROIWidth;
-	m_stROIImg.nHeight = nImgROIHeight;
+	m_stROIImg.nWidth = m_rtDisplayedROIOnImage.Width();
+	m_stROIImg.nHeight = m_rtDisplayedROIOnImage.Height();
 	m_stROIImg.pImage = pOriginROIImg;
 
-	CopyROIImageFromOrigin(m_pDisplayImage, pOriginROIImg, nOrgWidth, nOrgHeight, nImgROIWidth, nImgROIHeight);
+	CopyROIImageFromOrigin(m_pDisplayImage, pOriginROIImg,
+		nOrgWidth, nOrgHeight,
+		m_rtDisplayedROIOnImage.Width(), m_rtDisplayedROIOnImage.Height());
+
+	FreeScreenBuffer();
+	if (CalcImageOnCanvasRect(&m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex)));
+	{
+		AllocScreenBuffer();
+	}
+
+	if (!m_pScreenImage)
+		return;
 
 	DoInterpolate(pOriginROIImg,
 		m_pScreenImage,
-		nImgROIWidth,
-		nImgROIHeight,
-		m_stInterpolatedImg.nWidth,
-		m_stInterpolatedImg.nHeight);
+		m_rtDisplayedROIOnImage.Width(),
+		m_rtDisplayedROIOnImage.Height(),
+		m_rtDisplayedROIOnCanvas.Width(),
+		m_rtDisplayedROIOnCanvas.Height());
 
 	delete[] pOriginROIImg;
 
@@ -1500,10 +1761,7 @@ void CStudyViewer::CopyROIImageFromOrigin(BYTE* pSrc, BYTE* pDest, INT_PTR nSrcW
 	nSrcLine = (UINT)nSrcWidth;
 	nCopySize = (UINT)nROIWidth;
 
-	if (m_rtImage.left > 0)
-	{
-		pSrc += m_rtImage.left;
-	}
+	pSrc += m_rtDisplayedROIOnImage.left;
 	
 	for (nLine = 0; nLine < nTotalSize; nLine++, pDest += nDestLine, pSrc += nSrcLine)
 	{
