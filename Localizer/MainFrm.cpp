@@ -357,15 +357,21 @@ void CMainFrame::OnFileOpenfolder()
 
 void CMainFrame::OnFileOpen()
 {
-	CDicomFileDialog dlgDcm(TRUE);
+//	CDicomFileDialog dlgDcm(TRUE);
 
-	CStringArray aryFilePath;
+	CFileDialog dlgDcm(TRUE, NULL, NULL, OFN_ALLOWMULTISELECT, NULL, NULL);
+	CString fileName;
+
+	dlgDcm.GetOFN().hwndOwner = GetSafeHwnd();
+	dlgDcm.GetOFN().lpstrFilter = _T("DICOM Files (*.dcm;*.dic)\0*.dcm;*.dic\0All Files (*.*)\0*.*\0\0");
+	dlgDcm.GetOFN().lpstrDefExt = _T("*.dcm");
 
 	TCHAR szFileName[32767];
 	szFileName[0] = '\0';
 
 	dlgDcm.GetOFN().lpstrFile = szFileName;
 	dlgDcm.GetOFN().nMaxFile = _countof(szFileName);
+	CStringArray aryFilePath;
 	
 	if (dlgDcm.DoModal() == IDOK)
 	{
@@ -459,7 +465,6 @@ BOOL CMainFrame::AddStudyToLayoutManager()
 			theApp.m_pLayoutManager->UpdateStudyToViewer(pStudy);
 		}
 	}
-		
 	return TRUE;
 }
 

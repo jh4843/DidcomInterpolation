@@ -25,9 +25,6 @@
     <Filter Include="Util">
       <UniqueIdentifier>{4daf84d4-e062-4db0-a2ef-d7e1ab979f59}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Localizer">
-      <UniqueIdentifier>{5a17770c-053d-47ee-8d6b-75dda619a3f5}</UniqueIdentifier>
-    </Filter>
     <Filter Include="GeometryMath">
       <UniqueIdentifier>{58c6e933-862c-41d2-9765-f98c3306b814}</UniqueIdentifier>
     </Filter>
@@ -95,9 +92,6 @@
     </ClInclude>
     <ClInclude Include="OleDataSourceEx.h">
       <Filter>Util</Filter>
-    </ClInclude>
-    <ClInclude Include="LocalizerCore.h">
-      <Filter>Localizer</Filter>
     </ClInclude>
     <ClInclude Include="CoordinatorUtill.h">
       <Filter>Util</Filter>
@@ -172,9 +166,6 @@
     </ClCompile>
     <ClCompile Include="OleDataSourceEx.cpp">
       <Filter>Util</Filter>
-    </ClCompile>
-    <ClCompile Include="LocalizerCore.cpp">
-      <Filter>Localizer</Filter>
     </ClCompile>
     <ClCompile Include="CoordinatorUtill.cpp">
       <Filter>Util</Filter>

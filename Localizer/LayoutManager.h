@@ -2,9 +2,7 @@
 #include "afxwin.h"
 #include "StudyViewer.h"
 #include "Study.h"
-#include "LocalizerCore.h"
 
-class CLocalizerCore;
 class CLayoutManager :	public CWnd
 {
 	friend class CStudyViewer;
@@ -12,9 +10,6 @@ class CLayoutManager :	public CWnd
 public:
 	CLayoutManager();
 	~CLayoutManager();
-
-public:
-	CLocalizerCore* m_pLocalizerCore;
 
 protected:
 	INT_PTR m_nSelectedViewerIndex;
@@ -34,6 +29,7 @@ public:
 	BOOL AddLoadedStudy(CStudy* pStudy);
 	BOOL UpdateStudyToViewer(CStudy* pStudy);
 	INT_PTR GetStudyViewerCount();
+	CStudyViewer* GetCurStudyViewer();
 	
 	void SetSelectedStudyViewer(INT_PTR nSelectedViewerIndex);
 	BOOL SetStudyToEmptyStudyViewer(CStudy* pStudy);		// True : Success to set, Fail : Not empty study viewer

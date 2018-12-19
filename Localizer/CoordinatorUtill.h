@@ -21,6 +21,11 @@ public:
 	Gdiplus::PointF ConvertScreen2ImageCoordinateEx(Gdiplus::PointF point, CRect rtCanvas, CRect rtImage);
 
 	// Not change Y position
-	Gdiplus::PointF CCoordinatorUtill::ConvertCanvas(Gdiplus::PointF point, CRect rtCanvas, CRect rtImage);
+	CPoint CCoordinatorUtill::ConvertToCanvas(CPoint point, CRect rtCanvas, CRect rtImage);
+	Gdiplus::PointF CCoordinatorUtill::ConvertToCanvasEx(CPoint point, CRect rtCanvas, CRect rtImage);
+	Gdiplus::PointF CCoordinatorUtill::ConvertToCanvasEx(Gdiplus::PointF point, CRect rtCanvas, CRect rtImage);
+	CPoint CCoordinatorUtill::ConvertToImage(CPoint point, CRect rtCanvas, CRect rtImage);
+	Gdiplus::PointF CCoordinatorUtill::ConvertToImageEx(CPoint point, CRect rtCanvas, CRect rtImage);
+	Gdiplus::PointF CCoordinatorUtill::ConvertToImageEx(Gdiplus::PointF point, CRect rtCanvas, CRect rtImage);
 };
 

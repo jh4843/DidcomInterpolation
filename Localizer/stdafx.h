@@ -63,7 +63,7 @@ using namespace Gdiplus;
 #define	ID_LAYOUT_MANAGER	10100
 #define	ID_LAYOUT_VIEWER	11000
 
-#define DEFAULT_LAYOUT_COUNT	4
+#define DEFAULT_LAYOUT_COUNT	1
 #define MAX_LAYOUT_COUNT		16
 
 

@@ -118,6 +118,8 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>C:\Program Files (x86)\LEAD Technologies\LEADTOOLS 17\Include\ClassLib;C:\Program Files (x86)\LEAD Technologies\LEADTOOLS 17\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <OmitFramePointers>false</OmitFramePointers>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -205,7 +207,6 @@
     <ClInclude Include="LayoutManager.h" />
     <ClInclude Include="Line.h" />
     <ClInclude Include="LLDicomDS.h" />
-    <ClInclude Include="LocalizerCore.h" />
     <ClInclude Include="OleDataSourceEx.h" />
     <ClInclude Include="OleDropTargetEx.h" />
     <ClInclude Include="OverLayImage.h" />
@@ -235,7 +236,6 @@
     <ClCompile Include="LayoutManager.cpp" />
     <ClCompile Include="Line.cpp" />
     <ClCompile Include="LLDicomDS.cpp" />
-    <ClCompile Include="LocalizerCore.cpp" />
     <ClCompile Include="OleDataSourceEx.cpp" />
     <ClCompile Include="OleDropTargetEx.cpp" />
     <ClCompile Include="OverLayImage.cpp" />

@@ -86,9 +86,6 @@ protected:
 	CStudy* m_pStudy;
 	CLLDicomDS* m_pDisplayDicomDS;
 
-	Gdiplus::PointF m_ptLocalizerStart;
-	Gdiplus::PointF m_ptLocalizerEnd;
-
 	DIBINFO m_DibInfo;
 	INT_PTR m_nOperationMode;
 
@@ -103,10 +100,11 @@ private:
 			
 	BYTE* m_pDisplayImage;				// image processed image
 	BYTE* m_pScreenImage;				// Screen image
-	//BYTE& m_pRoiImage;					// image for ROI
+	BYTE* m_pRoiImage;					// image for ROI
 
 	CRect m_rtImage;
-	CRect m_rtImageOnCanvas;
+	CRect m_rtImageEx;
+	CRect m_rtDrawRectOnCanvas;
 	CRect m_rtCanvas;
 	CRect m_rtDisplayedROIOnImage;
 	CRect m_rtDisplayedROIOnCanvas;
@@ -129,7 +127,6 @@ public:
 	void SetViewOnlySameSeries();
 	void SetViewAllSeries();
 	void SetCurrentInstanceIndex(INT_PTR nInstanceIndex);
-	void SetLocalizerPoints(Gdiplus::PointF ptLocalizerStart, Gdiplus::PointF ptLocalizerEnd);
 
 	// Get
 	INT_PTR GetLayoutIndex();
@@ -145,10 +142,7 @@ public:
 	// Load
 	void LoadImageFromDcm(CDicomImage& imageDicom);
 
-	// Clear
-	void ClearLocalizerPoints();
-
-	// Operate
+		// Operate
 	void ResetPan();
 	void ResetZoom();
 
@@ -157,10 +151,11 @@ public:
 	void ZoomIn(BOOL bIsDetail);
 	void ZoomOut(BOOL bIsDetail);
 
+	BOOL ProcessHotKey(UINT nKey);
+
 protected:
 	BOOL IsValidStudy(CStudy* pStudy);
 	BOOL DrawInstanceImage(CDC* pDC);
-	BOOL DrawLocalizer(CDC* pDC);
 	BOOL DrawImageInfo(CDC* pDC);
 	BOOL DrawPatientOrientation(CDC* pDC);
 
@@ -186,13 +181,18 @@ protected:
 	virtual DIBINFO* GetDibInfo();
 	virtual BOOL CalcLayout();
 	virtual INT_PTR CalcImageRect(CDicomImage* imageInfo);
-	virtual BOOL CalcDisplayROI(CDicomImage * pImageInfo);
-	virtual BOOL CalcImageOnCanvasRect(CDicomImage* imageInfo);
+	virtual BOOL CalcImageRectEx(CDicomImage* imageInfo);
+	virtual BOOL CalcDisplayImageROI(CDicomImage * pImageInfo);
+	virtual BOOL CalcDisplayCanvasROI(CDicomImage * pImageInfo);
+	virtual BOOL CalcDrawRectOnCanvasRect(CDicomImage* imageInfo);
 	virtual void CalcZoomAndPan();
+	virtual void CalcZoomAndPanEx();
 	virtual BOOL AllocDisplayImage();
 	virtual BOOL AllocScreenBuffer();
+	virtual BOOL AllocRoiBuffer();
 	virtual void FreeDisplayImage();
 	virtual void FreeScreenBuffer();
+	virtual void FreeRoiBuffer();
 	virtual void UpdateScreenData();
 	virtual void CreateDragDropObjects();
 	virtual void CopyROIImageFromOrigin(BYTE* pSrc, BYTE* pDest, INT_PTR nSrcWidth, INT_PTR nSrcHeight, INT_PTR nROIWidth, INT_PTR nROIHeight);

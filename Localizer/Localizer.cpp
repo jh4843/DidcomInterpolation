@@ -179,6 +179,7 @@ BOOL CLocalizerApp::InitInstance()
 	// The one and only window has been initialized, so show and update it
 	m_pMainWnd->ShowWindow(SW_SHOW);
 	m_pMainWnd->UpdateWindow();
+	m_pMainWnd->SetWindowTextW(_T("Interpolation_No_Interpolation_gdiplus"));
 
 	m_bSyncPosAndOrient = FALSE;
 
@@ -295,4 +296,15 @@ void CLocalizerApp::OnSyncPosandorient()
 void CLocalizerApp::OnUpdateSyncPosandorient(CCmdUI *pCmdUI)
 {
 	pCmdUI->SetCheck(m_bSyncPosAndOrient);
+}
+
+
+BOOL CLocalizerApp::PreTranslateMessage(MSG* pMsg)
+{
+	if (pMsg->message == WM_KEYDOWN || pMsg->message == WM_SYSKEYDOWN)
+	{
+		m_pLayoutManager->GetCurStudyViewer()->ProcessHotKey(pMsg->wParam);
+	}
+
+	return CWinAppEx::PreTranslateMessage(pMsg);
 }

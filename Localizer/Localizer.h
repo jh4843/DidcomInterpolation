@@ -47,6 +47,7 @@ public:
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnSyncPosandorient();
 	afx_msg void OnUpdateSyncPosandorient(CCmdUI *pCmdUI);
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 };
 
 extern CLocalizerApp theApp;

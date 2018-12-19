@@ -72,7 +72,7 @@ Gdiplus::PointF CCoordinatorUtill::ConvertImage2ScreenCoordinateEx(Gdiplus::Poin
 	float fRatioY = (double)rtCanvas.Height() / (float)rtImage.Height();
 	ptResult.X = (point.X - rtImage.left)*fRatioX + rtCanvas.left;
 	ptResult.Y = (point.Y - rtImage.top)*fRatioY + rtCanvas.top;
-	//ptResult.Y = rtCanvas.Height() - (point.Y - rtImage.top)*fRatioY + rtCanvas.top;
+	ptResult.Y = rtCanvas.Height() - (point.Y - rtImage.top)*fRatioY + rtCanvas.top;
 
 	return ptResult;
 }
@@ -106,7 +106,24 @@ Gdiplus::PointF CCoordinatorUtill::ConvertScreen2ImageCoordinateEx(Gdiplus::Poin
 	return ptResult;
 }
 
-Gdiplus::PointF CCoordinatorUtill::ConvertCanvas(Gdiplus::PointF point, CRect rtCanvas, CRect rtImage)
+CPoint CCoordinatorUtill::ConvertToCanvas(CPoint point, CRect rtCanvas, CRect rtImage)
+{
+	Gdiplus::PointF ptNew = ConvertToCanvasEx(point, rtCanvas, rtImage);
+	//
+	point.x = (long)ptNew.X;
+	point.y = (long)ptNew.Y;
+	//
+	return point;
+}
+
+Gdiplus::PointF CCoordinatorUtill::ConvertToCanvasEx(CPoint point, CRect rtCanvas, CRect rtImage)
+{
+	Gdiplus::PointF ptNew((float)point.x, (float)point.y);
+
+	return ConvertToCanvasEx(ptNew, rtCanvas, rtImage);
+}
+
+Gdiplus::PointF CCoordinatorUtill::ConvertToCanvasEx(Gdiplus::PointF point, CRect rtCanvas, CRect rtImage)
 {
 	Gdiplus::PointF ptResult(0.0f, 0.0f);
 	//
@@ -115,6 +132,35 @@ Gdiplus::PointF CCoordinatorUtill::ConvertCanvas(Gdiplus::PointF point, CRect rt
 	ptResult.X = (point.X - rtImage.left)*fRatioX + rtCanvas.left;
 	ptResult.Y = (point.Y - rtImage.top)*fRatioY + rtCanvas.top;
 	//ptResult.Y = rtCanvas.Height() - (point.Y - rtImage.top)*fRatioY + rtCanvas.top;
+
+	return ptResult;
+}
+
+CPoint CCoordinatorUtill::ConvertToImage(CPoint point, CRect rtCanvas, CRect rtImage)
+{
+	Gdiplus::PointF ptNew = ConvertToImageEx(point, rtCanvas, rtImage);
+	//
+	point.x = (long)ptNew.X;
+	point.y = (long)ptNew.Y;
+
+	return point;
+}
+
+Gdiplus::PointF CCoordinatorUtill::ConvertToImageEx(CPoint point, CRect rtCanvas, CRect rtImage)
+{
+	Gdiplus::PointF ptNew((float)point.x, (float)point.y);
+
+	return ConvertToImageEx(ptNew, rtCanvas, rtImage);
+}
+
+Gdiplus::PointF CCoordinatorUtill::ConvertToImageEx(Gdiplus::PointF point, CRect rtCanvas, CRect rtImage)
+{
+	Gdiplus::PointF ptResult(0.0f, 0.0f);
+	//
+	float fRatioX = (double)rtImage.Width() / (float)rtCanvas.Width();
+	float fRatioY = (double)rtImage.Height() / (float)rtCanvas.Height();
+	ptResult.X = (point.X - rtCanvas.left)*fRatioX + rtImage.left;
+	ptResult.Y = (point.Y - rtCanvas.top)*fRatioY + rtImage.top;
 
 	return ptResult;
 }

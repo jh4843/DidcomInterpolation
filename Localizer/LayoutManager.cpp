@@ -6,7 +6,6 @@ CLayoutManager::CLayoutManager()
 	m_nViewerCount = 0;
 	m_nSelectedViewerIndex = -1;
 	m_nLayoutMargin = 5;
-	m_pLocalizerCore = new CLocalizerCore;
 
 	m_bSyncPosAndOrientation = FALSE;
 }
@@ -14,13 +13,10 @@ CLayoutManager::CLayoutManager()
 
 CLayoutManager::~CLayoutManager()
 {
-	delete m_pLocalizerCore;
 }
 
 void CLayoutManager::Init()
 {
-	m_pLocalizerCore->Init();
-
 	for (INT_PTR iStudyViewer = 0; iStudyViewer < m_aryStudyViewer.GetCount(); iStudyViewer++)
 	{
 		CStudyViewer* pStudyViewer = m_aryStudyViewer.GetAt(iStudyViewer);
@@ -55,8 +51,6 @@ BOOL CLayoutManager::AddStudyViewer(int nLayoutIndex, CWnd* pParent)
 	pStudyViewer->CreateCtrl(pParent);
 	m_aryStudyViewer.Add(pStudyViewer);
 	
-	m_pLocalizerCore->AddStudyViewer(pStudyViewer);
-
 	m_nViewerCount++;
 
 	return res;
@@ -101,6 +95,11 @@ INT_PTR CLayoutManager::GetStudyViewerCount()
 	return m_nViewerCount;
 }
 
+CStudyViewer * CLayoutManager::GetCurStudyViewer()
+{
+	return m_aryStudyViewer.GetAt(m_nSelectedViewerIndex);
+}
+
 void CLayoutManager::SetSelectedStudyViewer(INT_PTR nSelectedViewerIndex)
 {
 	m_nSelectedViewerIndex = nSelectedViewerIndex;
@@ -134,9 +133,6 @@ void CLayoutManager::SetSelectedStudyViewer(INT_PTR nSelectedViewerIndex)
 			}
 		}
 	}
-	
-	m_pLocalizerCore->SetSelectedIndex(m_nSelectedViewerIndex);
-	m_pLocalizerCore->CalcReferenceLine();
 
 	for (INT_PTR iStudyViewer = 0; iStudyViewer < m_aryStudyViewer.GetCount(); iStudyViewer++)
 	{
