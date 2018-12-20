@@ -396,9 +396,9 @@ void CStudyViewer::ZoomIn(BOOL bIsDetail)
 	double dRatio = 0.01;
 
 	if (bIsDetail)
-		m_dZoomValue += dRatio * 5.0;	// 5%
+		m_dZoomValue += dRatio * 2.0;	// 2%
 	else
-		m_dZoomValue += dRatio * 100.0;	// 100%
+		m_dZoomValue += dRatio * 20.0;	// 20%
 
 	if (m_dZoomValue < MIN_ZOOM_RATIO)
 	{
@@ -425,9 +425,9 @@ void CStudyViewer::ZoomOut(BOOL bIsDetail)
 	double dRatio = 0.01;
 
 	if (bIsDetail)
-		m_dZoomValue -= dRatio * 5.0;	// 5%
+		m_dZoomValue -= dRatio * 2.0;	// 2%
 	else
-		m_dZoomValue -= dRatio * 100.0;	// 30%
+		m_dZoomValue -= dRatio * 20.0;	// 20%
 
 	if (m_dZoomValue < MIN_ZOOM_RATIO)
 	{
@@ -511,7 +511,7 @@ void CStudyViewer::Init(INT_PTR nCurSeriesIndex, INT_PTR nCurInstanceIndex, INT_
 
 	m_rtCanvas = CRect(0, 0, 0, 0);
 	m_rtImage = CRect(0, 0, 0, 0);
-	m_rtImageEx = CRect(0, 0, 0, 0);
+	m_rtImageEx = Gdiplus::RectF(0.0f, 0.0f, 0.0f, 0.0f);
 	m_rtDrawRectOnCanvas = CRect(0, 0, 0, 0);
 
 	m_dCanvasPerImageRatio = 1.0;
@@ -761,7 +761,7 @@ BOOL CStudyViewer::DrawInstanceImage(CDC* pDC)
 	bih.biPlanes = 1;
 	bih.biBitCount = 8 * m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).m_stImageInfo.m_nSamplesPerPixel;
 	bih.biCompression = BI_RGB;
-	bih.biSizeImage = m_rtDisplayedROIOnCanvas.Width() * m_rtDisplayedROIOnCanvas.Height();
+	bih.biSizeImage = m_rtDisplayedROIOnCanvas.Width() * m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).m_stImageInfo.m_nSamplesPerPixel * m_rtDisplayedROIOnCanvas.Height();
 	bih.biXPelsPerMeter = 0;
 	bih.biYPelsPerMeter = 0;
 	bih.biClrUsed = 0;
@@ -949,7 +949,7 @@ BOOL CStudyViewer::DrawImageInfo(CDC* pDC)
 	strInstanceNumber.Format(_T("Instance : %d"), m_pDisplayDicomDS->GetInstanceNumber());
 	aryImageInfo.Add(strInstanceNumber);
 	CString strZoomValue;
-	strZoomValue.Format(_T("Zoom Value : %d"), (INT_PTR) m_dZoomValue);
+	strZoomValue.Format(_T("Zoom Value : %0.2f"), m_dZoomValue);
 	aryImageInfo.Add(strZoomValue);
 
 	for (INT_PTR nIndex = 0; nIndex < aryImageInfo.GetCount(); nIndex++)
@@ -1383,19 +1383,17 @@ BOOL CStudyViewer::CalcImageRectEx(CDicomImage * pImageInfo)
 	ptCenterImg = CPoint((int)((dImgWidth)*0.5f), (int)((dImgHeight)*0.5f));
 	ptCenterCanvas = CPoint((int)((dCanvasWidth)*0.5f), (int)((dCanvasHeight)*0.5f));
 
-	m_rtImageEx.left = ptCenterCanvas.x - (int)(dImgWidthOnCanvas / 2);
-	m_rtImageEx.right = m_rtImageEx.left + dImgWidthOnCanvas;
-	m_rtImageEx.top = ptCenterCanvas.y - (int)(dImgHeightOnCanvas / 2);
-	m_rtImageEx.bottom = m_rtImageEx.top + dImgHeightOnCanvas;
+	m_rtImageEx.X = ptCenterCanvas.x - (int)(dImgWidthOnCanvas / 2);
+	m_rtImageEx.Width = dImgWidthOnCanvas;
+	m_rtImageEx.Y = ptCenterCanvas.y - (int)(dImgHeightOnCanvas / 2);
+	m_rtImageEx.Height = dImgHeightOnCanvas;
 
 	// panning
 // 	double dPannedDeltaX = -1 * (double)m_ptPanDelta.x / m_dZoomValue;
 // 	double dPannedDeltaY = (double)m_ptPanDelta.y / m_dZoomValue;
 
-	m_rtImageEx.left	+= (double)m_ptPanDelta.x;
-	m_rtImageEx.right	+= (double)m_ptPanDelta.x;
-	m_rtImageEx.top		+= (double)m_ptPanDelta.y;
-	m_rtImageEx.bottom	+= (double)m_ptPanDelta.y;
+	m_rtImageEx.X	+= (double)m_ptPanDelta.x;
+	m_rtImageEx.Y	+= (double)m_ptPanDelta.y;
 
 //	m_rtImageEx.OffsetRect((int)(dPannedDeltaX + 0.5f), (int)(dPannedDeltaY + 0.5f));
 
@@ -1404,8 +1402,6 @@ BOOL CStudyViewer::CalcImageRectEx(CDicomImage * pImageInfo)
 // 	m_rtImageEx.top = (int)(dImgHeightOnCanvas / 2) - (int)(dCanvasHeight / 2);
 // 	m_rtImageEx.bottom = (int)(dCanvasHeight + 0.5f) + m_rtImageEx.top;
 
-//	CalcZoomAndPanEx();
-	
 	//m_dCanvasPerImageRatio = dCanvasWidth / m_rtImageEx.Width();
 
 	return TRUE;
@@ -1422,47 +1418,47 @@ BOOL CStudyViewer::CalcDisplayImageROI(CDicomImage * pImageInfo)
 	double nCanvasHeight = (double)m_rtCanvas.Height();
 	double nCanvasWidth = (double)m_rtCanvas.Width();
 	
-	double dWidthRatio = (double)nImageWidth / (double)m_rtImageEx.Width();
-	double dHeightRatio = (double)nImageHeight / (double)m_rtImageEx.Height();
+	double dWidthRatio = (double)nImageWidth / (double)m_rtImageEx.Width;
+	double dHeightRatio = (double)nImageHeight / (double)m_rtImageEx.Height;
 
 	CCoordinatorUtill util;
 
-	if (m_rtImageEx.left > 0) // 좌측이 다 보이는경우,
+	if (m_rtImageEx.GetLeft() > 0) // 좌측이 다 보이는경우,
 	{
 		m_rtDisplayedROIOnImage.left = 0;
 	}
 	else // 좌측이 다 보이지 않는 경우
 	{
-		m_rtDisplayedROIOnImage.left = m_rtImageEx.left * dWidthRatio * (-1);
+		m_rtDisplayedROIOnImage.left = m_rtImageEx.X * dWidthRatio * (-1);
 		//m_rtDisplayedROIOnImage.left = m_rtImage.left;
 	}
 	
-	if (m_rtImageEx.right > nCanvasWidth) // 우측이 다 보이는 경우
+	if (m_rtImageEx.GetRight() > nCanvasWidth) // 우측이 다 보이는 경우
 	{
-		m_rtDisplayedROIOnImage.right = nImageWidth - ((m_rtImageEx.right - nCanvasWidth) * dWidthRatio);
+		m_rtDisplayedROIOnImage.right = nImageWidth - ((m_rtImageEx.GetRight() - nCanvasWidth) * dWidthRatio);
 	}
 	else // 우측이 다 보이지 않는 경우
 	{
 		m_rtDisplayedROIOnImage.right = nImageWidth;
 	}
 
-	if (m_rtImageEx.top > 0) // 상단이 다 보이는 경우,
+	if (m_rtImageEx.GetTop() > 0) // 상단이 다 보이는 경우,
 	{
 		m_rtDisplayedROIOnImage.top = 0;
 	}
 	else // 상단이 다 보이지 않는 경우
 	{
-		m_rtDisplayedROIOnImage.top = m_rtImageEx.top * dWidthRatio * (-1);
+		m_rtDisplayedROIOnImage.top = m_rtImageEx.GetTop() * dWidthRatio * (-1);
 	}
 	
 	
-	if (m_rtImageEx.bottom < nCanvasHeight) // 하단이 다 보이는 경우,
+	if (m_rtImageEx.GetBottom() < nCanvasHeight) // 하단이 다 보이는 경우,
 	{
 		m_rtDisplayedROIOnImage.bottom = nImageHeight;
 	}
 	else // 하단이 다 보이지 않는 경우,
 	{
-		m_rtDisplayedROIOnImage.bottom = nImageHeight - ((m_rtImageEx.bottom - nCanvasHeight) * dWidthRatio);
+		m_rtDisplayedROIOnImage.bottom = nImageHeight - ((m_rtImageEx.GetBottom() - nCanvasHeight) * dWidthRatio);
 	}
 
 	INT_PTR nRoiImageWidth = m_rtDisplayedROIOnImage.Width();
@@ -1499,19 +1495,22 @@ BOOL CStudyViewer::CalcDisplayCanvasROI(CDicomImage * pImageInfo)
 
 ////////////////////////////////////////////////////////////////////////
 
-	m_rtDisplayedROIOnCanvas = m_rtImageEx;
+	m_rtDisplayedROIOnCanvas.left = m_rtImageEx.X;
+	m_rtDisplayedROIOnCanvas.right = m_rtImageEx.Width + m_rtImageEx.X;
+	m_rtDisplayedROIOnCanvas.top = m_rtImageEx.Y;
+	m_rtDisplayedROIOnCanvas.bottom = m_rtImageEx.Height + m_rtImageEx.Y;
 
-	double dWidthRatio = (double)m_rtImageEx.Width() / (double)nImageWidth;
-	double dHeightRatio = (double)m_rtImageEx.Height() / (double)nImageHeight;
+	double dWidthRatio = (double)m_rtImageEx.Width / (double)nImageWidth;
+	double dHeightRatio = (double)m_rtImageEx.Height / (double)nImageHeight;
 
 	double dExpectedWidth = m_rtDisplayedROIOnImage.Width() * dWidthRatio;
 	double dExpectedHeight = m_rtDisplayedROIOnImage.Height() * dHeightRatio;
 
-	CPoint ptCenter = m_rtImageEx.CenterPoint();
-	m_rtDisplayedROIOnCanvas.left = ptCenter.x - (dExpectedWidth * 0.5);
-	m_rtDisplayedROIOnCanvas.right = ptCenter.x + (dExpectedWidth * 0.5);
-	m_rtDisplayedROIOnCanvas.top = ptCenter.y - (dExpectedHeight * 0.5);
-	m_rtDisplayedROIOnCanvas.bottom = ptCenter.y + (dExpectedHeight * 0.5);
+// 	Gdiplus::PointF ptCenter = Gdiplus::PointF(((m_rtImageEx.GetLeft() + m_rtImageEx.GetRight()) * 0.5), ((m_rtImageEx.GetTop() + m_rtImageEx.GetBottom()) * 0.5));
+// 	m_rtDisplayedROIOnCanvas.left = ptCenter.X - (dExpectedWidth * 0.5);
+// 	m_rtDisplayedROIOnCanvas.right = ptCenter.X + (dExpectedWidth * 0.5);
+// 	m_rtDisplayedROIOnCanvas.top = ptCenter.Y - (dExpectedHeight * 0.5);
+// 	m_rtDisplayedROIOnCanvas.bottom = ptCenter.Y + (dExpectedHeight * 0.5);
 
 	if (m_rtDisplayedROIOnCanvas.left < 0)
 	{
@@ -1558,7 +1557,7 @@ BOOL CStudyViewer::CalcDrawRectOnCanvasRect(CDicomImage * pImageInfo)
 	double nCanvasHeight = (double)m_rtCanvas.Height();
 	double nCanvasWidth = (double)m_rtCanvas.Width();
 
-	if (m_rtImageEx.left < 0)
+	if (m_rtImageEx.GetLeft() < 0)
 	{
 		m_rtDrawRectOnCanvas.left = 0;
 	}
@@ -1569,42 +1568,20 @@ BOOL CStudyViewer::CalcDrawRectOnCanvasRect(CDicomImage * pImageInfo)
 
 	m_rtDrawRectOnCanvas.right = nCanvasWidth + m_rtDrawRectOnCanvas.left;
 
-	if (m_rtImageEx.top < 0)
+	if (m_rtImageEx.GetTop() < 0)
 	{
-		m_rtDrawRectOnCanvas.top = 0;
+		m_rtDrawRectOnCanvas.top = m_rtDisplayedROIOnCanvas.top - (nCanvasHeight - m_rtDisplayedROIOnCanvas.Height());;
+		m_rtDrawRectOnCanvas.bottom = nCanvasHeight - (nCanvasHeight - m_rtDisplayedROIOnCanvas.Height());
 	}
 	else
 	{
-		m_rtDrawRectOnCanvas.top = m_rtDisplayedROIOnCanvas.top;
+		m_rtDrawRectOnCanvas.top = 0;
+		m_rtDrawRectOnCanvas.bottom = nCanvasHeight;
 	}
 
-	m_rtDrawRectOnCanvas.bottom = nCanvasHeight + m_rtDrawRectOnCanvas.top;
-
 	// Need to Fix it
-	m_rtDrawRectOnCanvas.top += m_ptPanDelta.y;
-	m_rtDrawRectOnCanvas.bottom += m_ptPanDelta.y;
-
-// 	if (m_rtImageEx.left < 0)
-// 	{
-// 		m_rtDrawRectOnCanvas.left = 0;
-// 	}
-// 	else
-// 	{
-// 		m_rtDrawRectOnCanvas.left = (-1) * m_rtImageEx.left;
-// 	}
-// 
-// 	m_rtDrawRectOnCanvas.right = nCanvasWidth + m_rtDrawRectOnCanvas.left;
-// 
-// 	if (m_rtImageEx.top < 0)
-// 	{
-// 		m_rtDrawRectOnCanvas.top = 0;
-// 	}
-// 	else
-// 	{
-// 		m_rtDrawRectOnCanvas.top = (-1) * m_rtImageEx.top;
-// 	}
-// 
-// 	m_rtDrawRectOnCanvas.bottom = nCanvasHeight + m_rtDrawRectOnCanvas.top;
+// 	m_rtDrawRectOnCanvas.top += m_ptPanDelta.y;
+// 	m_rtDrawRectOnCanvas.bottom += m_ptPanDelta.y;
 
 	double dDrawCanvasWidth = BytesPerLine((UINT)(m_rtDrawRectOnCanvas.Width()), 8);
 	double dDrawCanvasHeight = BytesPerLine((UINT)(m_rtDrawRectOnCanvas.Height()), 8);
@@ -1643,43 +1620,6 @@ void CStudyViewer::CalcZoomAndPan()
 	double dPannedDeltaY = (double)m_ptPanDelta.y / m_dZoomValue;
 
 	m_rtImage.OffsetRect((int)(dPannedDeltaX + 0.5f), (int)(dPannedDeltaY + 0.5f));
-}
-
-void CStudyViewer::CalcZoomAndPanEx()
-{
-	// zoom
-	if (m_dZoomValue < MIN_ZOOM_RATIO)
-	{
-		m_dZoomValue = MIN_ZOOM_RATIO;
-	}
-	else if (m_dZoomValue > MAX_ZOOM_RATIO)
-	{
-		m_dZoomValue = MAX_ZOOM_RATIO;
-	}
-
-	CPoint ptCenter = CPoint((int)((m_rtImageEx.right + m_rtImageEx.left)*0.5f), (int)((m_rtImageEx.bottom + m_rtImageEx.top)*0.5f));
-
-	INT_PTR nWidth = m_rtImageEx.Width() * m_dZoomValue;
-	INT_PTR nHeight = m_rtImageEx.Height() * m_dZoomValue;
-
-	m_rtImageEx.left = ptCenter.x - (nWidth*0.5f) * m_dZoomValue;
-
-	//
-	
-	int nConst = (int)(m_rtImageEx.Width()*0.5f / m_dZoomValue);
-	int nConst1 = (int)(m_rtImageEx.Width() / m_dZoomValue);
-	m_rtImageEx.left = ptCenter.x - nConst;
-	m_rtImageEx.right = m_rtImageEx.left + nConst1;
-	nConst = (int)(m_rtImageEx.Height()*0.5f / m_dZoomValue);
-	nConst1 = (int)(m_rtImageEx.Height() / m_dZoomValue);
-	m_rtImageEx.top = ptCenter.y - nConst;
-	m_rtImageEx.bottom = m_rtImageEx.top + nConst1;
-
-	// panning
-	double dPannedDeltaX = -1 * (double)m_ptPanDelta.x / m_dZoomValue;
-	double dPannedDeltaY = (double)m_ptPanDelta.y / m_dZoomValue;
-
-	m_rtImageEx.OffsetRect((int)(dPannedDeltaX + 0.5f), (int)(dPannedDeltaY + 0.5f));
 }
 
 DIBINFO* CStudyViewer::GetDibInfo()
@@ -1854,7 +1794,6 @@ void CStudyViewer::UpdateScreenData()
 	m_stROIImg.nHeight = m_rtDisplayedROIOnImage.Height();
 	m_stROIImg.pImage = m_pRoiImage;
 
-#ifndef BY_SELF
 	FreeScreenBuffer();
 	AllocScreenBuffer();
 
@@ -1867,7 +1806,6 @@ void CStudyViewer::UpdateScreenData()
 		m_rtDisplayedROIOnImage.Height(),
 		m_rtDisplayedROIOnCanvas.Width(),
 		m_rtDisplayedROIOnCanvas.Height());
-#endif
 
 	return;
 }

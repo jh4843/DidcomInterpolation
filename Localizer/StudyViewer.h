@@ -103,7 +103,7 @@ private:
 	BYTE* m_pRoiImage;					// image for ROI
 
 	CRect m_rtImage;
-	CRect m_rtImageEx;
+	Gdiplus::RectF m_rtImageEx;
 	CRect m_rtDrawRectOnCanvas;
 	CRect m_rtCanvas;
 	CRect m_rtDisplayedROIOnImage;
@@ -186,7 +186,6 @@ protected:
 	virtual BOOL CalcDisplayCanvasROI(CDicomImage * pImageInfo);
 	virtual BOOL CalcDrawRectOnCanvasRect(CDicomImage* imageInfo);
 	virtual void CalcZoomAndPan();
-	virtual void CalcZoomAndPanEx();
 	virtual BOOL AllocDisplayImage();
 	virtual BOOL AllocScreenBuffer();
 	virtual BOOL AllocRoiBuffer();
