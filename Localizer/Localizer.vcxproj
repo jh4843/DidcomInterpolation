@@ -1,6 +1,38 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="ByGdiNoInterpolation|Win32">
+      <Configuration>ByGdiNoInterpolation</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="ByGdiNoInterpolation|x64">
+      <Configuration>ByGdiNoInterpolation</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="ByGdiPlusInterpolation|Win32">
+      <Configuration>ByGdiPlusInterpolation</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="ByGdiPlusInterpolation|x64">
+      <Configuration>ByGdiPlusInterpolation</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="BySelfResize|Win32">
+      <Configuration>BySelfResize</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="BySelfResize|x64">
+      <Configuration>BySelfResize</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="BySelf|Win32">
+      <Configuration>BySelf</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="BySelf|x64">
+      <Configuration>BySelf</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
@@ -55,6 +87,42 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
     <UseOfMfc>Dynamic</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='BySelf|Win32'">
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='BySelf|x64'">
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='ByGdiPlusInterpolation|Win32'">
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='ByGdiPlusInterpolation|x64'">
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='ByGdiNoInterpolation|Win32'">
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='ByGdiNoInterpolation|x64'">
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='BySelfResize|Win32'">
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='BySelfResize|x64'">
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -193,6 +261,47 @@
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='BySelf|x64'">
+    <ClCompile>
+      <AdditionalOptions> /D "_BYSELF" %(AdditionalOptions)</AdditionalOptions>
+      <PreprocessorDefinitions>BY_SELF;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Program Files (x86)\LEAD Technologies\LEADTOOLS 17\Include;C:\Program Files (x86)\LEAD Technologies\LEADTOOLS 17\Include\ClassLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>Level3</WarningLevel>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>C:\Program Files (x86)\LEAD Technologies\LEADTOOLS 17\Lib\CDLLVC10\x64;</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ByGdiPlusInterpolation|x64'">
+    <ClCompile>
+      <PreprocessorDefinitions>BY_GDI_INTERPOLATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Program Files (x86)\LEAD Technologies\LEADTOOLS 17\Include;C:\Program Files (x86)\LEAD Technologies\LEADTOOLS 17\Include\ClassLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>Level3</WarningLevel>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>C:\Program Files (x86)\LEAD Technologies\LEADTOOLS 17\Lib\CDLLVC10\x64;</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ByGdiNoInterpolation|x64'">
+    <ClCompile>
+      <PreprocessorDefinitions>BY_GDI_NO_INTERPOLATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <AdditionalIncludeDirectories>C:\Program Files (x86)\LEAD Technologies\LEADTOOLS 17\Include;C:\Program Files (x86)\LEAD Technologies\LEADTOOLS 17\Include\ClassLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>Level3</WarningLevel>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>C:\Program Files (x86)\LEAD Technologies\LEADTOOLS 17\Lib\CDLLVC10\x64;</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='BySelfResize|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Program Files (x86)\LEAD Technologies\LEADTOOLS 17\Include;C:\Program Files (x86)\LEAD Technologies\LEADTOOLS 17\Include\ClassLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>SELF_RESIZE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>C:\Program Files (x86)\LEAD Technologies\LEADTOOLS 17\Lib\CDLLVC10\x64;</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
   </ItemGroup>
@@ -212,9 +321,9 @@
     <ClInclude Include="OverLayImage.h" />
     <ClInclude Include="Plane.h" />
     <ClInclude Include="StudyViewer.h" />
-    <ClInclude Include="Localizer.h" />
-    <ClInclude Include="LocalizerDoc.h" />
-    <ClInclude Include="LocalizerView.h" />
+    <ClInclude Include="DicomViewer.h" />
+    <ClInclude Include="DicomViewerDoc.h" />
+    <ClInclude Include="DicomViewerView.h" />
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="MyDicomLanguage.h" />
     <ClInclude Include="Resource.h" />
@@ -224,6 +333,7 @@
     <ClInclude Include="targetver.h" />
     <ClInclude Include="template_image_process.h" />
     <ClInclude Include="Vectors.h" />
+    <ClInclude Include="XRLink.Clinic.MemoryDump.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CoordinatorUtill.cpp" />
@@ -241,9 +351,9 @@
     <ClCompile Include="OverLayImage.cpp" />
     <ClCompile Include="Plane.cpp" />
     <ClCompile Include="StudyViewer.cpp" />
-    <ClCompile Include="Localizer.cpp" />
-    <ClCompile Include="LocalizerDoc.cpp" />
-    <ClCompile Include="LocalizerView.cpp" />
+    <ClCompile Include="DicomViewer.cpp" />
+    <ClCompile Include="DicomViewerDoc.cpp" />
+    <ClCompile Include="DicomViewerView.cpp" />
     <ClCompile Include="MainFrm.cpp" />
     <ClCompile Include="MyDicomLanguage.cpp" />
     <ClCompile Include="Series.cpp" />
@@ -254,6 +364,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Study.cpp" />
+    <ClCompile Include="XRLink.Clinic.MemoryDump.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Localizer.rc" />

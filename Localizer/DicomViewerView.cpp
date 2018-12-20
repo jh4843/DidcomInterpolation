@@ -6,11 +6,11 @@
 // SHARED_HANDLERS can be defined in an ATL project implementing preview, thumbnail
 // and search filter handlers and allows sharing of document code with that project.
 #ifndef SHARED_HANDLERS
-#include "Localizer.h"
+#include "DicomViewer.h"
 #endif
 
-#include "LocalizerDoc.h"
-#include "LocalizerView.h"
+#include "DicomViewerDoc.h"
+#include "DicomViewerView.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -19,9 +19,9 @@
 
 // CLocalizerView
 
-IMPLEMENT_DYNCREATE(CLocalizerView, CView)
+IMPLEMENT_DYNCREATE(CDicomViewerView, CView)
 
-BEGIN_MESSAGE_MAP(CLocalizerView, CView)
+BEGIN_MESSAGE_MAP(CDicomViewerView, CView)
 	ON_WM_CONTEXTMENU()
 	ON_WM_RBUTTONUP()
 	ON_WM_SIZE()
@@ -30,17 +30,17 @@ END_MESSAGE_MAP()
 
 // CLocalizerView construction/destruction
 
-CLocalizerView::CLocalizerView()
+CDicomViewerView::CDicomViewerView()
 {
 	// TODO: add construction code here
 	
 }
 
-CLocalizerView::~CLocalizerView()
+CDicomViewerView::~CDicomViewerView()
 {
 }
 
-BOOL CLocalizerView::PreCreateWindow(CREATESTRUCT& cs)
+BOOL CDicomViewerView::PreCreateWindow(CREATESTRUCT& cs)
 {
 	// TODO: Modify the Window class or styles here by modifying
 	//  the CREATESTRUCT cs
@@ -50,9 +50,9 @@ BOOL CLocalizerView::PreCreateWindow(CREATESTRUCT& cs)
 
 // CLocalizerView drawing
 
-void CLocalizerView::OnDraw(CDC* /*pDC*/)
+void CDicomViewerView::OnDraw(CDC* /*pDC*/)
 {
-	CLocalizerDoc* pDoc = GetDocument();
+	CDicomViewerDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	if (!pDoc)
 		return;
@@ -60,13 +60,13 @@ void CLocalizerView::OnDraw(CDC* /*pDC*/)
 	// TODO: add draw code for native data here
 }
 
-void CLocalizerView::OnRButtonUp(UINT /* nFlags */, CPoint point)
+void CDicomViewerView::OnRButtonUp(UINT /* nFlags */, CPoint point)
 {
 	ClientToScreen(&point);
 	OnContextMenu(this, point);
 }
 
-void CLocalizerView::OnContextMenu(CWnd* /* pWnd */, CPoint point)
+void CDicomViewerView::OnContextMenu(CWnd* /* pWnd */, CPoint point)
 {
 #ifndef SHARED_HANDLERS
 	theApp.GetContextMenuManager()->ShowPopupMenu(IDR_POPUP_EDIT, point.x, point.y, this, TRUE);
@@ -77,20 +77,20 @@ void CLocalizerView::OnContextMenu(CWnd* /* pWnd */, CPoint point)
 // CLocalizerView diagnostics
 
 #ifdef _DEBUG
-void CLocalizerView::AssertValid() const
+void CDicomViewerView::AssertValid() const
 {
 	CView::AssertValid();
 }
 
-void CLocalizerView::Dump(CDumpContext& dc) const
+void CDicomViewerView::Dump(CDumpContext& dc) const
 {
 	CView::Dump(dc);
 }
 
-CLocalizerDoc* CLocalizerView::GetDocument() const // non-debug version is inline
+CDicomViewerDoc* CDicomViewerView::GetDocument() const // non-debug version is inline
 {
-	ASSERT(m_pDocument->IsKindOf(RUNTIME_CLASS(CLocalizerDoc)));
-	return (CLocalizerDoc*)m_pDocument;
+	ASSERT(m_pDocument->IsKindOf(RUNTIME_CLASS(CDicomViewerDoc)));
+	return (CDicomViewerDoc*)m_pDocument;
 }
 #endif //_DEBUG
 
@@ -98,7 +98,7 @@ CLocalizerDoc* CLocalizerView::GetDocument() const // non-debug version is inlin
 // CLocalizerView message handlers
 
 
-void CLocalizerView::OnInitialUpdate()
+void CDicomViewerView::OnInitialUpdate()
 {
 	CView::OnInitialUpdate();
 
@@ -111,7 +111,7 @@ void CLocalizerView::OnInitialUpdate()
 }
 
 
-void CLocalizerView::OnSize(UINT nType, int cx, int cy)
+void CDicomViewerView::OnSize(UINT nType, int cx, int cy)
 {
 	CView::OnSize(nType, cx, cy);
 
@@ -129,7 +129,7 @@ void CLocalizerView::OnSize(UINT nType, int cx, int cy)
 }
 
 
-void CLocalizerView::OnDestroy()
+void CDicomViewerView::OnDestroy()
 {
 	CView::OnDestroy();
 

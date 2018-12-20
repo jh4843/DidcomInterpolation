@@ -6,11 +6,11 @@
 #pragma once
 
 
-class CLocalizerDoc : public CDocument
+class CDicomViewerDoc : public CDocument
 {
 protected: // create from serialization only
-	CLocalizerDoc();
-	DECLARE_DYNCREATE(CLocalizerDoc)
+	CDicomViewerDoc();
+	DECLARE_DYNCREATE(CDicomViewerDoc)
 
 // Attributes
 public:
@@ -29,7 +29,7 @@ public:
 
 // Implementation
 public:
-	virtual ~CLocalizerDoc();
+	virtual ~CDicomViewerDoc();
 #ifdef _DEBUG
 	virtual void AssertValid() const;
 	virtual void Dump(CDumpContext& dc) const;

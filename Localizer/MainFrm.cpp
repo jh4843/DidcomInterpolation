@@ -2,7 +2,7 @@
 //
 
 #include "stdafx.h"
-#include "Localizer.h"
+#include "DicomViewer.h"
 
 #include "DicomFileDialog.h"
 
@@ -154,9 +154,15 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	CMFCToolBar::SetBasicCommands(lstBasicCommands);
 
-
+	m_wndStatusBar.SetPaneInfo(0, ID_SEPARATOR, SBPS_NORMAL, 200);
+	m_wndStatusBar.SetPaneInfo(1, ID_SEPARATOR, SBPS_STRETCH, 300);
 
 	return 0;
+}
+
+void CMainFrame::SetStatusBarText(INT_PTR nIndex, CString strText)
+{
+	m_wndStatusBar.SetPaneText(nIndex, strText);
 }
 
 BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)

@@ -20,6 +20,7 @@ public:
 
 // Operations
 public:
+	void SetStatusBarText(INT_PTR nIndex, CString strText);
 
 // Overrides
 public:

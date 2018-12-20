@@ -22,7 +22,7 @@ Localizer.vcxproj.filters
     similar extensions under a specific node (for e.g. ".cpp" files are associated with the
     "Source Files" filter).
 
-Localizer.h
+DicomViewer.h
     This is the main header file for the application.  It includes other
     project specific headers (including Resource.h) and declares the
     CLocalizerApp application class.
@@ -65,12 +65,12 @@ res\Toolbar.bmp
 
 The application wizard creates one document type and one view:
 
-LocalizerDoc.h, LocalizerDoc.cpp - the document
+DicomViewerDoc.h, DicomViewerDoc.cpp - the document
     These files contain your CLocalizerDoc class.  Edit these files to
     add your special document data and to implement file saving and loading
     (via CLocalizerDoc::Serialize).
 
-LocalizerView.h, LocalizerView.cpp - the view of the document
+DicomViewerView.h, DicomViewerView.cpp - the view of the document
     These files contain your CLocalizerView class.
     CLocalizerView objects are used to view CLocalizerDoc objects.
 
@@ -81,14 +81,14 @@ LocalizerView.h, LocalizerView.cpp - the view of the document
 
 Help Support:
 
-hlp\Localizer.hhp
+hlp\DicomViewer.hhp
     This file is a help project file. It contains the data needed to
     compile the help files into a .chm file.
 
-hlp\Localizer.hhc
+hlp\DicomViewer.hhc
     This file lists the contents of the help project.
 
-hlp\Localizer.hhk
+hlp\DicomViewer.hhk
     This file contains an index of the help topics.
 
 hlp\afxcore.htm

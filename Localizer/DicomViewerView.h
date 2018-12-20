@@ -1,18 +1,18 @@
 
-// LocalizerView.h : interface of the CLocalizerView class
+// CDicomViewerView.h : interface of the CLocalizerView class
 //
 
 #pragma once
 
-class CLocalizerView : public CView
+class CDicomViewerView : public CView
 {
 protected: // create from serialization only
-	CLocalizerView();
-	DECLARE_DYNCREATE(CLocalizerView)
+	CDicomViewerView();
+	DECLARE_DYNCREATE(CDicomViewerView)
 
 // Attributes
 public:
-	CLocalizerDoc* GetDocument() const;
+	CDicomViewerDoc* GetDocument() const;
 
 // Operations
 
@@ -26,7 +26,7 @@ protected:
 
 // Implementation
 public:
-	virtual ~CLocalizerView();
+	virtual ~CDicomViewerView();
 #ifdef _DEBUG
 	virtual void AssertValid() const;
 	virtual void Dump(CDumpContext& dc) const;
@@ -46,7 +46,7 @@ public:
 };
 
 #ifndef _DEBUG  // debug version in LocalizerView.cpp
-inline CLocalizerDoc* CLocalizerView::GetDocument() const
-   { return reinterpret_cast<CLocalizerDoc*>(m_pDocument); }
+inline CDicomViewerDoc* CDicomViewerView::GetDocument() const
+   { return reinterpret_cast<CDicomViewerDoc*>(m_pDocument); }
 #endif
 

@@ -5,11 +5,11 @@
 #include "stdafx.h"
 #include "afxwinappex.h"
 #include "afxdialogex.h"
-#include "Localizer.h"
+#include "DicomViewer.h"
 #include "MainFrm.h"
 
-#include "LocalizerDoc.h"
-#include "LocalizerView.h"
+#include "DicomViewerDoc.h"
+#include "DicomViewerView.h"
 #include "StudyViewer.h"
 
 #ifdef _DEBUG
@@ -19,20 +19,20 @@
 
 // CLocalizerApp
 
-BEGIN_MESSAGE_MAP(CLocalizerApp, CWinAppEx)
-	ON_COMMAND(ID_APP_ABOUT, &CLocalizerApp::OnAppAbout)
-	ON_COMMAND(ID_COMMAND_CLOSEALL, &CLocalizerApp::OnCloseAll)
-	ON_COMMAND(ID_VIEW_VIEWBYSERIESUNIT, &CLocalizerApp::OnViewBySeriesUnit)
+BEGIN_MESSAGE_MAP(CDicomViewerApp, CWinAppEx)
+	ON_COMMAND(ID_APP_ABOUT, &CDicomViewerApp::OnAppAbout)
+	ON_COMMAND(ID_COMMAND_CLOSEALL, &CDicomViewerApp::OnCloseAll)
+	ON_COMMAND(ID_VIEW_VIEWBYSERIESUNIT, &CDicomViewerApp::OnViewBySeriesUnit)
 	// Standard file based document commands
 	ON_COMMAND(ID_FILE_NEW, &CWinAppEx::OnFileNew)
-	ON_COMMAND(ID_SYNC_POSANDORIENT, &CLocalizerApp::OnSyncPosandorient)
-	ON_UPDATE_COMMAND_UI(ID_SYNC_POSANDORIENT, &CLocalizerApp::OnUpdateSyncPosandorient)
+	ON_COMMAND(ID_SYNC_POSANDORIENT, &CDicomViewerApp::OnSyncPosandorient)
+	ON_UPDATE_COMMAND_UI(ID_SYNC_POSANDORIENT, &CDicomViewerApp::OnUpdateSyncPosandorient)
 END_MESSAGE_MAP()
 
 
 // CLocalizerApp construction
 
-CLocalizerApp::CLocalizerApp()
+CDicomViewerApp::CDicomViewerApp()
 {
 	m_bHiColorIcons = TRUE;
 
@@ -55,12 +55,12 @@ CLocalizerApp::CLocalizerApp()
 
 // The one and only CLocalizerApp object
 
-CLocalizerApp theApp;
+CDicomViewerApp theApp;
 
 
 // CLocalizerApp initialization
 
-BOOL CLocalizerApp::InitInstance()
+BOOL CDicomViewerApp::InitInstance()
 {
 	// InitCommonControlsEx() is required on Windows XP if an application
 	// manifest specifies use of ComCtl32.dll version 6 or later to enable
@@ -157,9 +157,9 @@ BOOL CLocalizerApp::InitInstance()
 	CSingleDocTemplate* pDocTemplate;
 	pDocTemplate = new CSingleDocTemplate(
 		IDR_MAINFRAME,
-		RUNTIME_CLASS(CLocalizerDoc),
+		RUNTIME_CLASS(CDicomViewerDoc),
 		RUNTIME_CLASS(CMainFrame),       // main SDI frame window
-		RUNTIME_CLASS(CLocalizerView));
+		RUNTIME_CLASS(CDicomViewerView));
 	if (!pDocTemplate)
 		return FALSE;
 	AddDocTemplate(pDocTemplate);
@@ -176,17 +176,38 @@ BOOL CLocalizerApp::InitInstance()
 	if (!ProcessShellCommand(cmdInfo))
 		return FALSE;
 
+	CString strPlatformType;
+#ifdef _WIN64
+	strPlatformType = _T("X64");
+#else
+	strPlatformType = _T("X86");
+#endif
+
+	CString strAppName;
+#ifdef BY_SELF
+	strAppName.Format(_T("Interpolation_by_self"));
+#elif BY_GDI_INTERPOLATION
+	strAppName.Format(_T("Interpolation_by_gdiplus"));
+#elif BY_GDI_NO_INTERPOLATION
+	strAppName.Format(_T("Interpolation_No_Interpolation_gdiplus"));
+#else
+	strAppName.Format(_T("Interpolation_by_self"));
+#endif
+
 	// The one and only window has been initialized, so show and update it
 	m_pMainWnd->ShowWindow(SW_SHOW);
 	m_pMainWnd->UpdateWindow();
-	m_pMainWnd->SetWindowTextW(_T("Interpolation_No_Interpolation_gdiplus"));
+	m_pMainWnd->SetWindowTextW(strAppName);
+
+	m_MiniDump.SetDumpAppName(strAppName);
+	m_MiniDump.SetDumpPlatformType(strPlatformType);
 
 	m_bSyncPosAndOrient = FALSE;
 
 	return TRUE;
 }
 
-int CLocalizerApp::ExitInstance()
+int CDicomViewerApp::ExitInstance()
 {
 	//TODO: handle additional resources you may have added
 	LBase::UnloadLibraries(LT_ALL_LEADLIB);
@@ -237,7 +258,7 @@ END_MESSAGE_MAP()
 
 // CLocalizerApp message handlers
 
-void CLocalizerApp::PreLoadState()
+void CDicomViewerApp::PreLoadState()
 {
 	BOOL bNameValid;
 	CString strName;
@@ -246,33 +267,33 @@ void CLocalizerApp::PreLoadState()
 	GetContextMenuManager()->AddMenu(strName, IDR_POPUP_EDIT);
 }
 
-void CLocalizerApp::LoadCustomState()
+void CDicomViewerApp::LoadCustomState()
 {
 }
 
-void CLocalizerApp::SaveCustomState()
+void CDicomViewerApp::SaveCustomState()
 {
 }
 
-void CLocalizerApp::OnAppAbout()
+void CDicomViewerApp::OnAppAbout()
 {
 	CAboutDlg aboutDlg;
 	aboutDlg.DoModal();
 }
 
-void CLocalizerApp::OnCloseAll()
+void CDicomViewerApp::OnCloseAll()
 {
 	m_pLayoutManager->Init();
 	CMainFrame* pFrame = (CMainFrame*)AfxGetMainWnd();
 	pFrame->Init();
 }
 
-void CLocalizerApp::OnViewBySeriesUnit()
+void CDicomViewerApp::OnViewBySeriesUnit()
 {
 	m_pLayoutManager->SetViewerBySeriesUnit();
 }
 
-void CLocalizerApp::OnSyncPosandorient()
+void CDicomViewerApp::OnSyncPosandorient()
 {
 	CMenu menu;
 	menu.LoadMenuW(IDR_MAINFRAME);
@@ -293,13 +314,13 @@ void CLocalizerApp::OnSyncPosandorient()
 }
 
 
-void CLocalizerApp::OnUpdateSyncPosandorient(CCmdUI *pCmdUI)
+void CDicomViewerApp::OnUpdateSyncPosandorient(CCmdUI *pCmdUI)
 {
 	pCmdUI->SetCheck(m_bSyncPosAndOrient);
 }
 
 
-BOOL CLocalizerApp::PreTranslateMessage(MSG* pMsg)
+BOOL CDicomViewerApp::PreTranslateMessage(MSG* pMsg)
 {
 	if (pMsg->message == WM_KEYDOWN || pMsg->message == WM_SYSKEYDOWN)
 	{

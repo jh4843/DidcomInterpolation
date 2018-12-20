@@ -4,7 +4,7 @@
 
 
 CString COleDropTargetEx::m_strStudyViewInfoPrefix = _T("STUDYVIEW:");
-extern CLocalizerApp theApp;
+extern CDicomViewerApp theApp;
 
 COleDropTargetEx::COleDropTargetEx(CWnd* pParentWnd)
 {

@@ -1,5 +1,5 @@
 
-// Localizer.h : main header file for the Localizer application
+// DicomViewer.h : main header file for the Localizer application
 //
 #pragma once
 
@@ -9,6 +9,7 @@
 
 #include "resource.h"       // main symbols
 #include "LayoutManager.h"
+#include "XRLink.Clinic.MemoryDump.h"
 
 
 // CLocalizerApp:
@@ -16,10 +17,13 @@
 //
 
 class CLayoutManager;
-class CLocalizerApp : public CWinAppEx
+class CDicomViewerApp : public CWinAppEx
 {
 public:
-	CLocalizerApp();
+	CDicomViewerApp();
+
+protected:
+	CXRLinkClinicMemoryDump m_MiniDump;
 
 private:
 	ULONG_PTR m_nGdiPlusToken;
@@ -50,4 +54,4 @@ public:
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 };
 
-extern CLocalizerApp theApp;
+extern CDicomViewerApp theApp;

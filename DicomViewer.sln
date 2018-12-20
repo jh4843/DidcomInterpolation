@@ -1,0 +1,52 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Interpolation", "Localizer\Localizer.vcxproj", "{CB0D1C40-B8CA-4FF4-BE6E-74D26D6A2A21}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		ByGdiNoInterpolation|x64 = ByGdiNoInterpolation|x64
+		ByGdiNoInterpolation|x86 = ByGdiNoInterpolation|x86
+		ByGdiPlusInterpolation|x64 = ByGdiPlusInterpolation|x64
+		ByGdiPlusInterpolation|x86 = ByGdiPlusInterpolation|x86
+		BySelf|x64 = BySelf|x64
+		BySelf|x86 = BySelf|x86
+		BySelfResize|x64 = BySelfResize|x64
+		BySelfResize|x86 = BySelfResize|x86
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CB0D1C40-B8CA-4FF4-BE6E-74D26D6A2A21}.ByGdiNoInterpolation|x64.ActiveCfg = ByGdiNoInterpolation|x64
+		{CB0D1C40-B8CA-4FF4-BE6E-74D26D6A2A21}.ByGdiNoInterpolation|x64.Build.0 = ByGdiNoInterpolation|x64
+		{CB0D1C40-B8CA-4FF4-BE6E-74D26D6A2A21}.ByGdiNoInterpolation|x86.ActiveCfg = ByGdiNoInterpolation|Win32
+		{CB0D1C40-B8CA-4FF4-BE6E-74D26D6A2A21}.ByGdiNoInterpolation|x86.Build.0 = ByGdiNoInterpolation|Win32
+		{CB0D1C40-B8CA-4FF4-BE6E-74D26D6A2A21}.ByGdiPlusInterpolation|x64.ActiveCfg = ByGdiPlusInterpolation|x64
+		{CB0D1C40-B8CA-4FF4-BE6E-74D26D6A2A21}.ByGdiPlusInterpolation|x64.Build.0 = ByGdiPlusInterpolation|x64
+		{CB0D1C40-B8CA-4FF4-BE6E-74D26D6A2A21}.ByGdiPlusInterpolation|x86.ActiveCfg = ByGdiPlusInterpolation|Win32
+		{CB0D1C40-B8CA-4FF4-BE6E-74D26D6A2A21}.ByGdiPlusInterpolation|x86.Build.0 = ByGdiPlusInterpolation|Win32
+		{CB0D1C40-B8CA-4FF4-BE6E-74D26D6A2A21}.BySelf|x64.ActiveCfg = BySelf|x64
+		{CB0D1C40-B8CA-4FF4-BE6E-74D26D6A2A21}.BySelf|x64.Build.0 = BySelf|x64
+		{CB0D1C40-B8CA-4FF4-BE6E-74D26D6A2A21}.BySelf|x86.ActiveCfg = BySelf|Win32
+		{CB0D1C40-B8CA-4FF4-BE6E-74D26D6A2A21}.BySelf|x86.Build.0 = BySelf|Win32
+		{CB0D1C40-B8CA-4FF4-BE6E-74D26D6A2A21}.BySelfResize|x64.ActiveCfg = BySelfResize|x64
+		{CB0D1C40-B8CA-4FF4-BE6E-74D26D6A2A21}.BySelfResize|x64.Build.0 = BySelfResize|x64
+		{CB0D1C40-B8CA-4FF4-BE6E-74D26D6A2A21}.BySelfResize|x86.ActiveCfg = BySelfResize|Win32
+		{CB0D1C40-B8CA-4FF4-BE6E-74D26D6A2A21}.BySelfResize|x86.Build.0 = BySelfResize|Win32
+		{CB0D1C40-B8CA-4FF4-BE6E-74D26D6A2A21}.Debug|x64.ActiveCfg = Debug|x64
+		{CB0D1C40-B8CA-4FF4-BE6E-74D26D6A2A21}.Debug|x64.Build.0 = Debug|x64
+		{CB0D1C40-B8CA-4FF4-BE6E-74D26D6A2A21}.Debug|x86.ActiveCfg = Debug|Win32
+		{CB0D1C40-B8CA-4FF4-BE6E-74D26D6A2A21}.Debug|x86.Build.0 = Debug|Win32
+		{CB0D1C40-B8CA-4FF4-BE6E-74D26D6A2A21}.Release|x64.ActiveCfg = Release|x64
+		{CB0D1C40-B8CA-4FF4-BE6E-74D26D6A2A21}.Release|x64.Build.0 = Release|x64
+		{CB0D1C40-B8CA-4FF4-BE6E-74D26D6A2A21}.Release|x86.ActiveCfg = Release|Win32
+		{CB0D1C40-B8CA-4FF4-BE6E-74D26D6A2A21}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

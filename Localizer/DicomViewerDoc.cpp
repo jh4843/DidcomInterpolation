@@ -6,10 +6,10 @@
 // SHARED_HANDLERS can be defined in an ATL project implementing preview, thumbnail
 // and search filter handlers and allows sharing of document code with that project.
 #ifndef SHARED_HANDLERS
-#include "Localizer.h"
+#include "DicomViewer.h"
 #endif
 
-#include "LocalizerDoc.h"
+#include "DicomViewerDoc.h"
 
 #include <propkey.h>
 
@@ -19,25 +19,25 @@
 
 // CLocalizerDoc
 
-IMPLEMENT_DYNCREATE(CLocalizerDoc, CDocument)
+IMPLEMENT_DYNCREATE(CDicomViewerDoc, CDocument)
 
-BEGIN_MESSAGE_MAP(CLocalizerDoc, CDocument)
+BEGIN_MESSAGE_MAP(CDicomViewerDoc, CDocument)
 END_MESSAGE_MAP()
 
 
 // CLocalizerDoc construction/destruction
 
-CLocalizerDoc::CLocalizerDoc()
+CDicomViewerDoc::CDicomViewerDoc()
 {
 	// TODO: add one-time construction code here
 
 }
 
-CLocalizerDoc::~CLocalizerDoc()
+CDicomViewerDoc::~CDicomViewerDoc()
 {
 }
 
-BOOL CLocalizerDoc::OnNewDocument()
+BOOL CDicomViewerDoc::OnNewDocument()
 {
 	if (!CDocument::OnNewDocument())
 		return FALSE;
@@ -53,7 +53,7 @@ BOOL CLocalizerDoc::OnNewDocument()
 
 // CLocalizerDoc serialization
 
-void CLocalizerDoc::Serialize(CArchive& ar)
+void CDicomViewerDoc::Serialize(CArchive& ar)
 {
 	if (ar.IsStoring())
 	{
@@ -68,7 +68,7 @@ void CLocalizerDoc::Serialize(CArchive& ar)
 #ifdef SHARED_HANDLERS
 
 // Support for thumbnails
-void CLocalizerDoc::OnDrawThumbnail(CDC& dc, LPRECT lprcBounds)
+void CDicomViewerDoc::OnDrawThumbnail(CDC& dc, LPRECT lprcBounds)
 {
 	// Modify this code to draw the document's data
 	dc.FillSolidRect(lprcBounds, RGB(255, 255, 255));
@@ -89,7 +89,7 @@ void CLocalizerDoc::OnDrawThumbnail(CDC& dc, LPRECT lprcBounds)
 }
 
 // Support for Search Handlers
-void CLocalizerDoc::InitializeSearchContent()
+void CDicomViewerDoc::InitializeSearchContent()
 {
 	CString strSearchContent;
 	// Set search contents from document's data. 
@@ -99,7 +99,7 @@ void CLocalizerDoc::InitializeSearchContent()
 	SetSearchContent(strSearchContent);
 }
 
-void CLocalizerDoc::SetSearchContent(const CString& value)
+void CDicomViewerDoc::SetSearchContent(const CString& value)
 {
 	if (value.IsEmpty())
 	{
@@ -122,12 +122,12 @@ void CLocalizerDoc::SetSearchContent(const CString& value)
 // CLocalizerDoc diagnostics
 
 #ifdef _DEBUG
-void CLocalizerDoc::AssertValid() const
+void CDicomViewerDoc::AssertValid() const
 {
 	CDocument::AssertValid();
 }
 
-void CLocalizerDoc::Dump(CDumpContext& dc) const
+void CDicomViewerDoc::Dump(CDumpContext& dc) const
 {
 	CDocument::Dump(dc);
 }

@@ -33,9 +33,6 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Localizer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -43,12 +40,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MainFrm.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="LocalizerDoc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="LocalizerView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Resource.h">
@@ -114,21 +105,24 @@
     <ClInclude Include="OverLayImage.h">
       <Filter>Dicom</Filter>
     </ClInclude>
+    <ClInclude Include="XRLink.Clinic.MemoryDump.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="DicomViewer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DicomViewerDoc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DicomViewerView.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Localizer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MainFrm.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="LocalizerDoc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="LocalizerView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DicomParser.cpp">
@@ -184,6 +178,18 @@
     </ClCompile>
     <ClCompile Include="OverLayImage.cpp">
       <Filter>Dicom</Filter>
+    </ClCompile>
+    <ClCompile Include="XRLink.Clinic.MemoryDump.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="DicomViewer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DicomViewerDoc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DicomViewerView.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

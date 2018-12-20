@@ -1,6 +1,6 @@
 #pragma once
 #include "afxole.h"
-#include "Localizer.h"
+#include "DicomViewer.h"
 
 
 
