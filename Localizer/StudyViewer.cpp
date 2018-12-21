@@ -1568,20 +1568,12 @@ BOOL CStudyViewer::CalcDrawRectOnCanvasRect(CDicomImage * pImageInfo)
 
 	m_rtDrawRectOnCanvas.right = nCanvasWidth + m_rtDrawRectOnCanvas.left;
 
-	if (m_rtImageEx.GetTop() < 0)
-	{
-		m_rtDrawRectOnCanvas.top = m_rtDisplayedROIOnCanvas.top - (nCanvasHeight - m_rtDisplayedROIOnCanvas.Height());;
-		m_rtDrawRectOnCanvas.bottom = nCanvasHeight - (nCanvasHeight - m_rtDisplayedROIOnCanvas.Height());
-	}
-	else
-	{
-		m_rtDrawRectOnCanvas.top = 0;
-		m_rtDrawRectOnCanvas.bottom = nCanvasHeight;
-	}
 
-	// Need to Fix it
-// 	m_rtDrawRectOnCanvas.top += m_ptPanDelta.y;
-// 	m_rtDrawRectOnCanvas.bottom += m_ptPanDelta.y;
+	INT_PTR nTopSpare = m_rtDisplayedROIOnCanvas.top;
+	INT_PTR nBottomSpare = nCanvasHeight - m_rtDisplayedROIOnCanvas.Height();
+
+	m_rtDrawRectOnCanvas.top = m_rtDisplayedROIOnCanvas.top - nBottomSpare;
+	m_rtDrawRectOnCanvas.bottom = m_rtDisplayedROIOnCanvas.Height() + nTopSpare;
 
 	double dDrawCanvasWidth = BytesPerLine((UINT)(m_rtDrawRectOnCanvas.Width()), 8);
 	double dDrawCanvasHeight = BytesPerLine((UINT)(m_rtDrawRectOnCanvas.Height()), 8);
