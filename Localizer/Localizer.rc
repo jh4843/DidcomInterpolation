@@ -169,6 +169,12 @@ BEGIN
         BEGIN
             MENUITEM "Position & Orientation",      ID_SYNC_POSANDORIENT,MFT_STRING,MFS_ENABLED
         END
+        POPUP "Interpolation",                  65535,MFT_STRING,MFS_ENABLED
+        BEGIN
+            MENUITEM "Bilinear",                    ID_INTERPOLATION_BILINEAR,MFT_STRING,MFS_ENABLED
+            MENUITEM "Bicubic(Polynomial)",         ID_INTERPOLATION_BICUBIC_POLYNOMIAL,MFT_STRING,MFS_ENABLED
+            MENUITEM "Bicubic(Spline)",             ID_INTERPOLATION_BICUBIC_SPLINE,MFT_STRING,MFS_ENABLED
+        END
     END
     POPUP "&Help",                          65535,MFT_STRING,MFS_ENABLED
     BEGIN
@@ -452,6 +458,7 @@ LANGUAGE 9, 1
 #include "afxprint.rc"        // printing/print preview resources
 #include "afxribbon.rc"        // MFC ribbon and control bar resources
 #endif
+//#include "XFolderDialog.rc"
 #endif
 
 /////////////////////////////////////////////////////////////////////////////

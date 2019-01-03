@@ -28,6 +28,12 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWndEx)
 	ON_UPDATE_COMMAND_UI_RANGE(ID_VIEW_APPLOOK_WIN_2000, ID_VIEW_APPLOOK_WINDOWS_7, &CMainFrame::OnUpdateApplicationLook)
 	ON_COMMAND(ID_FILE_OPEN, &CMainFrame::OnFileOpen)
 	ON_COMMAND(ID_FILE_OPENFOLDER, &CMainFrame::OnFileOpenfolder)
+	ON_COMMAND(ID_INTERPOLATION_BILINEAR, &CMainFrame::OnInterpolationBilinear)
+	ON_COMMAND(ID_INTERPOLATION_BICUBIC_POLYNOMIAL, &CMainFrame::OnInterpolationBicubicPolynomial)
+	ON_COMMAND(ID_INTERPOLATION_BICUBIC_SPLINE, &CMainFrame::OnInterpolationBicubicSpline)
+	ON_UPDATE_COMMAND_UI(ID_INTERPOLATION_BILINEAR, &CMainFrame::OnUpdateInterpolationBilinear)
+	ON_UPDATE_COMMAND_UI(ID_INTERPOLATION_BICUBIC_POLYNOMIAL, &CMainFrame::OnUpdateInterpolationBicubicPolynomial)
+	ON_UPDATE_COMMAND_UI(ID_INTERPOLATION_BICUBIC_SPLINE, &CMainFrame::OnUpdateInterpolationBicubicSpline)
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -152,10 +158,12 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	lstBasicCommands.AddTail(ID_VIEW_APPLOOK_OFF_2007_AQUA);
 	lstBasicCommands.AddTail(ID_VIEW_APPLOOK_WINDOWS_7);
 
-	CMFCToolBar::SetBasicCommands(lstBasicCommands);
+	//CMFCToolBar::SetBasicCommands(lstBasicCommands);
 
 	m_wndStatusBar.SetPaneInfo(0, ID_SEPARATOR, SBPS_NORMAL, 200);
 	m_wndStatusBar.SetPaneInfo(1, ID_SEPARATOR, SBPS_STRETCH, 300);
+
+	SetActiveWindow();
 
 	return 0;
 }
@@ -163,6 +171,11 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 void CMainFrame::SetStatusBarText(INT_PTR nIndex, CString strText)
 {
 	m_wndStatusBar.SetPaneText(nIndex, strText);
+}
+
+INTERPOLATION_TYPE CMainFrame::GetInterpolationType()
+{
+	return m_eInterpolationType;
 }
 
 BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
@@ -365,18 +378,25 @@ void CMainFrame::OnFileOpen()
 {
 //	CDicomFileDialog dlgDcm(TRUE);
 
-	CFileDialog dlgDcm(TRUE, NULL, NULL, OFN_ALLOWMULTISELECT, NULL, NULL);
 	CString fileName;
+	CFileDialog dlgDcm(TRUE);
+	wchar_t* p = fileName.GetBuffer(32767);
 
-	dlgDcm.GetOFN().hwndOwner = GetSafeHwnd();
-	dlgDcm.GetOFN().lpstrFilter = _T("DICOM Files (*.dcm;*.dic)\0*.dcm;*.dic\0All Files (*.*)\0*.*\0\0");
-	dlgDcm.GetOFN().lpstrDefExt = _T("*.dcm");
+	OPENFILENAME& ofn = dlgDcm.GetOFN();
+	ofn.hwndOwner = GetSafeHwnd();
+	ofn.Flags |= OFN_ALLOWMULTISELECT;
+	ofn.lpstrFile = p;
+	ofn.nMaxFile = 32767;
 
-	TCHAR szFileName[32767];
-	szFileName[0] = '\0';
-
-	dlgDcm.GetOFN().lpstrFile = szFileName;
-	dlgDcm.GetOFN().nMaxFile = _countof(szFileName);
+// 	dlgDcm.GetOFN().hwndOwner = GetSafeHwnd();
+// 	dlgDcm.GetOFN().lpstrFilter = _T("DICOM Files (*.dcm;*.dic)\0*.dcm;*.dic\0All Files (*.*)\0*.*\0\0");
+// 	dlgDcm.GetOFN().lpstrDefExt = _T("*.dcm");
+// 
+// 	TCHAR szFileName[32767];
+// 	szFileName[0] = '\0';
+// 
+// 	dlgDcm.GetOFN().lpstrFile = szFileName;
+// 	dlgDcm.GetOFN().nMaxFile = _countof(szFileName);
 	CStringArray aryFilePath;
 	
 	if (dlgDcm.DoModal() == IDOK)
@@ -397,6 +417,8 @@ void CMainFrame::OnFileOpen()
 	ParseDicomFile(&aryFilePath);
 	AddStudyToLayoutManager();
 
+	fileName.ReleaseBuffer();
+
 	return;
 }
 
@@ -411,6 +433,8 @@ void CMainFrame::Init()
 			pStudy = nullptr;
 		}
 	}
+
+	m_eInterpolationType = eBilinear;
 
 	m_aryStudy.RemoveAll();
 	m_aryLLDicomds.RemoveAll();
@@ -664,4 +688,67 @@ void CMainFrame::FindFileInDirectory(CString strPath, CStringArray& aryPath)
 	}
 
 	fileFinder.Close();
+}
+
+
+void CMainFrame::OnInterpolationBilinear()
+{
+	m_eInterpolationType = eBilinear;
+}
+
+
+void CMainFrame::OnInterpolationBicubicPolynomial()
+{
+	m_eInterpolationType = eBicubicPolynomial;
+}
+
+
+void CMainFrame::OnInterpolationBicubicSpline()
+{
+	m_eInterpolationType = eBicubicSpline;
+}
+
+
+void CMainFrame::OnUpdateInterpolationBilinear(CCmdUI *pCmdUI)
+{
+	if (m_eInterpolationType == eBilinear)
+	{
+		pCmdUI->SetCheck(TRUE);
+	}
+	else
+	{
+		pCmdUI->SetCheck(FALSE);
+	}
+	
+	// TODO: Add your command update UI handler code here
+}
+
+
+void CMainFrame::OnUpdateInterpolationBicubicPolynomial(CCmdUI *pCmdUI)
+{
+	CMenu *hMenu = GetMenu();
+
+	if (m_eInterpolationType == eBicubicPolynomial)
+	{
+		pCmdUI->SetCheck(TRUE);
+	}
+	else
+	{
+		pCmdUI->SetCheck(FALSE);
+	}
+}
+
+
+void CMainFrame::OnUpdateInterpolationBicubicSpline(CCmdUI *pCmdUI)
+{
+	CMenu *hMenu = GetMenu();
+
+	if (m_eInterpolationType == eBicubicSpline)
+	{
+		pCmdUI->SetCheck(TRUE);
+	}
+	else
+	{
+		pCmdUI->SetCheck(FALSE);
+	}
 }

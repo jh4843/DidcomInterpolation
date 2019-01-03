@@ -148,8 +148,8 @@ public:
 
 	void OperatePan(CPoint point);
 
-	void ZoomIn(BOOL bIsDetail);
-	void ZoomOut(BOOL bIsDetail);
+	void ZoomIn(BOOL bIsDynamic, double dDelta = 1);
+	void ZoomOut(BOOL bIsDynamic, double dDelta = 1);
 
 	BOOL ProcessHotKey(UINT nKey);
 
@@ -195,7 +195,7 @@ protected:
 	virtual void UpdateScreenData();
 	virtual void CreateDragDropObjects();
 	virtual void CopyROIImageFromOrigin(BYTE* pSrc, BYTE* pDest, INT_PTR nSrcWidth, INT_PTR nSrcHeight, INT_PTR nROIWidth, INT_PTR nROIHeight);
-	virtual BOOL DoInterpolate(BYTE* pSrcImage, BYTE* pOutImage, UINT nInWidth, UINT nInHeight, UINT nOutWidth, UINT nOutHeight);
+	virtual BOOL DoInterpolate(BYTE* pSrcImage, BYTE* pDestImage, UINT nSrcWidth, UINT nSrcHeight, UINT nDestWidth, UINT nDestHeight);
 
 public:
 	DECLARE_MESSAGE_MAP()

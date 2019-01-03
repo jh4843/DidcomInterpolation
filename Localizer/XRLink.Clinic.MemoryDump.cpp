@@ -57,7 +57,29 @@ BOOL CXRLinkClinicMemoryDump::DumpMemory(EXCEPTION_POINTERS* _pEp)
 		mdei.ThreadId = GetCurrentThreadId();
 		mdei.ExceptionPointers = _pEp;
 		mdei.ClientPointers = FALSE;
-		MINIDUMP_TYPE mdt = MiniDumpWithFullMemory;
+//		MINIDUMP_TYPE mdt = MiniDumpWithFullMemory;
+		int nDump = MiniDumpWithDataSegs | MiniDumpWithFullMemory | MiniDumpWithHandleData |
+			MiniDumpFilterMemory |
+			MiniDumpScanMemory |
+			MiniDumpWithUnloadedModules |
+			MiniDumpWithIndirectlyReferencedMemory |
+			MiniDumpFilterModulePaths |
+			MiniDumpWithProcessThreadData |
+			MiniDumpWithPrivateReadWriteMemory |
+			MiniDumpWithoutOptionalData |
+			MiniDumpWithFullMemoryInfo |
+			MiniDumpWithThreadInfo;
+		MINIDUMP_TYPE mdt = (MINIDUMP_TYPE)nDump;
+// 			MiniDumpWithCodeSegs = 0x00002000,
+// 			MiniDumpWithoutAuxiliaryState = 0x00004000,
+// 			MiniDumpWithFullAuxiliaryState = 0x00008000,
+// 			MiniDumpWithPrivateWriteCopyMemory = 0x00010000,
+// 			MiniDumpIgnoreInaccessibleMemory = 0x00020000,
+// 			MiniDumpWithTokenInformation = 0x00040000,
+// 			MiniDumpWithModuleHeaders = 0x00080000,
+// 			MiniDumpFilterTriage = 0x00100000,
+// 			MiniDumpWithAvxXStateContext = 0x00200000,
+// 			MiniDumpValidTypeFlags = 0x003fffff,
 
 		// 
 		bRet = MiniDumpWriteDump(::GetCurrentProcess(),

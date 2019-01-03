@@ -10,7 +10,6 @@
 
 class CMainFrame : public CFrameWndEx
 {
-	
 protected: // create from serialization only
 	CMainFrame();
 	DECLARE_DYNCREATE(CMainFrame)
@@ -21,6 +20,7 @@ public:
 // Operations
 public:
 	void SetStatusBarText(INT_PTR nIndex, CString strText);
+	INTERPOLATION_TYPE GetInterpolationType();
 
 // Overrides
 public:
@@ -48,6 +48,8 @@ protected:  // control bar embedded members
 	CMFCStatusBar     m_wndStatusBar;
 	CMFCToolBarImages m_UserImages;
 
+	INTERPOLATION_TYPE m_eInterpolationType;
+
 public:
 	void Init();
 	CStudy* GetStudy(CString strStudyID);
@@ -73,6 +75,13 @@ protected:
 	afx_msg void OnFileOpen();
 	DECLARE_MESSAGE_MAP()
 
+public:
+	afx_msg void OnInterpolationBilinear();
+	afx_msg void OnInterpolationBicubicPolynomial();
+	afx_msg void OnInterpolationBicubicSpline();
+	afx_msg void OnUpdateInterpolationBilinear(CCmdUI *pCmdUI);
+	afx_msg void OnUpdateInterpolationBicubicPolynomial(CCmdUI *pCmdUI);
+	afx_msg void OnUpdateInterpolationBicubicSpline(CCmdUI *pCmdUI);
 };
 
 

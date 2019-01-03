@@ -117,6 +117,12 @@
     <ClInclude Include="DicomViewerView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MyInterpolation.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="DicomViewerTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -190,6 +196,9 @@
     </ClCompile>
     <ClCompile Include="DicomViewerView.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MyInterpolation.cpp">
+      <Filter>UI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

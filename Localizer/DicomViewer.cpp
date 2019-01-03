@@ -13,6 +13,21 @@
 #include "StudyViewer.h"
 
 #ifdef _DEBUG
+#pragma comment(lib, "opencv_core245d")
+#pragma comment(lib, "opencv_imgproc245d")
+#pragma comment(lib, "opencv_gpu245d")
+#pragma comment(lib, "opencv_photo245d")
+#pragma comment(lib, "opencv_highgui245d")
+#else
+#pragma comment(lib, "opencv_core245")
+#pragma comment(lib, "opencv_imgproc245")
+#pragma comment(lib, "opencv_gpu245")
+#pragma comment(lib, "opencv_photo245")
+#pragma comment(lib, "opencv_highgui245")
+#endif
+
+
+#ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
@@ -193,7 +208,6 @@ BOOL CDicomViewerApp::InitInstance()
 #else
 	strAppName.Format(_T("Interpolation_by_self"));
 #endif
-
 	// The one and only window has been initialized, so show and update it
 	m_pMainWnd->ShowWindow(SW_SHOW);
 	m_pMainWnd->UpdateWindow();

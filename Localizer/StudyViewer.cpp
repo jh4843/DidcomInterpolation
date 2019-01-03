@@ -4,6 +4,7 @@
 #include "DicomParser.h"
 #include "LayoutManager.h"
 #include "MainFrm.h"
+#include "MyInterpolation.h"
 
 CStudyViewer::CStudyViewer(INT_PTR nLayoutIndex)
 {
@@ -385,7 +386,7 @@ void CStudyViewer::OperatePan(CPoint point)
 	RedrawWnd();
 }
 
-void CStudyViewer::ZoomIn(BOOL bIsDetail)
+void CStudyViewer::ZoomIn(BOOL bIsDynamic, double dDelta)
 {
 	if (!m_pDisplayDicomDS)
 		return;
@@ -395,8 +396,8 @@ void CStudyViewer::ZoomIn(BOOL bIsDetail)
 
 	double dRatio = 0.01;
 
-	if (bIsDetail)
-		m_dZoomValue += dRatio * 2.0;	// 2%
+	if (bIsDynamic)
+		m_dZoomValue += dRatio * dDelta;
 	else
 		m_dZoomValue += dRatio * 20.0;	// 20%
 
@@ -414,7 +415,7 @@ void CStudyViewer::ZoomIn(BOOL bIsDetail)
 	RedrawWnd();
 }
 
-void CStudyViewer::ZoomOut(BOOL bIsDetail)
+void CStudyViewer::ZoomOut(BOOL bIsDynamic, double dDelta)
 {
 	if (!m_pDisplayDicomDS)
 		return;
@@ -423,9 +424,10 @@ void CStudyViewer::ZoomOut(BOOL bIsDetail)
 		return;
 
 	double dRatio = 0.01;
+	dDelta = dDelta * -1;
 
-	if (bIsDetail)
-		m_dZoomValue -= dRatio * 2.0;	// 2%
+	if (bIsDynamic)
+		m_dZoomValue -= dRatio * dDelta;	// 2%
 	else
 		m_dZoomValue -= dRatio * 20.0;	// 20%
 
@@ -671,8 +673,21 @@ BOOL CStudyViewer::DrawInstanceImage(CDC* pDC)
 	// 
 	Graphics g(pDC->GetSafeHdc());
 
-	// 나중에 시간날떄 한번씩 써보자. enum InterpolationMode
-	g.SetInterpolationMode(InterpolationModeBilinear);
+	INTERPOLATION_TYPE eInterpolationType = pMainFrm->GetInterpolationType();
+
+	switch (eInterpolationType)
+	{
+	case eBicubicPolynomial:
+		g.SetInterpolationMode(InterpolationModeBicubic);
+		break;
+	case eBicubicSpline:
+		g.SetInterpolationMode(InterpolationModeHighQualityBicubic);
+		break;
+	case eBilinear:
+	default:
+		g.SetInterpolationMode(InterpolationModeBilinear);
+		break;
+	}
 
 	Gdiplus::Bitmap bitmap((BITMAPINFO*)GetDibInfo(), m_pDisplayImage);
 
@@ -781,6 +796,35 @@ BOOL CStudyViewer::DrawInstanceImage(CDC* pDC)
 		(BITMAPINFO*)GetDibInfo(),
 		DIB_RGB_COLORS,
 		SRCCOPY);
+
+
+// 	BITMAPINFOHEADER& bih = GetDibInfo()->bmiHeader;
+// 	bih.biSize = sizeof(BITMAPINFOHEADER);
+// 	bih.biWidth = m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).m_stImageInfo.m_nWidth;
+// 	bih.biHeight = -m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).m_stImageInfo.m_nHeight;
+// 	bih.biPlanes = 1;
+// 	bih.biBitCount = 8 * m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).m_stImageInfo.m_nSamplesPerPixel;
+// 	bih.biCompression = BI_RGB;
+// 	bih.biSizeImage = m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).BytesPerLine((UINT)((double)m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).m_stImageInfo.m_nWidth*(double)m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).m_stImageInfo.m_nSamplesPerPixel), 8) * m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).m_stImageInfo.m_nHeight;
+// 	bih.biXPelsPerMeter = 0;
+// 	bih.biYPelsPerMeter = 0;
+// 	bih.biClrUsed = 0;
+// 	bih.biClrImportant = 0;
+// 
+// 	::SetStretchBltMode(pDC->GetSafeHdc(), COLORONCOLOR);
+// 	::StretchDIBits(pDC->GetSafeHdc(),
+// 		m_rtCanvas.left,
+// 		m_rtCanvas.top,
+// 		m_rtCanvas.Width(),
+// 		m_rtCanvas.Height(),
+// 		m_rtImage.left,
+// 		m_rtImage.top,
+// 		m_rtImage.Width(),
+// 		m_rtImage.Height(),
+// 		(void*)m_pDisplayImage,
+// 		(BITMAPINFO*)GetDibInfo(),
+// 		DIB_RGB_COLORS,
+// 		SRCCOPY);
 #endif
 
 	clockEnd = clock();
@@ -1568,7 +1612,6 @@ BOOL CStudyViewer::CalcDrawRectOnCanvasRect(CDicomImage * pImageInfo)
 
 	m_rtDrawRectOnCanvas.right = nCanvasWidth + m_rtDrawRectOnCanvas.left;
 
-
 	INT_PTR nTopSpare = m_rtDisplayedROIOnCanvas.top;
 	INT_PTR nBottomSpare = nCanvasHeight - m_rtDisplayedROIOnCanvas.Height();
 
@@ -1728,6 +1771,9 @@ void CStudyViewer::UpdateScreenData()
 	if (!m_pDisplayImage)
 		return;
 
+	CMainFrame* pMainFrm = (CMainFrame*)AfxGetMainWnd();
+	INTERPOLATION_TYPE eInterpolationType = pMainFrm->GetInterpolationType();
+
 	CDicomImage imageDisplayInfo;	// different with DICOM information
 	imageDisplayInfo = m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex);
 
@@ -1735,39 +1781,6 @@ void CStudyViewer::UpdateScreenData()
 	INT_PTR nOrgHeight = BytesPerLine((UINT)imageDisplayInfo.m_stImageInfo.m_nHeight, 8);
 	INT_PTR nImgWidthOnCanvas = m_rtCanvas.Width();
 	INT_PTR nImgHeightOnCanvas = m_rtCanvas.Height();
-
-
-	//
-	// TEST3
-// 	CalcImageSizeOnScreen(&imageDisplayInfo);
-// 
-// 	FreeScreenBuffer();
-// 	AllocScreenBuffer();
-
-// 	if (!m_pScreenImage)
-// 		return;
-// 
-// 	DoInterpolate(m_pDisplayImage,
-// 		m_pScreenImage,
-// 		nOrgWidth,
-// 		nOrgHeight,
-// 		m_rtDisplayedROIOnCanvas.Width(),
-// 		m_rtDisplayedROIOnCanvas.Height());
-	// End Test3
-
-
-
-	//TEST2
-
-// 	FreeRoiBuffer();
-// 	AllocRoiBuffer();
-// 
-// 	CopyROIImageFromOrigin(m_pDisplayImage, m_pRoiImage,
-// 		nOrgWidth, nOrgHeight,
-// 		m_rtDisplayedROIOnImage.Width(), m_rtDisplayedROIOnImage.Height());
-
-
-	// TEST1
 
 	CalcDisplayImageROI(&imageDisplayInfo);
 	CalcDisplayCanvasROI(&imageDisplayInfo);
@@ -1792,13 +1805,38 @@ void CStudyViewer::UpdateScreenData()
 	if (!m_pScreenImage)
 		return;
 
-	DoInterpolate(m_pRoiImage,
-		m_pScreenImage,
-		m_rtDisplayedROIOnImage.Width(),
-		m_rtDisplayedROIOnImage.Height(),
-		m_rtDisplayedROIOnCanvas.Width(),
-		m_rtDisplayedROIOnCanvas.Height());
+	CMyInterpolation myInter;
 
+	switch (eInterpolationType)
+	{
+	case eBicubicPolynomial:
+		myInter.DoHighOrderInterpolation(m_pRoiImage,
+			m_pScreenImage,
+			m_rtDisplayedROIOnImage.Width(),
+			m_rtDisplayedROIOnImage.Height(),
+			m_rtDisplayedROIOnCanvas.Width(),
+			m_rtDisplayedROIOnCanvas.Height(),
+			FALSE);
+		break;
+	case eBicubicSpline:
+		myInter.DoHighOrderInterpolation(m_pRoiImage,
+			m_pScreenImage,
+			m_rtDisplayedROIOnImage.Width(),
+			m_rtDisplayedROIOnImage.Height(),
+			m_rtDisplayedROIOnCanvas.Width(),
+			m_rtDisplayedROIOnCanvas.Height(),
+			TRUE);
+		break;
+	case eBilinear:
+		myInter.DoBilinearInterpolation(m_pRoiImage,
+			m_pScreenImage,
+			m_rtDisplayedROIOnImage.Width(),
+			m_rtDisplayedROIOnImage.Height(),
+			m_rtDisplayedROIOnCanvas.Width(),
+			m_rtDisplayedROIOnCanvas.Height());
+	default:
+		break;
+	}
 	return;
 }
 
@@ -1826,12 +1864,14 @@ void CStudyViewer::CopyROIImageFromOrigin(BYTE* pSrc, BYTE* pDest, INT_PTR nSrcW
 	}
 }
 
-BOOL CStudyViewer::DoInterpolate(BYTE * pSrcImage, BYTE * pOutImage, UINT nInWidth, UINT nInHeight, UINT nOutWidth, UINT nOutHeight)
+BOOL CStudyViewer::DoInterpolate(BYTE * pSrcImage, BYTE * pDestImage, UINT nSrcWidth, UINT nSrcHeight, UINT nDestWidth, UINT nDestHeight)
 {
 	UINT nrow, ncol, nIndex, nAllow1, nAllow2;
 	double dEWweight, dNSweight, dEWtop, dEWbottom;
-	double dOrgCol, dOrgRow;
-	double dOrgNextCol, dOrgNextRow;
+	INT_PTR nSrcCol, nSrcRow;
+	double dDestCol, dDestRow;
+	INT_PTR nSrcNextCol, nSrcNextRow;
+	double dDestNextCol, dDestNextRow;
 	double dWidthScale, dHeightScale;
 	double dInWidth, dOutWidth, dInHeight, dOutHeight;
 	UCHAR NW, NE, SW, SE;
@@ -1840,10 +1880,10 @@ BOOL CStudyViewer::DoInterpolate(BYTE * pSrcImage, BYTE * pOutImage, UINT nInWid
 
 	TRY
 	{
-		pLineBuffer = new BYTE[nOutWidth];	memset(pLineBuffer, 0, nOutWidth);
+		pLineBuffer = new BYTE[nDestWidth];	memset(pLineBuffer, 0, nDestWidth);
 
-		dInWidth = (double)nInWidth;	dOutWidth = (double)nOutWidth;
-		dInHeight = (double)nInHeight;	dOutHeight = (double)nOutHeight;
+		dInWidth = (double)nSrcWidth;	dOutWidth = (double)nDestWidth;
+		dInHeight = (double)nSrcHeight;	dOutHeight = (double)nDestHeight;
 
 		dWidthScale = dOutWidth / dInWidth;
 		dHeightScale = dOutHeight / dInHeight;
@@ -1851,52 +1891,58 @@ BOOL CStudyViewer::DoInterpolate(BYTE * pSrcImage, BYTE * pOutImage, UINT nInWid
 		nAllow1 = (dWidthScale > 1) ? (UINT)dWidthScale + 1 : (2);
 		nAllow2 = (dHeightScale > 1) ? (UINT)dHeightScale + 1 : (2);
 
-		nSrcImageLength = nOutWidth * nOutHeight;
+		nSrcImageLength = nDestWidth * nDestHeight;
 
-		for (nrow = 0; nrow < nOutHeight; nrow++)
+		for (nrow = 0; nrow < nDestHeight; nrow++)
 		{
 			nIndex = 0;
-			for (ncol = 0; ncol < nOutWidth; ncol++)
+			for (ncol = 0; ncol < nDestWidth; ncol++)
 			{
-				dOrgCol = (double)(ncol / dWidthScale);
-				dOrgRow = (double)(nrow / dHeightScale);
+				dDestCol = (double)(ncol / dWidthScale);
+				dDestRow = (double)(nrow / dHeightScale);
 
-				dOrgNextCol = dOrgCol + 1;
-				dOrgNextRow = dOrgRow + 1;
+				nSrcCol = (int)dDestCol;
+				nSrcRow = (int)dDestRow;
 
-				if (dOrgNextCol > (nInWidth-1))
-					dOrgNextCol = nInWidth-1;
+				dDestNextCol = dDestCol + 1;
+				dDestNextRow = dDestRow + 1;
 
-				if (dOrgNextRow > (nInHeight-1))
-					dOrgNextRow = nInHeight-1;
+				if (dDestNextCol > (nSrcWidth-1))
+					dDestNextCol = nSrcWidth-1;
 
-				dEWweight = dOrgCol - (int)dOrgCol;
-				dNSweight = dOrgRow - (int)dOrgRow;
+				if (dDestNextRow > (nSrcHeight-1))
+					dDestNextRow = nSrcHeight-1;
 
-				if (ncol >= (nOutWidth - nAllow1) || nrow >= (nOutHeight - nAllow2))
+				nSrcNextCol = (int)dDestNextCol;
+				nSrcNextRow = (int)dDestNextRow;
+
+				dEWweight = dDestCol - (int)nSrcCol;
+				dNSweight = dDestRow - (int)nSrcRow;
+
+				if (ncol >= (nDestWidth - nAllow1) || nrow >= (nDestHeight - nAllow2))
 				{
-					nAddress = (int)dOrgRow     * nInWidth + (int)dOrgCol;
+					nAddress = (int)nSrcRow     * nSrcWidth + (int)nSrcCol;
 					nAddress = (0 < nAddress && nAddress < nSrcImageLength) ? nAddress : 0;
 					NW = (UCHAR)*(pSrcImage + nAddress);
 
-					nAddress = (int)dOrgRow     * nInWidth + ((int)dOrgNextCol);
+					nAddress = (int)nSrcRow     * nSrcWidth + ((int)nSrcNextCol);
 					nAddress = (0 < nAddress && nAddress < nSrcImageLength) ? nAddress : 0;
 					NE = (UCHAR)*(pSrcImage + nAddress);
 
-					nAddress = ((int)dOrgNextRow) * nInWidth + (int)dOrgCol;
+					nAddress = ((int)nSrcNextRow) * nSrcWidth + (int)nSrcCol;
 					nAddress = (0 < nAddress && nAddress < nSrcImageLength) ? nAddress : 0;
 					SW = (UCHAR)*(pSrcImage + nAddress);
 
-					nAddress = ((int)dOrgNextRow) * nInWidth + ((int)dOrgNextCol);
+					nAddress = ((int)nSrcNextRow) * nSrcWidth + ((int)nSrcNextCol);
 					nAddress = (0 < nAddress && nAddress < nSrcImageLength) ? nAddress : 0;
 					SE = (UCHAR)*(pSrcImage + nAddress);
 				}
 				else
 				{
-					NW = (UCHAR)*(pSrcImage + (int)dOrgRow     * nInWidth + (int)dOrgCol);
-					NE = (UCHAR)*(pSrcImage + (int)dOrgRow     * nInWidth + (int)dOrgNextCol);
-					SW = (UCHAR)*(pSrcImage + ((int)dOrgNextRow) * nInWidth + (int)dOrgCol);
-					SE = (UCHAR)*(pSrcImage + ((int)dOrgNextRow) * nInWidth + (int)dOrgNextCol);
+					NW = (UCHAR)*(pSrcImage + (int)nSrcRow     * nSrcWidth + (int)nSrcCol);
+					NE = (UCHAR)*(pSrcImage + (int)nSrcRow     * nSrcWidth + (int)nSrcNextCol);
+					SW = (UCHAR)*(pSrcImage + ((int)nSrcNextRow) * nSrcWidth + (int)nSrcCol);
+					SE = (UCHAR)*(pSrcImage + ((int)nSrcNextRow) * nSrcWidth + (int)nSrcNextCol);
 				}
 
 				dEWtop = NW + dEWweight * (NE - NW);
@@ -1905,7 +1951,7 @@ BOOL CStudyViewer::DoInterpolate(BYTE * pSrcImage, BYTE * pOutImage, UINT nInWid
 				*(pLineBuffer + nIndex) = (BYTE)(dEWtop + dNSweight * (dEWbottom - dEWtop));
 				nIndex++;
 			}
-			memcpy(pOutImage + nrow * nOutWidth, pLineBuffer, nOutWidth);
+			memcpy(pDestImage + nrow * nDestWidth, pLineBuffer, nDestWidth);
 		}
 
 		delete[] pLineBuffer;
@@ -1982,11 +2028,22 @@ BOOL CStudyViewer::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 	{
 		if(zDelta > 0)
 		{
-			ZoomIn(bIsShiftKeyPressed);
+			ZoomIn(bIsShiftKeyPressed, zDelta);
 		}
 		else if (zDelta < 0)
 		{
-			ZoomOut(bIsShiftKeyPressed);
+			ZoomOut(bIsShiftKeyPressed, zDelta);
+		}
+	}
+	else
+	{
+		if (bIsShiftKeyPressed)
+		{
+			ChangeSeriesImageByWheel(zDelta);
+		}
+		else
+		{
+			ChangeInstanceImageByWheel(zDelta);
 		}
 	}
 

@@ -10,6 +10,7 @@
 #endif
 
 #include "targetver.h"
+#include "DicomViewerTypes.h"
 
 #define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS      // some CString constructors will be explicit
 
