@@ -46,6 +46,10 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWndEx)
 	ON_COMMAND(ID_INTERPOLATION_MITCHELL, &CMainFrame::OnInterpolationMitchell)
 	ON_UPDATE_COMMAND_UI(ID_INTERPOLATION_LANCZOS, &CMainFrame::OnUpdateInterpolationLanczos)
 	ON_UPDATE_COMMAND_UI(ID_INTERPOLATION_MITCHELL, &CMainFrame::OnUpdateInterpolationMitchell)
+	ON_COMMAND(ID_INTERPOLATION_CATMULLROM, &CMainFrame::OnInterpolationCatmullrom)
+	ON_UPDATE_COMMAND_UI(ID_INTERPOLATION_CATMULLROM, &CMainFrame::OnUpdateInterpolationCatmullrom)
+	ON_COMMAND(ID_COMMAND_USEPARALLELCALC, &CMainFrame::OnCommandUseparallelcalc)
+	ON_UPDATE_COMMAND_UI(ID_COMMAND_USEPARALLELCALC, &CMainFrame::OnUpdateCommandUseparallelcalc)
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -173,7 +177,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	//CMFCToolBar::SetBasicCommands(lstBasicCommands);
 
 	m_wndStatusBar.SetPaneInfo(0, ID_SEPARATOR, SBPS_NORMAL, 200);
-	m_wndStatusBar.SetPaneInfo(1, ID_SEPARATOR, SBPS_STRETCH, 300);
+	m_wndStatusBar.SetPaneInfo(1, ID_SEPARATOR, SBPS_STRETCH, 200);
+	m_wndStatusBar.SetPaneInfo(2, ID_SEPARATOR, SBPS_STRETCH, 200);
 
 	SetActiveWindow();
 
@@ -188,6 +193,11 @@ void CMainFrame::SetStatusBarText(INT_PTR nIndex, CString strText)
 INTERPOLATION_TYPE CMainFrame::GetInterpolationType()
 {
 	return m_eInterpolationType;
+}
+
+BOOL CMainFrame::IsUsingParallelCalc()
+{
+	return m_bUseParallelCalc;
 }
 
 BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
@@ -447,6 +457,7 @@ void CMainFrame::Init()
 	}
 
 	m_eInterpolationType = eBilinear;
+	m_bUseParallelCalc = TRUE;
 
 	m_aryStudy.RemoveAll();
 	m_aryLLDicomds.RemoveAll();
@@ -755,6 +766,10 @@ void CMainFrame::OnInterpolationMitchell()
 	m_eInterpolationType = eBicubicMichell;
 }
 
+void CMainFrame::OnInterpolationCatmullrom()
+{
+	m_eInterpolationType = eBicubicCatmullRom;
+}
 
 void CMainFrame::OnUpdateInterpolationBilinear(CCmdUI *pCmdUI)
 {
@@ -884,4 +899,38 @@ void CMainFrame::OnUpdateInterpolationMitchell(CCmdUI *pCmdUI)
 	{
 		pCmdUI->SetCheck(FALSE);
 	}
+}
+
+void CMainFrame::OnUpdateInterpolationCatmullrom(CCmdUI *pCmdUI)
+{
+	CMenu *hMenu = GetMenu();
+
+	if (m_eInterpolationType == eBicubicCatmullRom)
+	{
+		pCmdUI->SetCheck(TRUE);
+	}
+	else
+	{
+		pCmdUI->SetCheck(FALSE);
+	}
+}
+
+
+void CMainFrame::OnCommandUseparallelcalc()
+{
+	m_bUseParallelCalc = !m_bUseParallelCalc;
+}
+
+
+void CMainFrame::OnUpdateCommandUseparallelcalc(CCmdUI *pCmdUI)
+{
+	if (m_bUseParallelCalc)
+	{
+		pCmdUI->SetCheck(TRUE);
+	}
+	else
+	{
+		pCmdUI->SetCheck(FALSE);
+	}
+		
 }

@@ -5,11 +5,13 @@
 #include "opencv2\opencv.hpp"
 #include <math.h>
 
-#define PI       3.14159265358979323846
+
+#define PI       3.14159265
 #define CLAMP(v, min, max) if (v < min) { v = min; } else if (v > max) { v = max; } 
 
 CMyInterpolation::CMyInterpolation()
 {
+	m_bUseParallelCalc = TRUE;
 }
 
 
@@ -19,60 +21,61 @@ CMyInterpolation::~CMyInterpolation()
 
 BOOL CMyInterpolation::DoBilinearInterpolation(BYTE* pSrcImage, BYTE* pDestImage, UINT nSrcWidth, UINT nSrcHeight, UINT nDestWidth, UINT nDestHeight)
 {
-	UINT nrow, ncol, nIndex, nAllow1, nAllow2;
-	double dEWweight, dNSweight, dEWtop, dEWbottom;
-	INT_PTR nSrcCol, nSrcRow;
-	double dDestCol, dDestRow;
+	SYSTEM_INFO systemInfo;
+	DWORD dwCpuCount;
+	GetSystemInfo(&systemInfo);
+	dwCpuCount = systemInfo.dwNumberOfProcessors;
+
+	if (dwCpuCount < 1 || m_bUseParallelCalc == FALSE)
+	{
+		dwCpuCount = 1;
+	}
+	else
+	{
+		dwCpuCount /= 2;
+	}
+
+	INT_PTR nrow, ncol;
 	double dWidthScale, dHeightScale;
 	double dInWidth, dOutWidth, dInHeight, dOutHeight;
 	UCHAR NW, NE, SW, SE;
 	ULONG nAddress, nSrcImageLength;
-	BYTE* pLineBuffer = NULL;
 
 	TRY
 	{
-		pLineBuffer = new BYTE[nDestWidth];	memset(pLineBuffer, 0, nDestWidth);
-
 		dInWidth = (double)nSrcWidth;	dOutWidth = (double)nDestWidth;
 		dInHeight = (double)nSrcHeight;	dOutHeight = (double)nDestHeight;
 
 		dWidthScale = dOutWidth / dInWidth;
 		dHeightScale = dOutHeight / dInHeight;
 
-		nAllow1 = (dWidthScale > 1) ? (UINT)dWidthScale + 1 : (2);
-		nAllow2 = (dHeightScale > 1) ? (UINT)dHeightScale + 1 : (2);
-
 		nSrcImageLength = nDestWidth * nDestHeight;
 
+#pragma omp parallel for private(nrow, ncol, NW, NE, SW, SE) num_threads(dwCpuCount)
 		for (nrow = 0; nrow < nDestHeight; nrow++)
 		{
-			nIndex = 0;
 			for (ncol = 0; ncol < nDestWidth; ncol++)
 			{
-				dDestCol = (double)(ncol / dWidthScale);
-				dDestRow = (double)(nrow / dHeightScale);
+				double dDestCol = (double)(ncol / dWidthScale);
+				double dDestRow = (double)(nrow / dHeightScale);
 
-				nSrcCol = (int)dDestCol;
-				nSrcRow = (int)dDestRow;
+				INT_PTR nSrcCol = (int)dDestCol;
+				INT_PTR nSrcRow = (int)dDestRow;
 
-				dEWweight = dDestCol - nSrcCol;
-				dNSweight = dDestRow - nSrcRow;
+				double dEWweight = dDestCol - nSrcCol;
+				double dNSweight = dDestRow - nSrcRow;
 
 				NW = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol    , nSrcRow    , nSrcWidth, nSrcHeight);  
 				NE = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow    , nSrcWidth, nSrcHeight);
 				SW = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol    , nSrcRow + 1, nSrcWidth, nSrcHeight);
 				SE = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow + 1, nSrcWidth, nSrcHeight);
 
-				dEWtop = DoLinear(NW, NE, dEWweight);
-				dEWbottom = DoLinear(SW, SE, dEWweight);
+				double dEWtop = DoLinear(NW, NE, dEWweight);
+				double dEWbottom = DoLinear(SW, SE, dEWweight);
 
-				*(pLineBuffer + nIndex) = (BYTE)(DoLinear(dEWtop, dEWbottom, dNSweight));
-				nIndex++;
+				pDestImage[nrow * nDestWidth + ncol] = (BYTE)(DoLinear(dEWtop, dEWbottom, dNSweight));
 			}
-			memcpy(pDestImage + nrow * nDestWidth, pLineBuffer, nDestWidth);
 		}
-
-		delete[] pLineBuffer;
 	}
 		CATCH_ALL(e)
 	{
@@ -98,18 +101,21 @@ BOOL CMyInterpolation::DoBiCubicInterpolation(BYTE * pSrcImage, BYTE * pDestImag
 	GetSystemInfo(&systemInfo);
 	dwCpuCount = systemInfo.dwNumberOfProcessors;
 
-	if (dwCpuCount < 1)
+	if (dwCpuCount < 1 || m_bUseParallelCalc == FALSE)
+	{
 		dwCpuCount = 1;
+	}
+	else
+	{
+		dwCpuCount /= 2;
+	}
 
-	int nrow, ncol, nAllow1, nAllow2;
+	int nrow, ncol;
 	double dInWidth, dOutWidth, dInHeight, dOutHeight;
-	INT_PTR nSrcCol, nSrcRow;
-	double dDestCol, dDestRow;
+// 	INT_PTR nSrcCol, nSrcRow;
+// 	double dDestCol, dDestRow;
 	double dWidthScale, dHeightScale;
 	ULONG nAddress, nSrcImageLength;
-
-	BYTE* pLineBuffer = new BYTE[nDestWidth];	memset(pLineBuffer, 0, nDestWidth);
-	unsigned char image[4][4];	memset(image, 0, sizeof(image));
 
 	dInWidth = (double)nSrcWidth;	dOutWidth = (double)nDestWidth;
 	dInHeight = (double)nSrcHeight;	dOutHeight = (double)nDestHeight;
@@ -117,22 +123,22 @@ BOOL CMyInterpolation::DoBiCubicInterpolation(BYTE * pSrcImage, BYTE * pDestImag
 	dWidthScale = dOutWidth / dInWidth;
 	dHeightScale = dOutHeight / dInHeight;
 
-	nAllow1 = (dWidthScale > 1) ? (UINT)dWidthScale + 3 : (3);
-	nAllow2 = (dHeightScale > 1) ? (UINT)dHeightScale + 3 : (3);
-
 	nSrcImageLength = nSrcWidth * nSrcHeight;
 
-	
+	unsigned char image[4][4];
+
+#pragma omp parallel for private(nrow, ncol, image) num_threads(dwCpuCount)
 	for (nrow = 0; nrow < nDestHeight; nrow++)
 	{
-//#pragma omp parallel for private(ncol) num_threads(dwCpuCount)
 		for (ncol = 0; ncol < nDestWidth; ncol++)
 		{
-			dDestCol = (double)(ncol / dWidthScale);
-			dDestRow = (double)(nrow / dHeightScale);
+			memset(image, 0, sizeof(image));
 
-			nSrcCol = (int)dDestCol;
-			nSrcRow = (int)dDestRow;
+			double dDestCol = (double)(ncol / dWidthScale);
+			double dDestRow = (double)(nrow / dHeightScale);
+
+			double nSrcCol = (int)dDestCol;
+			double nSrcRow = (int)dDestRow;
 
 			image[0][0] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow - 1, nSrcWidth, nSrcHeight);
 			image[0][1] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol, nSrcRow - 1, nSrcWidth, nSrcHeight);
@@ -158,11 +164,6 @@ BOOL CMyInterpolation::DoBiCubicInterpolation(BYTE * pSrcImage, BYTE * pDestImag
 			double dYdiff = dDestRow - nSrcRow;
 
 			unsigned char column[4];
-			double a0, a1, a2, a3;
-			double x_plus_1, y_plus_1;
-			double one_minus_x, one_minus_y;
-			double two_minus_x, two_minus_y;
-			int i;
 			double pixel;
 
 			if ((dXdiff == 0.0) && (dYdiff == 0.0))
@@ -172,7 +173,7 @@ BOOL CMyInterpolation::DoBiCubicInterpolation(BYTE * pSrcImage, BYTE * pDestImag
 
 			if (dXdiff == 0.0)
 			{
-				for (i = 0; i < 4; i++)
+				for (INT_PTR i = 0; i < 4; i++)
 					column[i] = image[i][1];
 			}
 			else
@@ -197,14 +198,9 @@ BOOL CMyInterpolation::DoBiCubicInterpolation(BYTE * pSrcImage, BYTE * pDestImag
 				}
 			}
 
-			pLineBuffer[ncol] = pixel;
-			//pLineBuffer[nIndex++] = pixel;
-
+			pDestImage[nrow * nDestWidth + ncol] = pixel;
 		}
-		memcpy(pDestImage + nrow * nDestWidth, pLineBuffer, nDestWidth);
 	}
-
-	delete[] pLineBuffer;
 
 	return TRUE;
 }
@@ -217,18 +213,21 @@ BOOL CMyInterpolation::DoLanczosInterpolation(BYTE * pSrcImage, BYTE * pDestImag
 	GetSystemInfo(&systemInfo);
 	dwCpuCount = systemInfo.dwNumberOfProcessors;
 
-	if (dwCpuCount < 1)
+	if (dwCpuCount < 1 || m_bUseParallelCalc == FALSE)
+	{
 		dwCpuCount = 1;
+	}
+	else
+	{
+		dwCpuCount /= 2;
+	}
 
-	int nrow, ncol, nAllow1, nAllow2;
+	int nrow, ncol;
 	double dInWidth, dOutWidth, dInHeight, dOutHeight;
-	INT_PTR nSrcCol, nSrcRow;
-	double dDestCol, dDestRow;
 	double dWidthScale, dHeightScale;
 	ULONG nAddress, nSrcImageLength;
 
-	BYTE* pLineBuffer = new BYTE[nDestWidth];	memset(pLineBuffer, 0, nDestWidth);
-	unsigned char image[4][4];	memset(image, 0, sizeof(image));
+	unsigned char image[4][4];
 
 	dInWidth = (double)nSrcWidth;	dOutWidth = (double)nDestWidth;
 	dInHeight = (double)nSrcHeight;	dOutHeight = (double)nDestHeight;
@@ -236,21 +235,20 @@ BOOL CMyInterpolation::DoLanczosInterpolation(BYTE * pSrcImage, BYTE * pDestImag
 	dWidthScale = dOutWidth / dInWidth;
 	dHeightScale = dOutHeight / dInHeight;
 
-	nAllow1 = (dWidthScale > 1) ? (UINT)dWidthScale + 3 : (3);
-	nAllow2 = (dHeightScale > 1) ? (UINT)dHeightScale + 3 : (3);
-
 	nSrcImageLength = nSrcWidth * nSrcHeight;
 
-
+#pragma omp parallel for private(nrow, ncol, image) num_threads(dwCpuCount)
 	for (nrow = 0; nrow < nDestHeight; nrow++)
 	{
 		for (ncol = 0; ncol < nDestWidth; ncol++)
 		{
-			dDestCol = (double)(ncol / dWidthScale);
-			dDestRow = (double)(nrow / dHeightScale);
+			memset(image, 0, sizeof(image));
 
-			nSrcCol = (int)dDestCol;
-			nSrcRow = (int)dDestRow;
+			double dDestCol = (double)(ncol / dWidthScale);
+			double dDestRow = (double)(nrow / dHeightScale);
+
+			INT_PTR nSrcCol = (int)dDestCol;
+			INT_PTR nSrcRow = (int)dDestRow;
 
 			image[0][0] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow - 1, nSrcWidth, nSrcHeight);
 			image[0][1] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol, nSrcRow - 1, nSrcWidth, nSrcHeight);
@@ -276,11 +274,6 @@ BOOL CMyInterpolation::DoLanczosInterpolation(BYTE * pSrcImage, BYTE * pDestImag
 			double dYdiff = dDestRow - nSrcRow;
 
 			unsigned char column[4];
-			double a0, a1, a2, a3;
-			double x_plus_1, y_plus_1;
-			double one_minus_x, one_minus_y;
-			double two_minus_x, two_minus_y;
-			int i;
 			double pixel;
 
 			if ((dXdiff == 0.0) && (dYdiff == 0.0))
@@ -290,7 +283,7 @@ BOOL CMyInterpolation::DoLanczosInterpolation(BYTE * pSrcImage, BYTE * pDestImag
 
 			if (dXdiff == 0.0)
 			{
-				for (i = 0; i < 4; i++)
+				for (INT_PTR i = 0; i < 4; i++)
 					column[i] = image[i][1];
 			}
 			else
@@ -303,18 +296,14 @@ BOOL CMyInterpolation::DoLanczosInterpolation(BYTE * pSrcImage, BYTE * pDestImag
 				pixel = DoLanczos(column, dYdiff, a);
 			}
 
-			pLineBuffer[ncol] = pixel;
-			//pLineBuffer[nIndex++] = pixel;
-
+			pDestImage[nrow * nDestWidth + ncol] = pixel;
 		}
-		memcpy(pDestImage + nrow * nDestWidth, pLineBuffer, nDestWidth);
 	}
-
-	delete[] pLineBuffer;
 
 	return TRUE;
 }
 
+// normally B = 1/3, C = 1/3
 BOOL CMyInterpolation::DoMitchellInterpolation(BYTE * pSrcImage, BYTE * pDestImage, UINT nSrcWidth, UINT nSrcHeight, UINT nDestWidth, UINT nDestHeight, double B, double C)
 {
 	SYSTEM_INFO systemInfo;
@@ -322,17 +311,20 @@ BOOL CMyInterpolation::DoMitchellInterpolation(BYTE * pSrcImage, BYTE * pDestIma
 	GetSystemInfo(&systemInfo);
 	dwCpuCount = systemInfo.dwNumberOfProcessors;
 
-	if (dwCpuCount < 1)
+	if (dwCpuCount < 1 || m_bUseParallelCalc == FALSE)
+	{
 		dwCpuCount = 1;
+	}
+	else
+	{
+		dwCpuCount /= 2;
+	}
 
-	int nrow, ncol, nAllow1, nAllow2;
+	int nrow, ncol;
 	double dInWidth, dOutWidth, dInHeight, dOutHeight;
-	INT_PTR nSrcCol, nSrcRow;
-	double dDestCol, dDestRow;
 	double dWidthScale, dHeightScale;
 	ULONG nAddress, nSrcImageLength;
 
-	BYTE* pLineBuffer = new BYTE[nDestWidth];	memset(pLineBuffer, 0, nDestWidth);
 	unsigned char image[4][4];	memset(image, 0, sizeof(image));
 
 	dInWidth = (double)nSrcWidth;	dOutWidth = (double)nDestWidth;
@@ -341,21 +333,18 @@ BOOL CMyInterpolation::DoMitchellInterpolation(BYTE * pSrcImage, BYTE * pDestIma
 	dWidthScale = dOutWidth / dInWidth;
 	dHeightScale = dOutHeight / dInHeight;
 
-	nAllow1 = (dWidthScale > 1) ? (UINT)dWidthScale + 3 : (3);
-	nAllow2 = (dHeightScale > 1) ? (UINT)dHeightScale + 3 : (3);
-
 	nSrcImageLength = nSrcWidth * nSrcHeight;
 
-
+#pragma omp parallel for private(nrow, ncol, image) num_threads(dwCpuCount)
 	for (nrow = 0; nrow < nDestHeight; nrow++)
 	{
 		for (ncol = 0; ncol < nDestWidth; ncol++)
 		{
-			dDestCol = (double)(ncol / dWidthScale);
-			dDestRow = (double)(nrow / dHeightScale);
+			double dDestCol = (double)(ncol / dWidthScale);
+			double dDestRow = (double)(nrow / dHeightScale);
 
-			nSrcCol = (int)dDestCol;
-			nSrcRow = (int)dDestRow;
+			INT_PTR nSrcCol = (int)dDestCol;
+			INT_PTR nSrcRow = (int)dDestRow;
 
 			image[0][0] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow - 1, nSrcWidth, nSrcHeight);
 			image[0][1] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol, nSrcRow - 1, nSrcWidth, nSrcHeight);
@@ -381,11 +370,6 @@ BOOL CMyInterpolation::DoMitchellInterpolation(BYTE * pSrcImage, BYTE * pDestIma
 			double dYdiff = dDestRow - nSrcRow;
 
 			unsigned char column[4];
-			double a0, a1, a2, a3;
-			double x_plus_1, y_plus_1;
-			double one_minus_x, one_minus_y;
-			double two_minus_x, two_minus_y;
-			int i;
 			double pixel;
 
 			if ((dXdiff == 0.0) && (dYdiff == 0.0))
@@ -395,7 +379,7 @@ BOOL CMyInterpolation::DoMitchellInterpolation(BYTE * pSrcImage, BYTE * pDestIma
 
 			if (dXdiff == 0.0)
 			{
-				for (i = 0; i < 4; i++)
+				for (INT_PTR i = 0; i < 4; i++)
 					column[i] = image[i][1];
 			}
 			else
@@ -408,14 +392,104 @@ BOOL CMyInterpolation::DoMitchellInterpolation(BYTE * pSrcImage, BYTE * pDestIma
 				pixel = DoMitchell(column, dYdiff, B, C);
 			}
 
-			pLineBuffer[ncol] = pixel;
-			//pLineBuffer[nIndex++] = pixel;
-
+			pDestImage[nrow * nDestWidth + ncol] = pixel;
 		}
-		memcpy(pDestImage + nrow * nDestWidth, pLineBuffer, nDestWidth);
 	}
 
-	delete[] pLineBuffer;
+	return TRUE;
+}
+
+// B = 0, C = 0.5
+BOOL CMyInterpolation::DoCatmullRomSplineInterpolation(BYTE * pSrcImage, BYTE * pDestImage, UINT nSrcWidth, UINT nSrcHeight, UINT nDestWidth, UINT nDestHeight)
+{
+	SYSTEM_INFO systemInfo;
+	DWORD dwCpuCount;
+	GetSystemInfo(&systemInfo);
+	dwCpuCount = systemInfo.dwNumberOfProcessors;
+
+	if (dwCpuCount < 1)
+		dwCpuCount = 1;
+
+	int nrow, ncol;
+	double dInWidth, dOutWidth, dInHeight, dOutHeight;
+	double dWidthScale, dHeightScale;
+	ULONG nAddress, nSrcImageLength;
+
+	double B = 0;
+	double C = 0.5;
+
+	unsigned char image[4][4];	
+
+	dInWidth = (double)nSrcWidth;	dOutWidth = (double)nDestWidth;
+	dInHeight = (double)nSrcHeight;	dOutHeight = (double)nDestHeight;
+
+	dWidthScale = dOutWidth / dInWidth;
+	dHeightScale = dOutHeight / dInHeight;
+
+	nSrcImageLength = nSrcWidth * nSrcHeight;
+
+#pragma omp parallel for private(nrow, ncol, image) num_threads(dwCpuCount)
+	for (nrow = 0; nrow < nDestHeight; nrow++)
+	{
+		for (ncol = 0; ncol < nDestWidth; ncol++)
+		{
+			memset(image, 0, sizeof(image));
+
+			double dDestCol = (double)(ncol / dWidthScale);
+			double dDestRow = (double)(nrow / dHeightScale);
+
+			INT_PTR nSrcCol = (int)dDestCol;
+			INT_PTR nSrcRow = (int)dDestRow;
+
+			image[0][0] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow - 1, nSrcWidth, nSrcHeight);
+			image[0][1] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol, nSrcRow - 1, nSrcWidth, nSrcHeight);
+			image[0][2] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow - 1, nSrcWidth, nSrcHeight);
+			image[0][3] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 2, nSrcRow - 1, nSrcWidth, nSrcHeight);
+			//
+			image[1][0] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow, nSrcWidth, nSrcHeight);
+			image[1][1] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol, nSrcRow, nSrcWidth, nSrcHeight);
+			image[1][2] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow, nSrcWidth, nSrcHeight);
+			image[1][3] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 2, nSrcRow, nSrcWidth, nSrcHeight);
+			//
+			image[2][0] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow + 1, nSrcWidth, nSrcHeight);
+			image[2][1] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol, nSrcRow + 1, nSrcWidth, nSrcHeight);
+			image[2][2] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow + 1, nSrcWidth, nSrcHeight);
+			image[2][3] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 2, nSrcRow + 1, nSrcWidth, nSrcHeight);
+			//
+			image[3][0] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow + 2, nSrcWidth, nSrcHeight);
+			image[3][1] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol, nSrcRow + 2, nSrcWidth, nSrcHeight);
+			image[3][2] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow + 2, nSrcWidth, nSrcHeight);
+			image[3][3] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 2, nSrcRow + 2, nSrcWidth, nSrcHeight);
+
+			double dXdiff = dDestCol - nSrcCol;
+			double dYdiff = dDestRow - nSrcRow;
+
+			unsigned char column[4];
+			double pixel;
+
+			if ((dXdiff == 0.0) && (dYdiff == 0.0))
+			{
+				pixel = image[1][1];
+			}
+
+			if (dXdiff == 0.0)
+			{
+				for (INT_PTR i = 0; i < 4; i++)
+					column[i] = image[i][1];
+			}
+			else
+			{
+				column[0] = DoMitchell(image[0], dXdiff, B, C);
+				column[1] = DoMitchell(image[1], dXdiff, B, C);
+				column[2] = DoMitchell(image[2], dXdiff, B, C);
+				column[3] = DoMitchell(image[3], dXdiff, B, C);
+
+				pixel = DoMitchell(column, dYdiff, B, C);
+			}
+
+			pDestImage[nrow * nDestWidth + ncol] = pixel;
+		}
+	}
 
 	return TRUE;
 }
@@ -537,6 +611,11 @@ BOOL CMyInterpolation::DoHighOrderInterpolation(BYTE* pSrcImage, BYTE* pDestImag
 	return TRUE;
 }
 
+void CMyInterpolation::SetUseParallelCalc(BOOL bUse)
+{
+	m_bUseParallelCalc = bUse;
+}
+
 double CMyInterpolation::DoLinear(unsigned char fx1, unsigned char fx2, double dWeight)
 {
 	return fx1 + dWeight * (fx2 - fx1);
@@ -598,6 +677,11 @@ double CMyInterpolation::DoLanczos(unsigned char ucImg[4], double x, double a)
 	double dTwoMinusX = 2 - x; // 1 < |2  - x| <  2
 
 	// Lanczos convolution algorithm (ref https://en.wikipedia.org/wiki/Lanczos_resampling)
+// 	double w0 = (dXPlusOne == 0) ? 1 : (a * m_CalcUtil.SineTaylor(PI * dXPlusOne) * m_CalcUtil.SineTaylor((PI * dXPlusOne) / a)) / (PI * PI * dXPlusOne * dXPlusOne);
+// 	double w1 = (x == 0) ? 1 : (a * m_CalcUtil.SineTaylor(PI * x) * m_CalcUtil.SineTaylor((PI * x) / a)) / (PI * PI * x * x);
+// 	double w2 = (dOneMinusX == 0) ? 1 : (a * m_CalcUtil.SineTaylor(PI * dOneMinusX) * m_CalcUtil.SineTaylor((PI * dOneMinusX) / a)) / (PI * PI * dOneMinusX * dOneMinusX);
+// 	double w3 = (dTwoMinusX == 0) ? 1 : (a * m_CalcUtil.SineTaylor(PI * dTwoMinusX) * m_CalcUtil.SineTaylor((PI * dTwoMinusX) / a)) / (PI * PI * dTwoMinusX * dTwoMinusX);
+
 	double w0 = (dXPlusOne == 0) ? 1 : (a * sin(PI * dXPlusOne) * sin((PI * dXPlusOne) / a)) / (PI * PI * dXPlusOne * dXPlusOne);
 	double w1 = (x == 0) ? 1 : (a * sin(PI * x) * sin((PI * x) / a)) / (PI * PI * x * x);
 	double w2 = (dOneMinusX == 0) ? 1 : (a * sin(PI * dOneMinusX) * sin((PI * dOneMinusX) / a)) / (PI * PI * dOneMinusX * dOneMinusX);
@@ -616,10 +700,10 @@ double CMyInterpolation::DoMitchell(unsigned char ucImg[4], double x, double B, 
 	double dTwoMinusX = 2 - x; // 1 < |2  - x| <  2
 
 	// mitchell convolution algorithm (ref https://clouard.users.greyc.fr/Pantheon/experiments/rescaling/index-en.html#mitchell)
-	double w0 = ((-B - 6 * C) * dXPlusOne * dXPlusOne * dXPlusOne) + ((6 * B + 30 * C) * dXPlusOne * dXPlusOne) + ((-12 * B - 48 * C) * dXPlusOne) + (8*B - 24*C);
+	double w0 = ((-B - 6 * C) * dXPlusOne * dXPlusOne * dXPlusOne) + ((6 * B + 30 * C) * dXPlusOne * dXPlusOne) + ((-12 * B - 48 * C) * dXPlusOne) + (8*B + 24*C);
 	double w1 = ((12 - 9 * B - 6 * C) * x * x * x) + ((-18 + 12 * B + 6 * C) * x * x) + (6 - 2 * B);
 	double w2 = ((12 - 9 * B - 6 * C) * dOneMinusX * dOneMinusX * dOneMinusX) + ((-18 + 12 * B + 6 * C) * dOneMinusX * dOneMinusX) + (6 - 2 * B);
-	double w3 = ((-B - 6 * C) * dTwoMinusX * dTwoMinusX * dTwoMinusX) + ((6 * B + 30 * C) * dTwoMinusX * dTwoMinusX) + ((-12 * B - 48 * C) * dTwoMinusX) + (8 * B - 24 * C);
+	double w3 = ((-B - 6 * C) * dTwoMinusX * dTwoMinusX * dTwoMinusX) + ((6 * B + 30 * C) * dTwoMinusX * dTwoMinusX) + ((-12 * B - 48 * C) * dTwoMinusX) + (8 * B + 24 * C);
 
 	w0 = w0 * 0.16666667;
 	w1 = w1 * 0.16666667;

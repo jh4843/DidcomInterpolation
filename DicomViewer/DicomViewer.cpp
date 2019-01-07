@@ -209,7 +209,7 @@ BOOL CDicomViewerApp::InitInstance()
 	// The one and only window has been initialized, so show and update it
 	m_pMainWnd->ShowWindow(SW_SHOW);
 	m_pMainWnd->UpdateWindow();
-	m_pMainWnd->SetWindowTextW(strAppName);
+	m_pMainWnd->SetWindowText(strAppName);
 
 	m_MiniDump.SetDumpAppName(strAppName);
 	m_MiniDump.SetDumpPlatformType(strPlatformType);
@@ -308,7 +308,7 @@ void CDicomViewerApp::OnViewBySeriesUnit()
 void CDicomViewerApp::OnSyncPosandorient()
 {
 	CMenu menu;
-	menu.LoadMenuW(IDR_MAINFRAME);
+	menu.LoadMenu(IDR_MAINFRAME);
 
 	if (m_bSyncPosAndOrient)
 	{
@@ -336,7 +336,10 @@ BOOL CDicomViewerApp::PreTranslateMessage(MSG* pMsg)
 {
 	if (pMsg->message == WM_KEYDOWN || pMsg->message == WM_SYSKEYDOWN)
 	{
-		m_pLayoutManager->GetCurStudyViewer()->ProcessHotKey(pMsg->wParam);
+		if (m_pLayoutManager->GetStudyViewerCount() > 0)
+		{
+			m_pLayoutManager->GetCurStudyViewer()->ProcessHotKey(pMsg->wParam);
+		}
 	}
 
 	return CWinAppEx::PreTranslateMessage(pMsg);

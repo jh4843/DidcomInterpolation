@@ -651,14 +651,20 @@ BOOL CStudyViewer::DrawInstanceImage(CDC* pDC)
 	case eBicubicPolynomial_100:
 	case eBicubicPolynomial_000:
 	case eBicubicPolynomial_300:
+	case eBicubicMichell:
+	case eBicubicLanczos:
+	case eBicubicCatmullRom:
 		g.SetInterpolationMode(InterpolationModeBicubic);
+		pMainFrm->SetStatusBarText(0, _T("Bicubic"));
 		break;
 	case eBicubicBSpline:
 		g.SetInterpolationMode(InterpolationModeHighQualityBicubic);
+		pMainFrm->SetStatusBarText(0, _T("BicubicHighQuality"));
 		break;
 	case eBilinear:
 	default:
 		g.SetInterpolationMode(InterpolationModeBilinear);
+		pMainFrm->SetStatusBarText(0, _T("Bilinear"));
 		break;
 	}
 
@@ -700,6 +706,8 @@ BOOL CStudyViewer::DrawInstanceImage(CDC* pDC)
 
 	INT nSrcWidth = m_rtImage.Width();
 	INT nSrcHeight = m_rtImage.Height();
+
+	pMainFrm->SetStatusBarText(0, _T("No Interpolation"));
 
 	//
 	g.DrawImage(&bitmap,
@@ -805,7 +813,7 @@ BOOL CStudyViewer::DrawInstanceImage(CDC* pDC)
 	CString strTimeStamp;
 	float fResultTime = (float)(clockEnd - clockStart) / 1000;
 
-	strTimeStamp.Format(_T("Update time : %0.2f sec"), fResultTime);
+	strTimeStamp.Format(_T("Update total time : %0.2f sec"), fResultTime);
 	pMainFrm->SetStatusBarText(1, strTimeStamp);
 
 	// TEST1
@@ -943,7 +951,7 @@ BOOL CStudyViewer::DrawImageInfo(CDC* pDC)
 
 	INT_PTR nFontSize = 85;
 	CFont font;
-	font.CreatePointFont(nFontSize, L"Segoe UI");
+	font.CreatePointFont(nFontSize, _T("Segoe UI"));
 
 	CFont* pOldFont = pDC->SelectObject(&font);
 
@@ -998,7 +1006,7 @@ BOOL CStudyViewer::DrawPatientOrientation(CDC* pDC)
 
 	INT_PTR nFontSize = 2;
 	CFont font;
-	font.CreatePointFont(nFontSize, L"Segoe UI");
+	font.CreatePointFont(nFontSize, _T("Segoe UI"));
 
 	CFont* pOldFont = pDC->SelectObject(&font);
 
@@ -1744,6 +1752,8 @@ void CStudyViewer::UpdateScreenData()
 	if (!m_pDisplayImage)
 		return;
 
+
+
 	CMainFrame* pMainFrm = (CMainFrame*)AfxGetMainWnd();
 	INTERPOLATION_TYPE eInterpolationType = pMainFrm->GetInterpolationType();
 
@@ -1778,7 +1788,12 @@ void CStudyViewer::UpdateScreenData()
 	if (!m_pScreenImage)
 		return;
 
+	clock_t clockStart, clockEnd;
+	clockStart = clock();
+
 	CMyInterpolation myInter;
+	myInter.SetUseParallelCalc(pMainFrm->IsUsingParallelCalc());
+
 	switch (eInterpolationType)
 	{
 	case eBicubicPolynomial_050:
@@ -1844,7 +1859,7 @@ void CStudyViewer::UpdateScreenData()
 			m_rtDisplayedROIOnCanvas.Width(),
 			m_rtDisplayedROIOnCanvas.Height(),
 			TRUE);
-		pMainFrm->SetStatusBarText(0, _T("BSpline"));
+		pMainFrm->SetStatusBarText(0, _T("B-Spline"));
 		break;
 	case eBicubicLanczos:
 		myInter.DoLanczosInterpolation(m_pRoiImage,
@@ -1867,6 +1882,15 @@ void CStudyViewer::UpdateScreenData()
 			0.33333);
 		pMainFrm->SetStatusBarText(0, _T("Mitchell"));
 		break;
+	case eBicubicCatmullRom:
+		myInter.DoCatmullRomSplineInterpolation(m_pRoiImage,
+			m_pScreenImage,
+			m_rtDisplayedROIOnImage.Width(),
+			m_rtDisplayedROIOnImage.Height(),
+			m_rtDisplayedROIOnCanvas.Width(),
+			m_rtDisplayedROIOnCanvas.Height());
+		pMainFrm->SetStatusBarText(0, _T("Catmull-Rom Spline"));
+		break;
 	case eBilinear:
 	default:
 		myInter.DoBilinearInterpolation(m_pRoiImage,
@@ -1879,6 +1903,15 @@ void CStudyViewer::UpdateScreenData()
 	
 		break;
 	}
+
+	clockEnd = clock();
+
+	CString strTimeStamp;
+	float fResultTime = (float)(clockEnd - clockStart) / 1000;
+
+	strTimeStamp.Format(_T("Calc time : %0.2f sec"), fResultTime);
+	pMainFrm->SetStatusBarText(2, strTimeStamp);
+
 	return;
 }
 

@@ -112,7 +112,7 @@
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='ByGdiNoInterpolation|x64'">
     <PlatformToolset>v140</PlatformToolset>
     <UseOfMfc>Dynamic</UseOfMfc>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='BySelfResize|Win32'">
@@ -188,6 +188,7 @@
       <AdditionalIncludeDirectories>C:\Program Files (x86)\LEAD Technologies\LEADTOOLS 17\Include\ClassLib;C:\Program Files (x86)\LEAD Technologies\LEADTOOLS 17\Include;..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <OmitFramePointers>false</OmitFramePointers>
+      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -242,6 +243,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>C:\Program Files (x86)\LEAD Technologies\LEADTOOLS 17\Include;C:\Program Files (x86)\LEAD Technologies\LEADTOOLS 17\Include\ClassLib;..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -278,6 +280,7 @@
       <PreprocessorDefinitions>BY_GDI_INTERPOLATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>C:\Program Files (x86)\LEAD Technologies\LEADTOOLS 17\Include;C:\Program Files (x86)\LEAD Technologies\LEADTOOLS 17\Include\ClassLib;..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <WarningLevel>Level3</WarningLevel>
+      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>C:\Program Files (x86)\LEAD Technologies\LEADTOOLS 17\Lib\CDLLVC10\x64;..\lib\x64\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -287,8 +290,9 @@
     <ClCompile>
       <PreprocessorDefinitions>BY_GDI_NO_INTERPOLATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <AdditionalIncludeDirectories>C:\Program Files (x86)\LEAD Technologies\LEADTOOLS 17\Include;C:\Program Files (x86)\LEAD Technologies\LEADTOOLS 17\Include\ClassLib;.\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files (x86)\LEAD Technologies\LEADTOOLS 17\Include;C:\Program Files (x86)\LEAD Technologies\LEADTOOLS 17\Include\ClassLib;..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <WarningLevel>Level3</WarningLevel>
+      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>C:\Program Files (x86)\LEAD Technologies\LEADTOOLS 17\Lib\CDLLVC10\x64;..\lib\x64\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -318,6 +322,7 @@
     <ClInclude Include="LayoutManager.h" />
     <ClInclude Include="Line.h" />
     <ClInclude Include="LLDicomDS.h" />
+    <ClInclude Include="MyCalc.h" />
     <ClInclude Include="MyInterpolation.h" />
     <ClInclude Include="OleDataSourceEx.h" />
     <ClInclude Include="OleDropTargetEx.h" />
@@ -349,6 +354,7 @@
     <ClCompile Include="LayoutManager.cpp" />
     <ClCompile Include="Line.cpp" />
     <ClCompile Include="LLDicomDS.cpp" />
+    <ClCompile Include="MyCalc.cpp" />
     <ClCompile Include="MyInterpolation.cpp" />
     <ClCompile Include="OleDataSourceEx.cpp" />
     <ClCompile Include="OleDropTargetEx.cpp" />
@@ -376,6 +382,8 @@
   <ItemGroup>
     <Image Include="res\DicomViewer.ico" />
     <Image Include="res\DicomViewerDoc.ico" />
+    <Image Include="res\icon1.ico" />
+    <Image Include="res\MainIco.ico" />
     <Image Include="res\Toolbar.bmp" />
     <Image Include="res\Toolbar256.bmp" />
     <Image Include="UserImages.bmp" />

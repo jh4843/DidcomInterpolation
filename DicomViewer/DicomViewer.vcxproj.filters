@@ -1,23 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="Instance.cpp" />
-    <ClCompile Include="LayoutManager.cpp" />
-    <ClCompile Include="LLDicomDS.cpp" />
-    <ClCompile Include="MyInterpolation.cpp" />
-    <ClCompile Include="OleDataSourceEx.cpp" />
-    <ClCompile Include="OleDropTargetEx.cpp" />
-    <ClCompile Include="OverLayImage.cpp" />
-    <ClCompile Include="StudyViewer.cpp" />
-    <ClCompile Include="DicomViewer.cpp" />
-    <ClCompile Include="DicomViewerDoc.cpp" />
-    <ClCompile Include="DicomViewerView.cpp" />
-    <ClCompile Include="MainFrm.cpp" />
-    <ClCompile Include="MyDicomLanguage.cpp" />
-    <ClCompile Include="Series.cpp" />
-    <ClCompile Include="stdafx.cpp" />
-    <ClCompile Include="Study.cpp" />
-    <ClCompile Include="XRLink.Clinic.MemoryDump.cpp" />
     <ClCompile Include="CoordinatorUtill.cpp">
       <Filter>Utill</Filter>
     </ClCompile>
@@ -42,29 +25,61 @@
     <ClCompile Include="Line.cpp">
       <Filter>Geometry</Filter>
     </ClCompile>
+    <ClCompile Include="DicomViewerDoc.cpp">
+      <Filter>DicomViewer</Filter>
+    </ClCompile>
+    <ClCompile Include="DicomViewer.cpp">
+      <Filter>DicomViewer</Filter>
+    </ClCompile>
+    <ClCompile Include="DicomViewerView.cpp">
+      <Filter>DicomViewer</Filter>
+    </ClCompile>
+    <ClCompile Include="Instance.cpp">
+      <Filter>Dicom</Filter>
+    </ClCompile>
+    <ClCompile Include="LayoutManager.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="LLDicomDS.cpp">
+      <Filter>Dicom</Filter>
+    </ClCompile>
+    <ClCompile Include="MainFrm.cpp">
+      <Filter>DicomViewer</Filter>
+    </ClCompile>
+    <ClCompile Include="MyDicomLanguage.cpp">
+      <Filter>DicomViewer</Filter>
+    </ClCompile>
+    <ClCompile Include="MyInterpolation.cpp">
+      <Filter>Image</Filter>
+    </ClCompile>
+    <ClCompile Include="OleDataSourceEx.cpp">
+      <Filter>Utill</Filter>
+    </ClCompile>
+    <ClCompile Include="OleDropTargetEx.cpp">
+      <Filter>Utill</Filter>
+    </ClCompile>
+    <ClCompile Include="OverLayImage.cpp">
+      <Filter>Image</Filter>
+    </ClCompile>
+    <ClCompile Include="Series.cpp">
+      <Filter>Dicom</Filter>
+    </ClCompile>
+    <ClCompile Include="Study.cpp">
+      <Filter>Dicom</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>DicomViewer</Filter>
+    </ClCompile>
+    <ClCompile Include="StudyViewer.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="XRLink.Clinic.MemoryDump.cpp">
+      <Filter>Utill</Filter>
+    </ClCompile>
+    <ClCompile Include="MyCalc.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="DicomViewerTypes.h" />
-    <ClInclude Include="Instance.h" />
-    <ClInclude Include="LayoutManager.h" />
-    <ClInclude Include="LLDicomDS.h" />
-    <ClInclude Include="MyInterpolation.h" />
-    <ClInclude Include="OleDataSourceEx.h" />
-    <ClInclude Include="OleDropTargetEx.h" />
-    <ClInclude Include="OverLayImage.h" />
-    <ClInclude Include="StudyViewer.h" />
-    <ClInclude Include="DicomViewer.h" />
-    <ClInclude Include="DicomViewerDoc.h" />
-    <ClInclude Include="DicomViewerView.h" />
-    <ClInclude Include="MainFrm.h" />
-    <ClInclude Include="MyDicomLanguage.h" />
-    <ClInclude Include="Resource.h" />
-    <ClInclude Include="Series.h" />
-    <ClInclude Include="stdafx.h" />
-    <ClInclude Include="Study.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="template_image_process.h" />
-    <ClInclude Include="XRLink.Clinic.MemoryDump.h" />
     <ClInclude Include="CoordinatorUtill.h">
       <Filter>Utill</Filter>
     </ClInclude>
@@ -92,6 +107,67 @@
     <ClInclude Include="Line.h">
       <Filter>Geometry</Filter>
     </ClInclude>
+    <ClInclude Include="DicomViewerDoc.h">
+      <Filter>DicomViewer</Filter>
+    </ClInclude>
+    <ClInclude Include="DicomViewer.h">
+      <Filter>DicomViewer</Filter>
+    </ClInclude>
+    <ClInclude Include="DicomViewerView.h">
+      <Filter>DicomViewer</Filter>
+    </ClInclude>
+    <ClInclude Include="DicomViewerTypes.h">
+      <Filter>DicomViewer</Filter>
+    </ClInclude>
+    <ClInclude Include="Instance.h">
+      <Filter>Dicom</Filter>
+    </ClInclude>
+    <ClInclude Include="LayoutManager.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="LLDicomDS.h">
+      <Filter>Dicom</Filter>
+    </ClInclude>
+    <ClInclude Include="MainFrm.h">
+      <Filter>DicomViewer</Filter>
+    </ClInclude>
+    <ClInclude Include="MyDicomLanguage.h">
+      <Filter>DicomViewer</Filter>
+    </ClInclude>
+    <ClInclude Include="MyInterpolation.h">
+      <Filter>Image</Filter>
+    </ClInclude>
+    <ClInclude Include="OleDataSourceEx.h">
+      <Filter>Utill</Filter>
+    </ClInclude>
+    <ClInclude Include="OleDropTargetEx.h">
+      <Filter>Utill</Filter>
+    </ClInclude>
+    <ClInclude Include="OverLayImage.h">
+      <Filter>Image</Filter>
+    </ClInclude>
+    <ClInclude Include="Series.h">
+      <Filter>Dicom</Filter>
+    </ClInclude>
+    <ClInclude Include="Study.h">
+      <Filter>Dicom</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>DicomViewer</Filter>
+    </ClInclude>
+    <ClInclude Include="StudyViewer.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="template_image_process.h">
+      <Filter>Utill</Filter>
+    </ClInclude>
+    <ClInclude Include="XRLink.Clinic.MemoryDump.h">
+      <Filter>Utill</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>Res</Filter>
+    </ClInclude>
+    <ClInclude Include="MyCalc.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\DicomViewer.ico">
@@ -109,6 +185,8 @@
     <Image Include="res\DicomViewerDoc.ico">
       <Filter>Res</Filter>
     </Image>
+    <Image Include="res\icon1.ico" />
+    <Image Include="res\MainIco.ico" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />

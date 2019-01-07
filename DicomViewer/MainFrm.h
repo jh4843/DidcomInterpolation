@@ -21,6 +21,7 @@ public:
 public:
 	void SetStatusBarText(INT_PTR nIndex, CString strText);
 	INTERPOLATION_TYPE GetInterpolationType();
+	BOOL IsUsingParallelCalc();
 
 // Overrides
 public:
@@ -49,6 +50,7 @@ protected:  // control bar embedded members
 	CMFCToolBarImages m_UserImages;
 
 	INTERPOLATION_TYPE m_eInterpolationType;
+	BOOL m_bUseParallelCalc;
 
 public:
 	void Init();
@@ -85,6 +87,7 @@ public:
 	afx_msg void OnInterpolationBicubicBSpline();
 	afx_msg void OnInterpolationLanczos();
 	afx_msg void OnInterpolationMitchell();
+	afx_msg void OnInterpolationCatmullrom();
 	afx_msg void OnUpdateInterpolationBilinear(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateInterpolationBicubicPolynomial(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateInterpolationBicubicSpline(CCmdUI *pCmdUI);
@@ -94,6 +97,9 @@ public:
 	afx_msg void OnUpdateInterpolationBicubicPolynomial300(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateInterpolationLanczos(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateInterpolationMitchell(CCmdUI *pCmdUI);
+	afx_msg void OnUpdateInterpolationCatmullrom(CCmdUI *pCmdUI);
+	afx_msg void OnCommandUseparallelcalc();
+	afx_msg void OnUpdateCommandUseparallelcalc(CCmdUI *pCmdUI);
 };
 
 

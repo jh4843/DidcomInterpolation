@@ -97,6 +97,9 @@ INT_PTR CLayoutManager::GetStudyViewerCount()
 
 CStudyViewer * CLayoutManager::GetCurStudyViewer()
 {
+	if (m_nSelectedViewerIndex < 0 || m_aryStudyViewer.GetCount() <= 0)
+		return nullptr;
+
 	return m_aryStudyViewer.GetAt(m_nSelectedViewerIndex);
 }
 

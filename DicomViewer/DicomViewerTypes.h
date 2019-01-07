@@ -10,4 +10,5 @@ enum INTERPOLATION_TYPE {
 	eBicubicBSpline = 7,
 	eBicubicMichell = 8,			// B = 1/3, C = 1/3
 	eBicubicLanczos = 9,
+	eBicubicCatmullRom = 10,
 };

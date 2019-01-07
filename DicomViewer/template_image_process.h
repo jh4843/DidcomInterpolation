@@ -17,6 +17,8 @@
 // template function
 ///////////////////////////////////////////////////////////////////
 
+int GetOmpProcCount();
+
 template <class TYPE> BOOL adjust_usingbits(TYPE* pImage, UINT nWidth, UINT nHeight, UINT nUsingBits);
 
 template <class TYPE> BOOL adjust_dicom_lut(TYPE* pImage, RGBQUAD* pLut, UINT nWidth, UINT nHeight, UINT nUsingBits);
@@ -52,6 +54,19 @@ template <RGBQUAD*> BOOL burn_dc_object(RGBQUAD** pImage, UINT nWidth, UINT nHei
 
 template <class TYPE> BOOL rotate_image_arbitrarily(TYPE* pDestImage, UINT nDestWidth, UINT nDestHeight, UINT nDestBytesPerLine, TYPE* pSrcImage, UINT nSrcWidth, UINT nSrcHeight, UINT nSrcBytesPerLine, float fDestCenterX, float fDestCenterY, float fSrcCenterX, float fSrcCenterY, float fRadian, float fScale);
 
+int GetOmpProcCount()
+{
+	static int nOmpProcCount = 0;
+	if (!nOmpProcCount)
+	{
+		nOmpProcCount = omp_get_num_procs() / 2;
+		if (nOmpProcCount < 1)
+			nOmpProcCount = 1;
+	}
+	//
+	return nOmpProcCount;
+}
+
 //////////////////////////////////////////////////////////////////////////
 //
 template <class TYPE> BOOL adjust_usingbits(TYPE* pImage, UINT nWidth, UINT nHeight, UINT nUsingBits)
@@ -70,7 +85,7 @@ template <class TYPE> BOOL adjust_usingbits(TYPE* pImage, UINT nWidth, UINT nHei
 	nMaxValue = (int)((1 << nUsingBits)-1);
 
 	omp_set_dynamic(1);
-#pragma omp parallel for num_threads(theGlobal.m_nOmpProcCount)
+#pragma omp parallel for num_threads(GetOmpProcCount())
 	for(i=0; i<size; i++)
 	{
 		pImage[i] = (TYPE)min(pImage[i], nMaxValue);
@@ -113,7 +128,7 @@ template <> BOOL adjust_dicom_lut<RGBQUAD*>(RGBQUAD** pImage, RGBQUAD* pLut, UIN
 
 	omp_set_dynamic(1);
 	//omp_set_dynamic(1);
-#pragma omp parallel for private(j) num_threads(theGlobal.m_nOmpProcCount)
+#pragma omp parallel for private(j) num_threads(GetOmpProcCount())
 	for (int i = 0; i < nPixelCount; i++)
 	{
 		//
@@ -188,7 +203,7 @@ template <> BOOL adjust_dicom_lut<RGBTRIPLE*>(RGBTRIPLE** pImage, RGBQUAD* pLut,
 	int nMaxValue = (int)((1 << nUsingBits)-1);
 
 	omp_set_dynamic(1);
-#pragma omp parallel for private(j) num_threads(theGlobal.m_nOmpProcCount)
+#pragma omp parallel for private(j) num_threads(GetOmpProcCount())
 	for (int i=0; i<nPixelCount; i++)
 	{
 		j = (int)(((RGBTRIPLE*)((*pImage)+i))->rgbtRed);
@@ -265,7 +280,7 @@ template <class TYPE> BOOL adjust_dicom_lut(TYPE* pImage, RGBQUAD* pLut, UINT nW
 
 
 	omp_set_dynamic(1);
-#pragma omp parallel for private(j, fPixelValue) num_threads(theGlobal.m_nOmpProcCount)
+#pragma omp parallel for private(j, fPixelValue) num_threads(GetOmpProcCount())
 	for(i=0; i<pixel_count; i++)
 	{
 		j = (DWORD)(*(pImage+i));
@@ -644,7 +659,7 @@ template <class TYPE> BOOL crop_roi_image(TYPE* pImage, UINT nWidth, UINT nHeigh
 	}
 
 	omp_set_dynamic(1);
-#pragma omp parallel for private(j) num_threads(theGlobal.m_nOmpProcCount)
+#pragma omp parallel for private(j) num_threads(GetOmpProcCount())
 	for (i = 0; i < nRoiHeight; i++)
 	{
 		for (j = 0; j < nRoiWidth; j++)
@@ -715,7 +730,7 @@ template <class TYPE> BOOL rotate_image(TYPE* pImage, UINT nWidth, UINT nHeight,
 	if (!nMode)	//ccw
 	{
 		omp_set_dynamic(1);
-#pragma omp parallel for private(j) num_threads(theGlobal.m_nOmpProcCount)
+#pragma omp parallel for private(j) num_threads(GetOmpProcCount())
 		for (i = 0; i < dy; i++)
 		{
 			for (j = 0; j < dx; j++)
@@ -727,7 +742,7 @@ template <class TYPE> BOOL rotate_image(TYPE* pImage, UINT nWidth, UINT nHeight,
 	else //cw
 	{
 		omp_set_dynamic(1);
-#pragma omp parallel for private(j) num_threads(theGlobal.m_nOmpProcCount)
+#pragma omp parallel for private(j) num_threads(GetOmpProcCount())
 		for (i = 0; i < dy; i++)
 		{
 			for (j = 0; j < dx; j++)
@@ -798,7 +813,7 @@ template <class TYPE> BOOL reverse_image(TYPE* pImage, UINT nWidth, UINT nHeight
 	if (!nMode)	//mirror
 	{
 		omp_set_dynamic(1);
-#pragma omp parallel for private(j) num_threads(theGlobal.m_nOmpProcCount)
+#pragma omp parallel for private(j) num_threads(GetOmpProcCount())
 		for (i = 0; i < nY; i++)
 		{
 			for (j = 0; j < nX; j++)
@@ -810,7 +825,7 @@ template <class TYPE> BOOL reverse_image(TYPE* pImage, UINT nWidth, UINT nHeight
 	else //flip
 	{
 		omp_set_dynamic(1);
-#pragma omp parallel for num_threads(theGlobal.m_nOmpProcCount)
+#pragma omp parallel for num_threads(GetOmpProcCount())
 		for (i = 0; i < nY; i++)
 		{
 			memcpy(arDst[dy_minus1-i], arSrs[i], sizeof(TYPE)*nX);
@@ -879,7 +894,7 @@ template <class IN_TYPE, class OUT_TYPE> BOOL convert_image(IN_TYPE* pIn, OUT_TY
 	nRemainSize = (int)(nPixelCount%4);
 
 	omp_set_dynamic(1);
-#pragma omp parallel for private(j, m128Temp, fTemp) num_threads(theGlobal.m_nOmpProcCount)
+#pragma omp parallel for private(j, m128Temp, fTemp) num_threads(GetOmpProcCount())
 	for (i = 0; i < nQuadSize; i++)
 	{
 		j = i << 2;
@@ -903,7 +918,7 @@ template <class IN_TYPE, class OUT_TYPE> BOOL convert_image(IN_TYPE* pIn, OUT_TY
 
 	j = nQuadSize << 2;
 //	omp_set_dynamic(1);
-#pragma omp parallel for private(fPixelValue) num_threads(theGlobal.m_nOmpProcCount)
+#pragma omp parallel for private(fPixelValue) num_threads(GetOmpProcCount())
 	for (i = 0; i < nRemainSize; i++)
 	{
 		fPixelValue =(float)(*(pIn+j+i));
@@ -1035,7 +1050,7 @@ template <class IN_TYPE, class OUT_TYPE> BOOL window_level_image(IN_TYPE* pIn, O
 	nRemainSize = (int)(nPixelCount%4);
 
 	omp_set_dynamic(1);
-#pragma omp parallel for private(j, nRow, nCol, m128Temp, fTemp) num_threads(theGlobal.m_nOmpProcCount)
+#pragma omp parallel for private(j, nRow, nCol, m128Temp, fTemp) num_threads(GetOmpProcCount())
 	for (i = 0; i < nQuadSize; i++)
 	{
 		j = i << 2;
@@ -1067,7 +1082,7 @@ template <class IN_TYPE, class OUT_TYPE> BOOL window_level_image(IN_TYPE* pIn, O
 	nRow = (int)(j / nWidth);
 	nCol = (int)(j % nWidth);
 //	omp_set_dynamic(1);
-#pragma omp parallel for private(fPixelValue) num_threads(theGlobal.m_nOmpProcCount)
+#pragma omp parallel for private(fPixelValue) num_threads(GetOmpProcCount())
 	for (i = 0; i < nRemainSize; i++)
 	{
 		fPixelValue =(float)(arImageIn[nRow][nCol+i]);
@@ -1223,7 +1238,7 @@ template <class IN_TYPE, class OUT_TYPE> BOOL window_level_invert_image(IN_TYPE*
 	nRemainSize = (int)(nPixelCount % 4);
 
 	omp_set_dynamic(1);
-#pragma omp parallel for private(j, nRow, nCol, m128Temp, fTemp) num_threads(theGlobal.m_nOmpProcCount)
+#pragma omp parallel for private(j, nRow, nCol, m128Temp, fTemp) num_threads(GetOmpProcCount())
 	for (i = 0; i < nQuadSize; i++)
 	{
 		j = i << 2;
@@ -1256,7 +1271,7 @@ template <class IN_TYPE, class OUT_TYPE> BOOL window_level_invert_image(IN_TYPE*
 	nRow = (int)(j/nWidth);
 	nCol = (int)(j%nWidth);
 //	omp_set_dynamic(1);
-#pragma omp parallel for private(fPixelValue) num_threads(theGlobal.m_nOmpProcCount)
+#pragma omp parallel for private(fPixelValue) num_threads(GetOmpProcCount())
 	for (i = 0; i < nRemainSize; i++)
 	{
 		fPixelValue =(float)(arImageIn[nRow][nCol+i]);
@@ -1431,7 +1446,7 @@ template <class IN_TYPE, class OUT_TYPE, class LUT_TYPE> BOOL window_level_lut_i
 	nRemainSize = (int)(nPixelCount % 4);
 
 	omp_set_dynamic(1);
-#pragma omp parallel for private(j, nRow, nCol, m128Temp, fTemp) num_threads(theGlobal.m_nOmpProcCount)
+#pragma omp parallel for private(j, nRow, nCol, m128Temp, fTemp) num_threads(GetOmpProcCount())
 	for (i = 0; i < nQuadSize; i++)
 	{
 		j = i << 2;
@@ -1462,7 +1477,7 @@ template <class IN_TYPE, class OUT_TYPE, class LUT_TYPE> BOOL window_level_lut_i
 	nRow = (int)(j / nWidth);
 	nCol = (int)(j % nWidth);
 //	omp_set_dynamic(1);
-#pragma omp parallel for private(fPixelValue) num_threads(theGlobal.m_nOmpProcCount)
+#pragma omp parallel for private(fPixelValue) num_threads(GetOmpProcCount())
 	for(i=0; i<nRemainSize; i++)
 	{
 		fPixelValue =(float)(arImageIn[nRow][nCol+i]);
@@ -1618,7 +1633,7 @@ template <class TYPE> BOOL mask_circle_mask_data(TYPE* pMask, UINT nWidth, UINT 
 	if(dDiameter<=0)
 	{
 		omp_set_dynamic(1);
-#pragma omp parallel for num_threads(theGlobal.m_nOmpProcCount)
+#pragma omp parallel for num_threads(GetOmpProcCount())
 		for(i=0; i<dy; i++)
 		{
 			pMask[i] = (TYPE)dx;
@@ -1630,7 +1645,7 @@ template <class TYPE> BOOL mask_circle_mask_data(TYPE* pMask, UINT nWidth, UINT 
 		section2 = dy_half + (int)(dRadius+0.5);
 
 		omp_set_dynamic(1);
-#pragma omp parallel for private(j) num_threads(theGlobal.m_nOmpProcCount)
+#pragma omp parallel for private(j) num_threads(GetOmpProcCount())
 		for(i=0; i<dy; i++)
 		{
 			if(i<=section1)
@@ -2219,7 +2234,7 @@ template <class TYPE> BOOL adjust_circle_mask_data(TYPE* pImage, WORD* pMask, UI
 	for(i=1; i<dy; i++) arImage[i] = arImage[i-1]+dx;
 
 	omp_set_dynamic(1);
-#pragma omp parallel for num_threads(theGlobal.m_nOmpProcCount)
+#pragma omp parallel for num_threads(GetOmpProcCount())
 	for (i=0; i<dy; i++)
 	{
 		if (pMask[i]>0)
