@@ -1,0 +1,152 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="Instance.cpp" />
+    <ClCompile Include="LayoutManager.cpp" />
+    <ClCompile Include="LLDicomDS.cpp" />
+    <ClCompile Include="MyInterpolation.cpp" />
+    <ClCompile Include="OleDataSourceEx.cpp" />
+    <ClCompile Include="OleDropTargetEx.cpp" />
+    <ClCompile Include="OverLayImage.cpp" />
+    <ClCompile Include="StudyViewer.cpp" />
+    <ClCompile Include="DicomViewer.cpp" />
+    <ClCompile Include="DicomViewerDoc.cpp" />
+    <ClCompile Include="DicomViewerView.cpp" />
+    <ClCompile Include="MainFrm.cpp" />
+    <ClCompile Include="MyDicomLanguage.cpp" />
+    <ClCompile Include="Series.cpp" />
+    <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="Study.cpp" />
+    <ClCompile Include="XRLink.Clinic.MemoryDump.cpp" />
+    <ClCompile Include="CoordinatorUtill.cpp">
+      <Filter>Utill</Filter>
+    </ClCompile>
+    <ClCompile Include="DicomFileDialog.cpp">
+      <Filter>Dialog</Filter>
+    </ClCompile>
+    <ClCompile Include="DicomImageProcessor.cpp">
+      <Filter>Image</Filter>
+    </ClCompile>
+    <ClCompile Include="DicomImage.cpp">
+      <Filter>Dicom</Filter>
+    </ClCompile>
+    <ClCompile Include="DicomParser.cpp">
+      <Filter>Dicom</Filter>
+    </ClCompile>
+    <ClCompile Include="GeometryMath.cpp">
+      <Filter>Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="Plane.cpp">
+      <Filter>Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="Line.cpp">
+      <Filter>Geometry</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="DicomViewerTypes.h" />
+    <ClInclude Include="Instance.h" />
+    <ClInclude Include="LayoutManager.h" />
+    <ClInclude Include="LLDicomDS.h" />
+    <ClInclude Include="MyInterpolation.h" />
+    <ClInclude Include="OleDataSourceEx.h" />
+    <ClInclude Include="OleDropTargetEx.h" />
+    <ClInclude Include="OverLayImage.h" />
+    <ClInclude Include="StudyViewer.h" />
+    <ClInclude Include="DicomViewer.h" />
+    <ClInclude Include="DicomViewerDoc.h" />
+    <ClInclude Include="DicomViewerView.h" />
+    <ClInclude Include="MainFrm.h" />
+    <ClInclude Include="MyDicomLanguage.h" />
+    <ClInclude Include="Resource.h" />
+    <ClInclude Include="Series.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="Study.h" />
+    <ClInclude Include="targetver.h" />
+    <ClInclude Include="template_image_process.h" />
+    <ClInclude Include="XRLink.Clinic.MemoryDump.h" />
+    <ClInclude Include="CoordinatorUtill.h">
+      <Filter>Utill</Filter>
+    </ClInclude>
+    <ClInclude Include="DicomFileDialog.h">
+      <Filter>Dialog</Filter>
+    </ClInclude>
+    <ClInclude Include="DicomImageProcessor.h">
+      <Filter>Image</Filter>
+    </ClInclude>
+    <ClInclude Include="DicomImage.h">
+      <Filter>Dicom</Filter>
+    </ClInclude>
+    <ClInclude Include="DicomParser.h">
+      <Filter>Dicom</Filter>
+    </ClInclude>
+    <ClInclude Include="GeometryMath.h">
+      <Filter>Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="Plane.h">
+      <Filter>Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="Vectors.h">
+      <Filter>Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="Line.h">
+      <Filter>Geometry</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\DicomViewer.ico">
+      <Filter>Res</Filter>
+    </Image>
+    <Image Include="res\Toolbar.bmp">
+      <Filter>Res</Filter>
+    </Image>
+    <Image Include="res\Toolbar256.bmp">
+      <Filter>Res</Filter>
+    </Image>
+    <Image Include="UserImages.bmp">
+      <Filter>Res</Filter>
+    </Image>
+    <Image Include="res\DicomViewerDoc.ico">
+      <Filter>Res</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Utill">
+      <UniqueIdentifier>{ff302509-58e0-42f3-80cc-f6debc8d285b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Res">
+      <UniqueIdentifier>{5d4b94ba-347e-4062-8fb6-183f983171d8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dialog">
+      <UniqueIdentifier>{17884d51-ece2-49c1-af0b-7e09b3334563}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Image">
+      <UniqueIdentifier>{ddf6c985-525f-4c6c-b221-0034d8c7e185}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dicom">
+      <UniqueIdentifier>{db0a8f89-1474-4484-ac2d-f20c027766bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Geometry">
+      <UniqueIdentifier>{0053ea52-8245-4217-9d7a-a9573ab6af7f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI">
+      <UniqueIdentifier>{183ed9ed-15e9-4a9b-8aad-0c27dde5ee3e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DicomViewer">
+      <UniqueIdentifier>{67045d11-48f1-4d20-a1cf-0a36e851b14a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="DicomViewer.rc">
+      <Filter>Res</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\DicomViewer.rc2">
+      <Filter>Res</Filter>
+    </None>
+  </ItemGroup>
+</Project>

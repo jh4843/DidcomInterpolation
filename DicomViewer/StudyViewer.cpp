@@ -626,38 +626,7 @@ BOOL CStudyViewer::DrawInstanceImage(CDC* pDC)
 
 	clockStart = clock();
 
-#ifdef BY_SELF
-	UpdateScreenData();
-
-	BITMAPINFOHEADER& bih = GetDibInfo()->bmiHeader;
-	bih.biSize = sizeof(BITMAPINFOHEADER);
-	bih.biWidth = m_rtDisplayedROIOnCanvas.Width();
-	bih.biHeight = -m_rtDisplayedROIOnCanvas.Height();
-	bih.biPlanes = 1;
-	bih.biBitCount = 8 * m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).m_stImageInfo.m_nSamplesPerPixel;
-	bih.biCompression = BI_RGB;
-	bih.biSizeImage = m_rtDisplayedROIOnCanvas.Width() * m_rtDisplayedROIOnCanvas.Height();
-	bih.biXPelsPerMeter = 0;
-	bih.biYPelsPerMeter = 0;
-	bih.biClrUsed = 0;
-	bih.biClrImportant = 0;
-
-	::SetStretchBltMode(pDC->GetSafeHdc(), COLORONCOLOR);
-	::StretchDIBits(pDC->GetSafeHdc(),
-		m_rtCanvas.left,
-		m_rtCanvas.top,
-		m_rtCanvas.Width(),
-		m_rtCanvas.Height(),
-		m_rtDrawRectOnCanvas.left,
-		m_rtDrawRectOnCanvas.top,
-		m_rtDrawRectOnCanvas.Width(),
-		m_rtDrawRectOnCanvas.Height(),
-		(void*)m_pScreenImage,
-		(BITMAPINFO*)GetDibInfo(),
-		DIB_RGB_COLORS,
-		SRCCOPY);
-
-#elif BY_GDI_INTERPOLATION
+#ifdef BY_GDI_INTERPOLATION
 	BITMAPINFOHEADER& bih = GetDibInfo()->bmiHeader;
 	bih.biSize = sizeof(BITMAPINFOHEADER);
 	bih.biWidth = m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).m_stImageInfo.m_nWidth;
@@ -677,10 +646,14 @@ BOOL CStudyViewer::DrawInstanceImage(CDC* pDC)
 
 	switch (eInterpolationType)
 	{
-	case eBicubicPolynomial:
+	case eBicubicPolynomial_050:
+	case eBicubicPolynomial_075:
+	case eBicubicPolynomial_100:
+	case eBicubicPolynomial_000:
+	case eBicubicPolynomial_300:
 		g.SetInterpolationMode(InterpolationModeBicubic);
 		break;
-	case eBicubicSpline:
+	case eBicubicBSpline:
 		g.SetInterpolationMode(InterpolationModeHighQualityBicubic);
 		break;
 	case eBilinear:
@@ -1806,35 +1779,104 @@ void CStudyViewer::UpdateScreenData()
 		return;
 
 	CMyInterpolation myInter;
-
 	switch (eInterpolationType)
 	{
-	case eBicubicPolynomial:
-		myInter.DoHighOrderInterpolation(m_pRoiImage,
+	case eBicubicPolynomial_050:
+		myInter.DoBiCubicInterpolation(m_pRoiImage,
 			m_pScreenImage,
 			m_rtDisplayedROIOnImage.Width(),
 			m_rtDisplayedROIOnImage.Height(),
 			m_rtDisplayedROIOnCanvas.Width(),
 			m_rtDisplayedROIOnCanvas.Height(),
-			FALSE);
+			FALSE,
+			-0.5);
+		pMainFrm->SetStatusBarText(0, _T("Bicubic_-0.50"));
 		break;
-	case eBicubicSpline:
-		myInter.DoHighOrderInterpolation(m_pRoiImage,
+	case eBicubicPolynomial_075:
+		myInter.DoBiCubicInterpolation(m_pRoiImage,
+			m_pScreenImage,
+			m_rtDisplayedROIOnImage.Width(),
+			m_rtDisplayedROIOnImage.Height(),
+			m_rtDisplayedROIOnCanvas.Width(),
+			m_rtDisplayedROIOnCanvas.Height(),
+			FALSE,
+			-0.75);
+		pMainFrm->SetStatusBarText(0, _T("Bicubic_-0.75"));
+		break;
+	case eBicubicPolynomial_100:
+		myInter.DoBiCubicInterpolation(m_pRoiImage,
+			m_pScreenImage,
+			m_rtDisplayedROIOnImage.Width(),
+			m_rtDisplayedROIOnImage.Height(),
+			m_rtDisplayedROIOnCanvas.Width(),
+			m_rtDisplayedROIOnCanvas.Height(),
+			FALSE,
+			-1.0);
+		pMainFrm->SetStatusBarText(0, _T("Bicubic_-1.0"));
+		break;
+	case eBicubicPolynomial_000:
+		myInter.DoBiCubicInterpolation(m_pRoiImage,
+			m_pScreenImage,
+			m_rtDisplayedROIOnImage.Width(),
+			m_rtDisplayedROIOnImage.Height(),
+			m_rtDisplayedROIOnCanvas.Width(),
+			m_rtDisplayedROIOnCanvas.Height(),
+			FALSE,
+			0.0);
+		pMainFrm->SetStatusBarText(0, _T("Bicubic_0.0"));
+		break;
+	case eBicubicPolynomial_300:
+		myInter.DoBiCubicInterpolation(m_pRoiImage,
+			m_pScreenImage,
+			m_rtDisplayedROIOnImage.Width(),
+			m_rtDisplayedROIOnImage.Height(),
+			m_rtDisplayedROIOnCanvas.Width(),
+			m_rtDisplayedROIOnCanvas.Height(),
+			FALSE,
+			-3.0);
+		pMainFrm->SetStatusBarText(0, _T("Bicubic_-3.0"));
+		break;
+	case eBicubicBSpline:
+		myInter.DoBiCubicInterpolation(m_pRoiImage,
 			m_pScreenImage,
 			m_rtDisplayedROIOnImage.Width(),
 			m_rtDisplayedROIOnImage.Height(),
 			m_rtDisplayedROIOnCanvas.Width(),
 			m_rtDisplayedROIOnCanvas.Height(),
 			TRUE);
+		pMainFrm->SetStatusBarText(0, _T("BSpline"));
+		break;
+	case eBicubicLanczos:
+		myInter.DoLanczosInterpolation(m_pRoiImage,
+			m_pScreenImage,
+			m_rtDisplayedROIOnImage.Width(),
+			m_rtDisplayedROIOnImage.Height(),
+			m_rtDisplayedROIOnCanvas.Width(),
+			m_rtDisplayedROIOnCanvas.Height(),
+			2.0);
+		pMainFrm->SetStatusBarText(0, _T("Lanczos"));
+		break;
+	case eBicubicMichell:
+		myInter.DoMitchellInterpolation(m_pRoiImage,
+			m_pScreenImage,
+			m_rtDisplayedROIOnImage.Width(),
+			m_rtDisplayedROIOnImage.Height(),
+			m_rtDisplayedROIOnCanvas.Width(),
+			m_rtDisplayedROIOnCanvas.Height(),
+			0.33333,
+			0.33333);
+		pMainFrm->SetStatusBarText(0, _T("Mitchell"));
 		break;
 	case eBilinear:
+	default:
 		myInter.DoBilinearInterpolation(m_pRoiImage,
 			m_pScreenImage,
 			m_rtDisplayedROIOnImage.Width(),
 			m_rtDisplayedROIOnImage.Height(),
 			m_rtDisplayedROIOnCanvas.Width(),
 			m_rtDisplayedROIOnCanvas.Height());
-	default:
+		pMainFrm->SetStatusBarText(0, _T("Bilinear"));
+	
 		break;
 	}
 	return;

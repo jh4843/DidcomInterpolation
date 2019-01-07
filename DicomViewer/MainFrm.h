@@ -77,11 +77,23 @@ protected:
 
 public:
 	afx_msg void OnInterpolationBilinear();
-	afx_msg void OnInterpolationBicubicPolynomial();
-	afx_msg void OnInterpolationBicubicSpline();
+	afx_msg void OnInterpolationBicubicPolynomial050();
+	afx_msg void OnInterpolationBicubicPolynomial075();
+	afx_msg void OnInterpolationBicubicPolynomial100();
+	afx_msg void OnInterpolationBicubicPolynomial000();
+	afx_msg void OnInterpolationBicubicPolynomial300();
+	afx_msg void OnInterpolationBicubicBSpline();
+	afx_msg void OnInterpolationLanczos();
+	afx_msg void OnInterpolationMitchell();
 	afx_msg void OnUpdateInterpolationBilinear(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateInterpolationBicubicPolynomial(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateInterpolationBicubicSpline(CCmdUI *pCmdUI);
+	afx_msg void OnUpdateInterpolationBicubicPolynomial075(CCmdUI *pCmdUI);
+	afx_msg void OnUpdateInterpolationBicubicPolynomial100(CCmdUI *pCmdUI);
+	afx_msg void OnUpdateInterpolationBicubicPolynomial000(CCmdUI *pCmdUI);
+	afx_msg void OnUpdateInterpolationBicubicPolynomial300(CCmdUI *pCmdUI);
+	afx_msg void OnUpdateInterpolationLanczos(CCmdUI *pCmdUI);
+	afx_msg void OnUpdateInterpolationMitchell(CCmdUI *pCmdUI);
 };
 
 

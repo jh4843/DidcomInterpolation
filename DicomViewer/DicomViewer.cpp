@@ -199,9 +199,7 @@ BOOL CDicomViewerApp::InitInstance()
 #endif
 
 	CString strAppName;
-#ifdef BY_SELF
-	strAppName.Format(_T("Interpolation_by_self"));
-#elif BY_GDI_INTERPOLATION
+#ifdef BY_GDI_INTERPOLATION
 	strAppName.Format(_T("Interpolation_by_gdiplus"));
 #elif BY_GDI_NO_INTERPOLATION
 	strAppName.Format(_T("Interpolation_No_Interpolation_gdiplus"));

@@ -29,11 +29,23 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWndEx)
 	ON_COMMAND(ID_FILE_OPEN, &CMainFrame::OnFileOpen)
 	ON_COMMAND(ID_FILE_OPENFOLDER, &CMainFrame::OnFileOpenfolder)
 	ON_COMMAND(ID_INTERPOLATION_BILINEAR, &CMainFrame::OnInterpolationBilinear)
-	ON_COMMAND(ID_INTERPOLATION_BICUBIC_POLYNOMIAL, &CMainFrame::OnInterpolationBicubicPolynomial)
-	ON_COMMAND(ID_INTERPOLATION_BICUBIC_SPLINE, &CMainFrame::OnInterpolationBicubicSpline)
+	ON_COMMAND(ID_INTERPOLATION_BICUBIC_POLYNOMIAL, &CMainFrame::OnInterpolationBicubicPolynomial050)
+	ON_COMMAND(ID_INTERPOLATION_BICUBIC_POLYNOMIAL_075, &CMainFrame::OnInterpolationBicubicPolynomial075)
+	ON_COMMAND(ID_INTERPOLATION_BICUBIC_POLYNOMIAL_100, &CMainFrame::OnInterpolationBicubicPolynomial100)
+	ON_COMMAND(ID_INTERPOLATION_BICUBIC_POLYNOMIAL_000, &CMainFrame::OnInterpolationBicubicPolynomial000)
+	ON_COMMAND(ID_INTERPOLATION_BICUBIC_POLYNOMIAL_300, &CMainFrame::OnInterpolationBicubicPolynomial300)
+	ON_COMMAND(ID_INTERPOLATION_BICUBIC_BSPLINE, &CMainFrame::OnInterpolationBicubicBSpline)
 	ON_UPDATE_COMMAND_UI(ID_INTERPOLATION_BILINEAR, &CMainFrame::OnUpdateInterpolationBilinear)
 	ON_UPDATE_COMMAND_UI(ID_INTERPOLATION_BICUBIC_POLYNOMIAL, &CMainFrame::OnUpdateInterpolationBicubicPolynomial)
-	ON_UPDATE_COMMAND_UI(ID_INTERPOLATION_BICUBIC_SPLINE, &CMainFrame::OnUpdateInterpolationBicubicSpline)
+	ON_UPDATE_COMMAND_UI(ID_INTERPOLATION_BICUBIC_POLYNOMIAL_075, &CMainFrame::OnUpdateInterpolationBicubicPolynomial075)
+	ON_UPDATE_COMMAND_UI(ID_INTERPOLATION_BICUBIC_POLYNOMIAL_100, &CMainFrame::OnUpdateInterpolationBicubicPolynomial100)
+	ON_UPDATE_COMMAND_UI(ID_INTERPOLATION_BICUBIC_POLYNOMIAL_000, &CMainFrame::OnUpdateInterpolationBicubicPolynomial000)
+	ON_UPDATE_COMMAND_UI(ID_INTERPOLATION_BICUBIC_POLYNOMIAL_300, &CMainFrame::OnUpdateInterpolationBicubicPolynomial300)
+	ON_UPDATE_COMMAND_UI(ID_INTERPOLATION_BICUBIC_BSPLINE, &CMainFrame::OnUpdateInterpolationBicubicSpline)
+	ON_COMMAND(ID_INTERPOLATION_LANCZOS, &CMainFrame::OnInterpolationLanczos)
+	ON_COMMAND(ID_INTERPOLATION_MITCHELL, &CMainFrame::OnInterpolationMitchell)
+	ON_UPDATE_COMMAND_UI(ID_INTERPOLATION_LANCZOS, &CMainFrame::OnUpdateInterpolationLanczos)
+	ON_UPDATE_COMMAND_UI(ID_INTERPOLATION_MITCHELL, &CMainFrame::OnUpdateInterpolationMitchell)
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -697,15 +709,50 @@ void CMainFrame::OnInterpolationBilinear()
 }
 
 
-void CMainFrame::OnInterpolationBicubicPolynomial()
+void CMainFrame::OnInterpolationBicubicPolynomial050()
 {
-	m_eInterpolationType = eBicubicPolynomial;
+	m_eInterpolationType = eBicubicPolynomial_050;
+}
+
+void CMainFrame::OnInterpolationBicubicPolynomial075()
+{
+	m_eInterpolationType = eBicubicPolynomial_075;
 }
 
 
-void CMainFrame::OnInterpolationBicubicSpline()
+void CMainFrame::OnInterpolationBicubicPolynomial100()
 {
-	m_eInterpolationType = eBicubicSpline;
+	m_eInterpolationType = eBicubicPolynomial_100;
+}
+
+
+void CMainFrame::OnInterpolationBicubicPolynomial000()
+{
+	m_eInterpolationType = eBicubicPolynomial_000;
+}
+
+
+void CMainFrame::OnInterpolationBicubicPolynomial300()
+{
+	m_eInterpolationType = eBicubicPolynomial_300;
+}
+
+
+
+void CMainFrame::OnInterpolationBicubicBSpline()
+{
+	m_eInterpolationType = eBicubicBSpline;
+}
+
+void CMainFrame::OnInterpolationLanczos()
+{
+	m_eInterpolationType = eBicubicLanczos;
+}
+
+
+void CMainFrame::OnInterpolationMitchell()
+{
+	m_eInterpolationType = eBicubicMichell;
 }
 
 
@@ -728,7 +775,21 @@ void CMainFrame::OnUpdateInterpolationBicubicPolynomial(CCmdUI *pCmdUI)
 {
 	CMenu *hMenu = GetMenu();
 
-	if (m_eInterpolationType == eBicubicPolynomial)
+	if (m_eInterpolationType == eBicubicPolynomial_050)
+	{
+		pCmdUI->SetCheck(TRUE);
+	}
+	else
+	{
+		pCmdUI->SetCheck(FALSE);
+	}
+}
+
+void CMainFrame::OnUpdateInterpolationBicubicPolynomial075(CCmdUI *pCmdUI)
+{
+	CMenu *hMenu = GetMenu();
+
+	if (m_eInterpolationType == eBicubicPolynomial_075)
 	{
 		pCmdUI->SetCheck(TRUE);
 	}
@@ -739,11 +800,83 @@ void CMainFrame::OnUpdateInterpolationBicubicPolynomial(CCmdUI *pCmdUI)
 }
 
 
+void CMainFrame::OnUpdateInterpolationBicubicPolynomial100(CCmdUI *pCmdUI)
+{
+	CMenu *hMenu = GetMenu();
+
+	if (m_eInterpolationType == eBicubicPolynomial_100)
+	{
+		pCmdUI->SetCheck(TRUE);
+	}
+	else
+	{
+		pCmdUI->SetCheck(FALSE);
+	}
+}
+
+
+void CMainFrame::OnUpdateInterpolationBicubicPolynomial000(CCmdUI *pCmdUI)
+{
+	CMenu *hMenu = GetMenu();
+
+	if (m_eInterpolationType == eBicubicPolynomial_000)
+	{
+		pCmdUI->SetCheck(TRUE);
+	}
+	else
+	{
+		pCmdUI->SetCheck(FALSE);
+	}
+}
+
+void CMainFrame::OnUpdateInterpolationBicubicPolynomial300(CCmdUI *pCmdUI)
+{
+	CMenu *hMenu = GetMenu();
+
+	if (m_eInterpolationType == eBicubicPolynomial_300)
+	{
+		pCmdUI->SetCheck(TRUE);
+	}
+	else
+	{
+		pCmdUI->SetCheck(FALSE);
+	}
+}
+
 void CMainFrame::OnUpdateInterpolationBicubicSpline(CCmdUI *pCmdUI)
 {
 	CMenu *hMenu = GetMenu();
 
-	if (m_eInterpolationType == eBicubicSpline)
+	if (m_eInterpolationType == eBicubicBSpline)
+	{
+		pCmdUI->SetCheck(TRUE);
+	}
+	else
+	{
+		pCmdUI->SetCheck(FALSE);
+	}
+}
+
+void CMainFrame::OnUpdateInterpolationLanczos(CCmdUI *pCmdUI)
+{
+	CMenu *hMenu = GetMenu();
+
+	if (m_eInterpolationType == eBicubicLanczos)
+	{
+		pCmdUI->SetCheck(TRUE);
+	}
+	else
+	{
+		pCmdUI->SetCheck(FALSE);
+	}
+}
+
+
+void CMainFrame::OnUpdateInterpolationMitchell(CCmdUI *pCmdUI)
+{
+	CMenu *hMenu = GetMenu();
+
+	if (m_eInterpolationType == eBicubicMichell)
 	{
 		pCmdUI->SetCheck(TRUE);
 	}

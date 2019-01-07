@@ -52,13 +52,12 @@ BEGIN
     "\r\n"
     "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
     "LANGUAGE 9, 1\r\n"
-    "#include ""res\\Localizer.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""res\\DicomViewer.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
     "#include ""afxres.rc""      // Standard components\r\n"
     "#if !defined(_AFXDLL)\r\n"
     "#include ""afxprint.rc""        // printing/print preview resources\r\n"
     "#include ""afxribbon.rc""        // MFC ribbon and control bar resources\r\n"
     "#endif\r\n"
-    "#include ""XFolderDialog.rc""\r\n"
     "#endif\r\n"
     "\0"
 END
@@ -83,9 +82,9 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDR_MAINFRAME           ICON                    "res\\Localizer.ico"
+IDR_MAINFRAME           ICON                    "res\\DicomViewer.ico"
 
-IDR_LocalizerTYPE       ICON                    "res\\LocalizerDoc.ico"
+IDR_LocalizerTYPE       ICON                    "res\\DicomViewerDoc.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -172,8 +171,14 @@ BEGIN
         POPUP "Interpolation",                  65535,MFT_STRING,MFS_ENABLED
         BEGIN
             MENUITEM "Bilinear",                    ID_INTERPOLATION_BILINEAR,MFT_STRING,MFS_ENABLED
-            MENUITEM "Bicubic(Polynomial)",         ID_INTERPOLATION_BICUBIC_POLYNOMIAL,MFT_STRING,MFS_ENABLED
-            MENUITEM "Bicubic(Spline)",             ID_INTERPOLATION_BICUBIC_SPLINE,MFT_STRING,MFS_ENABLED
+            MENUITEM "Bicubic(Poly_a=-0.5)",        ID_INTERPOLATION_BICUBIC_POLYNOMIAL,MFT_STRING,MFS_ENABLED
+            MENUITEM "Bicubic(Poly_a=-0.75)",       ID_INTERPOLATION_BICUBIC_POLYNOMIAL_075,MFT_STRING,MFS_ENABLED
+            MENUITEM "Bicubic(Poly_a=-1)",          ID_INTERPOLATION_BICUBIC_POLYNOMIAL_100,MFT_STRING,MFS_ENABLED
+            MENUITEM "Bicubic(Poly_a=0)",           ID_INTERPOLATION_BICUBIC_POLYNOMIAL_000,MFT_STRING,MFS_ENABLED
+            MENUITEM "Bicubic(Poly_a=-3)",          ID_INTERPOLATION_BICUBIC_POLYNOMIAL_300,MFT_STRING,MFS_ENABLED
+            MENUITEM "Bicubic(BSpline)",            ID_INTERPOLATION_BICUBIC_BSPLINE,MFT_STRING,MFS_ENABLED
+            MENUITEM "Lanczos",                     ID_INTERPOLATION_LANCZOS,MFT_STRING,MFS_ENABLED
+            MENUITEM "Mitchell",                    ID_INTERPOLATION_MITCHELL,MFT_STRING,MFS_ENABLED
         END
     END
     POPUP "&Help",                          65535,MFT_STRING,MFS_ENABLED
@@ -452,13 +457,12 @@ END
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE 9, 1
-#include "res\Localizer.rc2"  // non-Microsoft Visual C++ edited resources
+#include "res\DicomViewer.rc2"  // non-Microsoft Visual C++ edited resources
 #include "afxres.rc"      // Standard components
 #if !defined(_AFXDLL)
 #include "afxprint.rc"        // printing/print preview resources
 #include "afxribbon.rc"        // MFC ribbon and control bar resources
 #endif
-//#include "XFolderDialog.rc"
 #endif
 
 /////////////////////////////////////////////////////////////////////////////

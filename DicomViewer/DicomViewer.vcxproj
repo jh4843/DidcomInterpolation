@@ -52,7 +52,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{CB0D1C40-B8CA-4FF4-BE6E-74D26D6A2A21}</ProjectGuid>
-    <RootNamespace>Localizer</RootNamespace>
+    <RootNamespace>DicomViewer</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.10586.0</WindowsTargetPlatformVersion>
     <Keyword>MFCProj</Keyword>
     <ProjectName>Interpolation</ProjectName>
@@ -371,24 +371,24 @@
     <ClCompile Include="XRLink.Clinic.MemoryDump.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Localizer.rc" />
+    <ResourceCompile Include="DicomViewer.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="res\Localizer.ico" />
-    <Image Include="res\LocalizerDoc.ico" />
+    <Image Include="res\DicomViewer.ico" />
+    <Image Include="res\DicomViewerDoc.ico" />
     <Image Include="res\Toolbar.bmp" />
     <Image Include="res\Toolbar256.bmp" />
     <Image Include="UserImages.bmp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\Localizer.rc2" />
+    <None Include="res\DicomViewer.rc2" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties RESOURCE_FILE="Localizer.rc" />
+      <UserProperties RESOURCE_FILE="DicomViewer.rc" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>

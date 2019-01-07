@@ -202,7 +202,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Localizer.rc">
+    <ResourceCompile Include="DicomViewer.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
@@ -210,10 +210,10 @@
     <Image Include="UserImages.bmp">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="res\LocalizerDoc.ico">
+    <Image Include="res\DicomViewerDoc.ico">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="res\Localizer.ico">
+    <Image Include="res\DicomViewer.ico">
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\Toolbar.bmp">
@@ -224,7 +224,7 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\Localizer.rc2">
+    <None Include="res\DicomViewer.rc2">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
