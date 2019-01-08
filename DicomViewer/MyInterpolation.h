@@ -19,17 +19,17 @@ public:
 	void SetUseParallelCalc(BOOL bUse);
 
 private:
-	double DoLinear(unsigned char fx1, unsigned char fx2, double dWeight);
-	double DoCubicKernel(unsigned char ucImg[4], double x, double a);
-	double DoBSplineKernel(unsigned char ucImg[4], double x);
-	double DoLanczos(unsigned char ucImg[4], double x, double a);
-	double DoMitchell(unsigned char ucImg[4], double x, double B, double C);
+	unsigned char DoLinear(unsigned char fx1, unsigned char fx2, double dWeight);
+	unsigned char DoCubicKernel(unsigned char ucImg[4], double x, double a);
+	unsigned char DoBSplineKernel(unsigned char ucImg[4], double x);
+	unsigned char DoLanczos(unsigned char ucImg[4], double x, double a);
+	unsigned char DoMitchell(unsigned char ucImg[4], double x, double B, double C);
 	//
-	double DoCubicPolynomial(unsigned char ucImg[4], double x);
-	double DoNaturalCubicSpline(unsigned char ucImg[4], double x);
+	unsigned char DoCubicPolynomial(unsigned char ucImg[4], double x);
+	unsigned char DoNaturalCubicSpline(unsigned char ucImg[4], double x);
 	
 	void clip(double max, double min, double& num);
-	BYTE GetPixelClamped(BYTE* pImage, INT_PTR x, INT_PTR y, INT_PTR nWidth, INT_PTR nHeight);
+	unsigned char GetPixelClamped(unsigned char* pImage, INT_PTR x, INT_PTR y, INT_PTR nWidth, INT_PTR nHeight);
 
 private:
 	CMyCalc m_CalcUtil;

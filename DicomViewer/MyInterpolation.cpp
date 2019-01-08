@@ -65,15 +65,15 @@ BOOL CMyInterpolation::DoBilinearInterpolation(BYTE* pSrcImage, BYTE* pDestImage
 				double dEWweight = dDestCol - nSrcCol;
 				double dNSweight = dDestRow - nSrcRow;
 
-				NW = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol    , nSrcRow    , nSrcWidth, nSrcHeight);  
-				NE = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow    , nSrcWidth, nSrcHeight);
-				SW = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol    , nSrcRow + 1, nSrcWidth, nSrcHeight);
-				SE = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow + 1, nSrcWidth, nSrcHeight);
+				NW = GetPixelClamped(pSrcImage, nSrcCol    , nSrcRow    , nSrcWidth, nSrcHeight);  
+				NE = GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow    , nSrcWidth, nSrcHeight);
+				SW = GetPixelClamped(pSrcImage, nSrcCol    , nSrcRow + 1, nSrcWidth, nSrcHeight);
+				SE = GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow + 1, nSrcWidth, nSrcHeight);
 
-				double dEWtop = DoLinear(NW, NE, dEWweight);
-				double dEWbottom = DoLinear(SW, SE, dEWweight);
+				unsigned char dEWtop = DoLinear(NW, NE, dEWweight);
+				unsigned char dEWbottom = DoLinear(SW, SE, dEWweight);
 
-				pDestImage[nrow * nDestWidth + ncol] = (BYTE)(DoLinear(dEWtop, dEWbottom, dNSweight));
+				pDestImage[nrow * nDestWidth + ncol] = DoLinear(dEWtop, dEWbottom, dNSweight);
 			}
 		}
 	}
@@ -140,31 +140,31 @@ BOOL CMyInterpolation::DoBiCubicInterpolation(BYTE * pSrcImage, BYTE * pDestImag
 			double nSrcCol = (int)dDestCol;
 			double nSrcRow = (int)dDestRow;
 
-			image[0][0] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow - 1, nSrcWidth, nSrcHeight);
-			image[0][1] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol, nSrcRow - 1, nSrcWidth, nSrcHeight);
-			image[0][2] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow - 1, nSrcWidth, nSrcHeight);
-			image[0][3] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 2, nSrcRow - 1, nSrcWidth, nSrcHeight);
+			image[0][0] = GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow - 1, nSrcWidth, nSrcHeight);
+			image[0][1] = GetPixelClamped(pSrcImage, nSrcCol, nSrcRow - 1, nSrcWidth, nSrcHeight);
+			image[0][2] = GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow - 1, nSrcWidth, nSrcHeight);
+			image[0][3] = GetPixelClamped(pSrcImage, nSrcCol + 2, nSrcRow - 1, nSrcWidth, nSrcHeight);
 			//
-			image[1][0] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow, nSrcWidth, nSrcHeight);
-			image[1][1] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol, nSrcRow, nSrcWidth, nSrcHeight);
-			image[1][2] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow, nSrcWidth, nSrcHeight);
-			image[1][3] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 2, nSrcRow, nSrcWidth, nSrcHeight);
+			image[1][0] = GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow, nSrcWidth, nSrcHeight);
+			image[1][1] = GetPixelClamped(pSrcImage, nSrcCol, nSrcRow, nSrcWidth, nSrcHeight);
+			image[1][2] = GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow, nSrcWidth, nSrcHeight);
+			image[1][3] = GetPixelClamped(pSrcImage, nSrcCol + 2, nSrcRow, nSrcWidth, nSrcHeight);
 			//
-			image[2][0] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow + 1, nSrcWidth, nSrcHeight);
-			image[2][1] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol, nSrcRow + 1, nSrcWidth, nSrcHeight);
-			image[2][2] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow + 1, nSrcWidth, nSrcHeight);
-			image[2][3] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 2, nSrcRow + 1, nSrcWidth, nSrcHeight);
+			image[2][0] = GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow + 1, nSrcWidth, nSrcHeight);
+			image[2][1] = GetPixelClamped(pSrcImage, nSrcCol, nSrcRow + 1, nSrcWidth, nSrcHeight);
+			image[2][2] = GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow + 1, nSrcWidth, nSrcHeight);
+			image[2][3] = GetPixelClamped(pSrcImage, nSrcCol + 2, nSrcRow + 1, nSrcWidth, nSrcHeight);
 			//
-			image[3][0] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow + 2, nSrcWidth, nSrcHeight);
-			image[3][1] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol, nSrcRow + 2, nSrcWidth, nSrcHeight);
-			image[3][2] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow + 2, nSrcWidth, nSrcHeight);
-			image[3][3] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 2, nSrcRow + 2, nSrcWidth, nSrcHeight);
+			image[3][0] = GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow + 2, nSrcWidth, nSrcHeight);
+			image[3][1] = GetPixelClamped(pSrcImage, nSrcCol, nSrcRow + 2, nSrcWidth, nSrcHeight);
+			image[3][2] = GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow + 2, nSrcWidth, nSrcHeight);
+			image[3][3] = GetPixelClamped(pSrcImage, nSrcCol + 2, nSrcRow + 2, nSrcWidth, nSrcHeight);
 
 			double dXdiff = dDestCol - nSrcCol;
 			double dYdiff = dDestRow - nSrcRow;
 
 			unsigned char column[4];
-			double pixel;
+			unsigned char pixel;
 
 			if ((dXdiff == 0.0) && (dYdiff == 0.0))
 			{
@@ -250,25 +250,25 @@ BOOL CMyInterpolation::DoLanczosInterpolation(BYTE * pSrcImage, BYTE * pDestImag
 			INT_PTR nSrcCol = (int)dDestCol;
 			INT_PTR nSrcRow = (int)dDestRow;
 
-			image[0][0] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow - 1, nSrcWidth, nSrcHeight);
-			image[0][1] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol, nSrcRow - 1, nSrcWidth, nSrcHeight);
-			image[0][2] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow - 1, nSrcWidth, nSrcHeight);
-			image[0][3] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 2, nSrcRow - 1, nSrcWidth, nSrcHeight);
+			image[0][0] = GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow - 1, nSrcWidth, nSrcHeight);
+			image[0][1] = GetPixelClamped(pSrcImage, nSrcCol, nSrcRow - 1, nSrcWidth, nSrcHeight);
+			image[0][2] = GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow - 1, nSrcWidth, nSrcHeight);
+			image[0][3] = GetPixelClamped(pSrcImage, nSrcCol + 2, nSrcRow - 1, nSrcWidth, nSrcHeight);
 			//
-			image[1][0] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow, nSrcWidth, nSrcHeight);
-			image[1][1] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol, nSrcRow, nSrcWidth, nSrcHeight);
-			image[1][2] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow, nSrcWidth, nSrcHeight);
-			image[1][3] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 2, nSrcRow, nSrcWidth, nSrcHeight);
+			image[1][0] = GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow, nSrcWidth, nSrcHeight);
+			image[1][1] = GetPixelClamped(pSrcImage, nSrcCol, nSrcRow, nSrcWidth, nSrcHeight);
+			image[1][2] = GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow, nSrcWidth, nSrcHeight);
+			image[1][3] = GetPixelClamped(pSrcImage, nSrcCol + 2, nSrcRow, nSrcWidth, nSrcHeight);
 			//
-			image[2][0] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow + 1, nSrcWidth, nSrcHeight);
-			image[2][1] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol, nSrcRow + 1, nSrcWidth, nSrcHeight);
-			image[2][2] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow + 1, nSrcWidth, nSrcHeight);
-			image[2][3] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 2, nSrcRow + 1, nSrcWidth, nSrcHeight);
+			image[2][0] = GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow + 1, nSrcWidth, nSrcHeight);
+			image[2][1] = GetPixelClamped(pSrcImage, nSrcCol, nSrcRow + 1, nSrcWidth, nSrcHeight);
+			image[2][2] = GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow + 1, nSrcWidth, nSrcHeight);
+			image[2][3] = GetPixelClamped(pSrcImage, nSrcCol + 2, nSrcRow + 1, nSrcWidth, nSrcHeight);
 			//
-			image[3][0] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow + 2, nSrcWidth, nSrcHeight);
-			image[3][1] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol, nSrcRow + 2, nSrcWidth, nSrcHeight);
-			image[3][2] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow + 2, nSrcWidth, nSrcHeight);
-			image[3][3] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 2, nSrcRow + 2, nSrcWidth, nSrcHeight);
+			image[3][0] = GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow + 2, nSrcWidth, nSrcHeight);
+			image[3][1] = GetPixelClamped(pSrcImage, nSrcCol, nSrcRow + 2, nSrcWidth, nSrcHeight);
+			image[3][2] = GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow + 2, nSrcWidth, nSrcHeight);
+			image[3][3] = GetPixelClamped(pSrcImage, nSrcCol + 2, nSrcRow + 2, nSrcWidth, nSrcHeight);
 
 			double dXdiff = dDestCol - nSrcCol;
 			double dYdiff = dDestRow - nSrcRow;
@@ -346,25 +346,25 @@ BOOL CMyInterpolation::DoMitchellInterpolation(BYTE * pSrcImage, BYTE * pDestIma
 			INT_PTR nSrcCol = (int)dDestCol;
 			INT_PTR nSrcRow = (int)dDestRow;
 
-			image[0][0] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow - 1, nSrcWidth, nSrcHeight);
-			image[0][1] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol, nSrcRow - 1, nSrcWidth, nSrcHeight);
-			image[0][2] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow - 1, nSrcWidth, nSrcHeight);
-			image[0][3] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 2, nSrcRow - 1, nSrcWidth, nSrcHeight);
+			image[0][0] = GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow - 1, nSrcWidth, nSrcHeight);
+			image[0][1] = GetPixelClamped(pSrcImage, nSrcCol, nSrcRow - 1, nSrcWidth, nSrcHeight);
+			image[0][2] = GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow - 1, nSrcWidth, nSrcHeight);
+			image[0][3] = GetPixelClamped(pSrcImage, nSrcCol + 2, nSrcRow - 1, nSrcWidth, nSrcHeight);
 			//
-			image[1][0] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow, nSrcWidth, nSrcHeight);
-			image[1][1] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol, nSrcRow, nSrcWidth, nSrcHeight);
-			image[1][2] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow, nSrcWidth, nSrcHeight);
-			image[1][3] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 2, nSrcRow, nSrcWidth, nSrcHeight);
+			image[1][0] = GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow, nSrcWidth, nSrcHeight);
+			image[1][1] = GetPixelClamped(pSrcImage, nSrcCol, nSrcRow, nSrcWidth, nSrcHeight);
+			image[1][2] = GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow, nSrcWidth, nSrcHeight);
+			image[1][3] = GetPixelClamped(pSrcImage, nSrcCol + 2, nSrcRow, nSrcWidth, nSrcHeight);
 			//
-			image[2][0] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow + 1, nSrcWidth, nSrcHeight);
-			image[2][1] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol, nSrcRow + 1, nSrcWidth, nSrcHeight);
-			image[2][2] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow + 1, nSrcWidth, nSrcHeight);
-			image[2][3] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 2, nSrcRow + 1, nSrcWidth, nSrcHeight);
+			image[2][0] = GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow + 1, nSrcWidth, nSrcHeight);
+			image[2][1] = GetPixelClamped(pSrcImage, nSrcCol, nSrcRow + 1, nSrcWidth, nSrcHeight);
+			image[2][2] = GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow + 1, nSrcWidth, nSrcHeight);
+			image[2][3] = GetPixelClamped(pSrcImage, nSrcCol + 2, nSrcRow + 1, nSrcWidth, nSrcHeight);
 			//
-			image[3][0] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow + 2, nSrcWidth, nSrcHeight);
-			image[3][1] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol, nSrcRow + 2, nSrcWidth, nSrcHeight);
-			image[3][2] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow + 2, nSrcWidth, nSrcHeight);
-			image[3][3] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 2, nSrcRow + 2, nSrcWidth, nSrcHeight);
+			image[3][0] = GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow + 2, nSrcWidth, nSrcHeight);
+			image[3][1] = GetPixelClamped(pSrcImage, nSrcCol, nSrcRow + 2, nSrcWidth, nSrcHeight);
+			image[3][2] = GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow + 2, nSrcWidth, nSrcHeight);
+			image[3][3] = GetPixelClamped(pSrcImage, nSrcCol + 2, nSrcRow + 2, nSrcWidth, nSrcHeight);
 
 			double dXdiff = dDestCol - nSrcCol;
 			double dYdiff = dDestRow - nSrcRow;
@@ -441,25 +441,25 @@ BOOL CMyInterpolation::DoCatmullRomSplineInterpolation(BYTE * pSrcImage, BYTE * 
 			INT_PTR nSrcCol = (int)dDestCol;
 			INT_PTR nSrcRow = (int)dDestRow;
 
-			image[0][0] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow - 1, nSrcWidth, nSrcHeight);
-			image[0][1] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol, nSrcRow - 1, nSrcWidth, nSrcHeight);
-			image[0][2] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow - 1, nSrcWidth, nSrcHeight);
-			image[0][3] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 2, nSrcRow - 1, nSrcWidth, nSrcHeight);
+			image[0][0] = GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow - 1, nSrcWidth, nSrcHeight);
+			image[0][1] = GetPixelClamped(pSrcImage, nSrcCol, nSrcRow - 1, nSrcWidth, nSrcHeight);
+			image[0][2] = GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow - 1, nSrcWidth, nSrcHeight);
+			image[0][3] = GetPixelClamped(pSrcImage, nSrcCol + 2, nSrcRow - 1, nSrcWidth, nSrcHeight);
 			//
-			image[1][0] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow, nSrcWidth, nSrcHeight);
-			image[1][1] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol, nSrcRow, nSrcWidth, nSrcHeight);
-			image[1][2] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow, nSrcWidth, nSrcHeight);
-			image[1][3] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 2, nSrcRow, nSrcWidth, nSrcHeight);
+			image[1][0] = GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow, nSrcWidth, nSrcHeight);
+			image[1][1] = GetPixelClamped(pSrcImage, nSrcCol, nSrcRow, nSrcWidth, nSrcHeight);
+			image[1][2] = GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow, nSrcWidth, nSrcHeight);
+			image[1][3] = GetPixelClamped(pSrcImage, nSrcCol + 2, nSrcRow, nSrcWidth, nSrcHeight);
 			//
-			image[2][0] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow + 1, nSrcWidth, nSrcHeight);
-			image[2][1] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol, nSrcRow + 1, nSrcWidth, nSrcHeight);
-			image[2][2] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow + 1, nSrcWidth, nSrcHeight);
-			image[2][3] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 2, nSrcRow + 1, nSrcWidth, nSrcHeight);
+			image[2][0] = GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow + 1, nSrcWidth, nSrcHeight);
+			image[2][1] = GetPixelClamped(pSrcImage, nSrcCol, nSrcRow + 1, nSrcWidth, nSrcHeight);
+			image[2][2] = GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow + 1, nSrcWidth, nSrcHeight);
+			image[2][3] = GetPixelClamped(pSrcImage, nSrcCol + 2, nSrcRow + 1, nSrcWidth, nSrcHeight);
 			//
-			image[3][0] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow + 2, nSrcWidth, nSrcHeight);
-			image[3][1] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol, nSrcRow + 2, nSrcWidth, nSrcHeight);
-			image[3][2] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow + 2, nSrcWidth, nSrcHeight);
-			image[3][3] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 2, nSrcRow + 2, nSrcWidth, nSrcHeight);
+			image[3][0] = GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow + 2, nSrcWidth, nSrcHeight);
+			image[3][1] = GetPixelClamped(pSrcImage, nSrcCol, nSrcRow + 2, nSrcWidth, nSrcHeight);
+			image[3][2] = GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow + 2, nSrcWidth, nSrcHeight);
+			image[3][3] = GetPixelClamped(pSrcImage, nSrcCol + 2, nSrcRow + 2, nSrcWidth, nSrcHeight);
 
 			double dXdiff = dDestCol - nSrcCol;
 			double dYdiff = dDestRow - nSrcRow;
@@ -536,25 +536,25 @@ BOOL CMyInterpolation::DoHighOrderInterpolation(BYTE* pSrcImage, BYTE* pDestImag
 			nSrcCol = (int)dDestCol;
 			nSrcRow = (int)dDestRow;
 
-			image[0][0] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow - 1, nSrcWidth, nSrcHeight);
-			image[0][1] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol    , nSrcRow - 1, nSrcWidth, nSrcHeight); 
-			image[0][2] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow - 1, nSrcWidth, nSrcHeight); 
-			image[0][3] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 2, nSrcRow - 1, nSrcWidth, nSrcHeight);
+			image[0][0] = GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow - 1, nSrcWidth, nSrcHeight);
+			image[0][1] = GetPixelClamped(pSrcImage, nSrcCol    , nSrcRow - 1, nSrcWidth, nSrcHeight); 
+			image[0][2] = GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow - 1, nSrcWidth, nSrcHeight); 
+			image[0][3] = GetPixelClamped(pSrcImage, nSrcCol + 2, nSrcRow - 1, nSrcWidth, nSrcHeight);
 			//
-			image[1][0] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow    , nSrcWidth, nSrcHeight);
-			image[1][1] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol    , nSrcRow    , nSrcWidth, nSrcHeight);
-			image[1][2] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow    , nSrcWidth, nSrcHeight);
-			image[1][3] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 2, nSrcRow    , nSrcWidth, nSrcHeight);
+			image[1][0] = GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow    , nSrcWidth, nSrcHeight);
+			image[1][1] = GetPixelClamped(pSrcImage, nSrcCol    , nSrcRow    , nSrcWidth, nSrcHeight);
+			image[1][2] = GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow    , nSrcWidth, nSrcHeight);
+			image[1][3] = GetPixelClamped(pSrcImage, nSrcCol + 2, nSrcRow    , nSrcWidth, nSrcHeight);
 			//
-			image[2][0] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow + 1, nSrcWidth, nSrcHeight);
-			image[2][1] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol    , nSrcRow + 1, nSrcWidth, nSrcHeight);
-			image[2][2] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow + 1, nSrcWidth, nSrcHeight);
-			image[2][3] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 2, nSrcRow + 1, nSrcWidth, nSrcHeight);
+			image[2][0] = GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow + 1, nSrcWidth, nSrcHeight);
+			image[2][1] = GetPixelClamped(pSrcImage, nSrcCol    , nSrcRow + 1, nSrcWidth, nSrcHeight);
+			image[2][2] = GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow + 1, nSrcWidth, nSrcHeight);
+			image[2][3] = GetPixelClamped(pSrcImage, nSrcCol + 2, nSrcRow + 1, nSrcWidth, nSrcHeight);
 			//
-			image[3][0] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow + 2, nSrcWidth, nSrcHeight);
-			image[3][1] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol    , nSrcRow + 2, nSrcWidth, nSrcHeight);
-			image[3][2] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow + 2, nSrcWidth, nSrcHeight);
-			image[3][3] = (unsigned char)GetPixelClamped(pSrcImage, nSrcCol + 2, nSrcRow + 2, nSrcWidth, nSrcHeight);
+			image[3][0] = GetPixelClamped(pSrcImage, nSrcCol - 1, nSrcRow + 2, nSrcWidth, nSrcHeight);
+			image[3][1] = GetPixelClamped(pSrcImage, nSrcCol    , nSrcRow + 2, nSrcWidth, nSrcHeight);
+			image[3][2] = GetPixelClamped(pSrcImage, nSrcCol + 1, nSrcRow + 2, nSrcWidth, nSrcHeight);
+			image[3][3] = GetPixelClamped(pSrcImage, nSrcCol + 2, nSrcRow + 2, nSrcWidth, nSrcHeight);
 
 			double dXdiff = dDestCol - nSrcCol;
 			double dYdiff = dDestRow - nSrcRow;
@@ -616,7 +616,7 @@ void CMyInterpolation::SetUseParallelCalc(BOOL bUse)
 	m_bUseParallelCalc = bUse;
 }
 
-double CMyInterpolation::DoLinear(unsigned char fx1, unsigned char fx2, double dWeight)
+unsigned char CMyInterpolation::DoLinear(unsigned char fx1, unsigned char fx2, double dWeight)
 {
 	return fx1 + dWeight * (fx2 - fx1);
 }
@@ -629,7 +629,7 @@ double CMyInterpolation::DoLinear(unsigned char fx1, unsigned char fx2, double d
 // ucImg[0] = f(-1), ucImg[1] = f(0), ucImg[2] = f(1), ucImg[3] = f(2)
 // x를 기준으로 Convolution 하기 위해, 위 값을 x만큼 이동 시키면
 // (-1-x, f(-1)), (0 - x, f(0)), (1 - x, f(1)), (2 - x, f(2))
-double CMyInterpolation::DoCubicKernel(unsigned char ucImg[4], double x, double a)
+unsigned char CMyInterpolation::DoCubicKernel(unsigned char ucImg[4], double x, double a)
 {
 	// x = |0-x|               // 0 < |0  - x| <= 1
 	double dXPlusOne = x + 1;  // 1 < |-1 - x| <  2
@@ -642,8 +642,11 @@ double CMyInterpolation::DoCubicKernel(unsigned char ucImg[4], double x, double 
 	double w2 = ((a + 2.0) * dOneMinusX * dOneMinusX * dOneMinusX) - ((a + 3.0) * dOneMinusX * dOneMinusX) +1;  
 	double w3 = (a * dTwoMinusX * dTwoMinusX * dTwoMinusX) - (5.0*a * dTwoMinusX* dTwoMinusX) + (8.0*a * dTwoMinusX) - 4.0 * a; 
 	
+	double res = w0 * ucImg[0] + w1 * ucImg[1] + w2 * ucImg[2] + w3 * ucImg[3];
+	CLAMP(res, 0, 255);
+
 	// convolution
-	return w0 * ucImg[0] + w1 * ucImg[1] + w2 * ucImg[2] + w3 * ucImg[3];
+	return (unsigned char)res;
 }
 
 // http://teaching.csse.uwa.edu.au/units/CITS4241/Handouts/Lecture04.html
@@ -651,7 +654,7 @@ double CMyInterpolation::DoCubicKernel(unsigned char ucImg[4], double x, double 
 // ucImg[0] = f(-1), ucImg[1] = f(0), ucImg[2] = f(1), ucImg[3] = f(2)
 // x를 기준으로 Convolution 하기 위해, 위 값을 x만큼 이동 시키면
 // (-1-x, f(-1)), (0 - x, f(0)), (1 - x, f(1)), (2 - x, f(2))
-double CMyInterpolation::DoBSplineKernel(unsigned char ucImg[4], double x)
+unsigned char CMyInterpolation::DoBSplineKernel(unsigned char ucImg[4], double x)
 {
 	// x = |0-x|               // 0 < |0  - x| <= 1
 	double dXPlusOne = x + 1;  // 1 < |-1 - x| <  2
@@ -664,12 +667,15 @@ double CMyInterpolation::DoBSplineKernel(unsigned char ucImg[4], double x)
 	double w2 = (0.5 * dOneMinusX * dOneMinusX * dOneMinusX) - (1.0 * dOneMinusX * dOneMinusX) + 0.666666667;
 	double w3 = (-0.16666667 * dTwoMinusX * dTwoMinusX * dTwoMinusX) + ((1.0) * dTwoMinusX * dTwoMinusX) - ((2.0) * dTwoMinusX) + 1.33333; 
 
+	double res = w0 * ucImg[0] + w1 * ucImg[1] + w2 * ucImg[2] + w3 * ucImg[3];
+	CLAMP(res, 0, 255);
+
 	// convolution
-	return w0 * ucImg[0] + w1 * ucImg[1] + w2 * ucImg[2] + w3 * ucImg[3];
+	return (unsigned char)res;
 }
 
 // https://en.wikipedia.org/wiki/Lanczos_resampling
-double CMyInterpolation::DoLanczos(unsigned char ucImg[4], double x, double a)
+unsigned char CMyInterpolation::DoLanczos(unsigned char ucImg[4], double x, double a)
 {
 	// x = |0-x|               // 0 < |0  - x| <= 1
 	double dXPlusOne = x + 1;  // 1 < |-1 - x| <  2
@@ -687,12 +693,15 @@ double CMyInterpolation::DoLanczos(unsigned char ucImg[4], double x, double a)
 	double w2 = (dOneMinusX == 0) ? 1 : (a * sin(PI * dOneMinusX) * sin((PI * dOneMinusX) / a)) / (PI * PI * dOneMinusX * dOneMinusX);
 	double w3 = (dTwoMinusX == 0) ? 1 : (a * sin(PI * dTwoMinusX) * sin((PI * dTwoMinusX) / a)) / (PI * PI * dTwoMinusX * dTwoMinusX);
 
+	double res = w0 * ucImg[0] + w1 * ucImg[1] + w2 * ucImg[2] + w3 * ucImg[3];
+	CLAMP(res, 0, 255);
+
 	// convolution
-	return w0 * ucImg[0] + w1 * ucImg[1] + w2 * ucImg[2] + w3 * ucImg[3];
+	return (unsigned char)res;
 }
 
 // https://de.wikipedia.org/wiki/Mitchell-Netravali-Filter
-double CMyInterpolation::DoMitchell(unsigned char ucImg[4], double x, double B, double C)
+unsigned char CMyInterpolation::DoMitchell(unsigned char ucImg[4], double x, double B, double C)
 {
 	// x = |0-x|               // 0 < |0  - x| <= 1
 	double dXPlusOne = x + 1;  // 1 < |-1 - x| <  2
@@ -710,12 +719,15 @@ double CMyInterpolation::DoMitchell(unsigned char ucImg[4], double x, double B, 
 	w2 = w2 * 0.16666667;
 	w3 = w3 * 0.16666667;
 
+	double res = w0 * ucImg[0] + w1 * ucImg[1] + w2 * ucImg[2] + w3 * ucImg[3];
+	CLAMP(res, 0, 255);
+
 	// convolution
-	return w0 * ucImg[0] + w1 * ucImg[1] + w2 * ucImg[2] + w3 * ucImg[3];
+	return (unsigned char)res;
 }
 
 // https://blog.naver.com/mykepzzang/220546694965
-double CMyInterpolation::DoCubicPolynomial(unsigned char ucImg[4], double x)
+unsigned char CMyInterpolation::DoCubicPolynomial(unsigned char ucImg[4], double x)
 {
 	double dInvX[4][4] = {
 		{ 0.0f, 1.0f, 0.0f, 0.0f },
@@ -729,12 +741,16 @@ double CMyInterpolation::DoCubicPolynomial(unsigned char ucImg[4], double x)
 	double a3 = dInvX[2][0] * (double)ucImg[0] + dInvX[2][1] * (double)ucImg[1] + dInvX[2][2] * (double)ucImg[2] + dInvX[2][3] * (double)ucImg[3];
 	double a4 = dInvX[3][0] * (double)ucImg[0] + dInvX[3][1] * (double)ucImg[1] + dInvX[3][2] * (double)ucImg[2] + dInvX[3][3] * (double)ucImg[3];
 
-	return a1 + x* a2 + x*x*a3 + x*x*x*a4;
+	double res = a1 + x* a2 + x*x*a3 + x*x*x*a4;
+	CLAMP(res, 0, 255);
+
+	// convolution
+	return (unsigned char)res;
 }
 
 // S(x) = aj + bj(x-xj) + cj(x-xj)^2 + dj(x-xj)^3 (xj <= x <= xj+1)
 // https://fac.ksu.edu.sa/sites/default/files/numerical_analysis_9th.pdf#page=167
-double CMyInterpolation::DoNaturalCubicSpline(unsigned char ucImg[4], double x)
+unsigned char CMyInterpolation::DoNaturalCubicSpline(unsigned char ucImg[4], double x)
 {
 	// Input
 	const INT_PTR nCount = 3;						// n
@@ -807,8 +823,11 @@ double CMyInterpolation::DoNaturalCubicSpline(unsigned char ucImg[4], double x)
 // 		dD[j] = (dC[j + 1] - dC[j]) / (3 * dH);
 // 	}
 
-	// Result
-	return dA[1] + dB[1]*x + dC[1]*x*x + dD[1]*x*x*x;
+	double res = dA[1] + dB[1] * x + dC[1] * x*x + dD[1] * x*x*x;
+	CLAMP(res, 0, 255);
+
+	// convolution
+	return (unsigned char)res;
 }
 
 void CMyInterpolation::clip(double max, double min, double& num)
@@ -819,7 +838,7 @@ void CMyInterpolation::clip(double max, double min, double& num)
 		num = min;
 }
 
-BYTE CMyInterpolation::GetPixelClamped(BYTE* pImage, INT_PTR x, INT_PTR y, INT_PTR nWidth, INT_PTR nHeight)
+unsigned char CMyInterpolation::GetPixelClamped(unsigned char* pImage, INT_PTR x, INT_PTR y, INT_PTR nWidth, INT_PTR nHeight)
 {
 	CLAMP(x, 0, nWidth - 1);
 	CLAMP(y, 0, nHeight - 1);

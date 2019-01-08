@@ -489,12 +489,16 @@ void CMainFrame::ParseDicomFile(CStringArray* aryDicomFilePath)
 
 		if (dicomParser.LoadDS((LPTSTR)(LPCTSTR)strFilePath, 0) == DICOM_SUCCESS)
 		{
+			Sleep(10);
+
 			dicomParser.ParseDicomHeader();
 			dicomParser.ParseImageInfo();
 
 			CLLDicomDS dsLLDicomds = dicomParser.GetLLDicomDS();
 
 			AddDicomDS(dsLLDicomds);
+
+//			AddDicomDS(dicomParser.GetLLDicomDS());
 
 			dicomParser.m_aryDicomImage.RemoveAll();
 		}
