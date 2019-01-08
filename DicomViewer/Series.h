@@ -18,7 +18,7 @@ public:
 	BOOL IsSameSeriesID(CString strSeriesId);
 
 	// Add
-	void AddInstance(CLLDicomDS dsLLDicomDS);
+	void AddInstance(CLLDicomDS& dsLLDicomDS);
 
 	// Update
 	void UpdateDicomDs(CLLDicomDS dsLLDicom);

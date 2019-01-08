@@ -858,6 +858,18 @@ BOOL CDicomParser::ParseImageInfo()
 	return TRUE;
 }
 
+BOOL CDicomParser::ParseLLDicomDS()
+{
+	m_LLDicomDS.m_dcmHeaderInfo = m_dcmHeaderInfo;
+	m_LLDicomDS.m_aryDicomImage.RemoveAll();
+	for (INT_PTR iFrame = 0; iFrame < m_dcmHeaderInfo.m_nFrameCount; iFrame++)
+	{
+		m_LLDicomDS.m_aryDicomImage.Add(m_aryDicomImage.GetAt(iFrame));
+	}
+
+	return TRUE;
+}
+
 BOOL CDicomParser::ParseOverlayInfo(pBITMAPHANDLE pOverlayBitmapHandle, CDicomImage* pOverlayImgInfo)
 {
 	// nWidth, nHeight, m_nBitsPerPixel, nSamplesPerPixel is already set.
@@ -1153,16 +1165,9 @@ int& CDicomParser::GetCurNLS()
 
 CLLDicomDS CDicomParser::GetLLDicomDS(INT_PTR nFrameIndex)
 {
-	CLLDicomDS dsLLDicomDS;
 
-	dsLLDicomDS.m_dcmHeaderInfo = m_dcmHeaderInfo;
-	dsLLDicomDS.m_aryDicomImage.RemoveAll();
-	for (INT_PTR iFrame = 0; iFrame < m_dcmHeaderInfo.m_nFrameCount; iFrame++)
-	{
-		dsLLDicomDS.m_aryDicomImage.Add(m_aryDicomImage.GetAt(iFrame));
-	}
 
-	return dsLLDicomDS;
+	return m_LLDicomDS;
 }
 
 CDicomParser& CDicomParser::operator=(const CDicomParser& obj)

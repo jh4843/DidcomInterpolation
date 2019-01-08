@@ -36,7 +36,7 @@ BOOL CSeries::IsSameSeriesID(CString strSeriesId)
 	return FALSE;
 }
 
-void CSeries::AddInstance(CLLDicomDS dsLLDicomDS)
+void CSeries::AddInstance(CLLDicomDS& dsLLDicomDS)
 {
 	CInstance* pInstance = new CInstance(dsLLDicomDS);
 	INT_PTR iInsertIndex = -1;

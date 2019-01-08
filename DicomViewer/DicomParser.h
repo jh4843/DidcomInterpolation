@@ -17,6 +17,7 @@ public:
 public:
 	CLLDicomDS::DICOM_HEADER_INFO_ m_dcmHeaderInfo;
 	CArray<CDicomImage, CDicomImage> m_aryDicomImage;	// for multi frame
+	CLLDicomDS m_LLDicomDS;
 
 	// to Control
 	BOOL m_bInitialized;
@@ -49,6 +50,7 @@ public:
 	//
 	BOOL ParseDicomHeader();
 	BOOL ParseImageInfo();
+	BOOL ParseLLDicomDS();
 	BOOL ParseOverlayInfo(pBITMAPHANDLE pOverlayBitmapHandle, CDicomImage* pOverlayImgInfo);
 
 	L_UINT GetOverlayImageFromOrigin(pBITMAPHANDLE pBitmapHandle, pBITMAPHANDLE pOverlayBitmapHandle);

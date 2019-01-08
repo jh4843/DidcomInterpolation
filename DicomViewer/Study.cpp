@@ -39,7 +39,7 @@ BOOL CStudy::IsSameStudyID(CString strStudyId)
 	return FALSE;
 }
 
-void CStudy::AddSeries(CLLDicomDS dsLLDicomDS)
+void CStudy::AddSeries(CLLDicomDS& dsLLDicomDS)
 {
 	CSeries* pSeries = new CSeries(dsLLDicomDS);
 	BOOL bFindSeries = FALSE;

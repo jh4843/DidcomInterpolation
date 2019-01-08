@@ -489,18 +489,15 @@ void CMainFrame::ParseDicomFile(CStringArray* aryDicomFilePath)
 
 		if (dicomParser.LoadDS((LPTSTR)(LPCTSTR)strFilePath, 0) == DICOM_SUCCESS)
 		{
-			Sleep(10);
-
 			dicomParser.ParseDicomHeader();
 			dicomParser.ParseImageInfo();
+			dicomParser.ParseLLDicomDS();
 
-			CLLDicomDS dsLLDicomds = dicomParser.GetLLDicomDS();
-
-			AddDicomDS(dsLLDicomds);
-
-//			AddDicomDS(dicomParser.GetLLDicomDS());
+			AddDicomDS(dicomParser.GetLLDicomDS());
 
 			dicomParser.m_aryDicomImage.RemoveAll();
+
+			Sleep(10);
 		}
 	}
 
@@ -607,14 +604,14 @@ BOOL CMainFrame::AddDicomDS(CLLDicomDS dsLLDicomds)
 	return FALSE;
 }
 
-void CMainFrame::AddStudy(CLLDicomDS dsLLdicomDS)
+void CMainFrame::AddStudy(CLLDicomDS& dsLLdicomDS)
 {
 	CStudy* pStudy = new CStudy(dsLLdicomDS);
 	pStudy->AddSeries(dsLLdicomDS);
 	m_aryStudy.Add(pStudy);
 }
 
-void CMainFrame::AddSeries(CLLDicomDS dsLLdicomDS)
+void CMainFrame::AddSeries(CLLDicomDS& dsLLdicomDS)
 {
 	BOOL bExist = FALSE;
 
@@ -639,7 +636,7 @@ void CMainFrame::AddSeries(CLLDicomDS dsLLdicomDS)
 	pStudyInfo->AddSeries(dsLLdicomDS);
 }
 
-void CMainFrame::AddInstance(CLLDicomDS dsLLdicomDS)
+void CMainFrame::AddInstance(CLLDicomDS& dsLLdicomDS)
 {
 	BOOL bExist = FALSE;
 

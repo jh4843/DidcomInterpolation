@@ -23,7 +23,7 @@ public:
 	BOOL IsSameStudyID(CString strStudyId);
 
 	// Add
-	void AddSeries(CLLDicomDS dsLLDicomDS);
+	void AddSeries(CLLDicomDS& dsLLDicomDS);
 	void AddStudyViewerIndex(INT_PTR nStudyViewerIndex);
 
 	// Update

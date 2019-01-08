@@ -37,7 +37,7 @@ public:
 #endif
 
 public:
-	CArray<CLLDicomDS, CLLDicomDS> m_aryLLDicomds;
+	CArray<CLLDicomDS, CLLDicomDS&> m_aryLLDicomds;
 
 protected:
 	CArray<CStudy*, CStudy*> m_aryStudy;
@@ -60,9 +60,9 @@ protected:
 	void ParseDicomFile(CStringArray* aryDicomFilePath);
 	BOOL AddStudyToLayoutManager();
 	BOOL AddDicomDS(CLLDicomDS dsLLDicomds);
-	void AddStudy(CLLDicomDS dsLLdicomDS);
-	void AddSeries(CLLDicomDS dsLLdicomDS);
-	void AddInstance(CLLDicomDS dsLLdicomDS);
+	void AddStudy(CLLDicomDS& dsLLdicomDS);
+	void AddSeries(CLLDicomDS& dsLLdicomDS);
+	void AddInstance(CLLDicomDS& dsLLdicomDS);
 
 	void FindFileInDirectory(CString strPath, CStringArray& aryPath);
 
