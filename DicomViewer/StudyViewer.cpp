@@ -1165,7 +1165,6 @@ BOOL CStudyViewer::Draw(CDC* pDC)
 	return TRUE;
 }
 
-
 BOOL CStudyViewer::CalcLayout()
 {
 	BOOL bRes = TRUE;
@@ -1173,6 +1172,14 @@ BOOL CStudyViewer::CalcLayout()
 	CRect rtOldCanvas = m_rtCanvas;
 
 	GetClientRect(&m_rtCanvas);
+
+	if ((m_rtCanvas.Width() != rtOldCanvas.Width()) ||
+		(m_rtCanvas.Height() != rtOldCanvas.Height()))
+	{
+		m_rtDisplayedROIOnImage.SetRectEmpty();
+		m_rtDisplayedROIOnCanvas.SetRectEmpty();
+		m_rtDrawRectOnCanvas.SetRectEmpty();
+	}
 
 	if (m_pDisplayDicomDS)
 	{
@@ -1404,21 +1411,26 @@ BOOL CStudyViewer::CalcDisplayImageROI(CDicomImage * pImageInfo)
 		m_rtDisplayedROIOnImage.bottom = nImageHeight;
 	}
 	
-	m_dOldZoomValue = m_dZoomValue;
-
-	if (m_dOldZoomValue != m_dZoomValue &&					// Zoom값이 변했을때만 고려한다.
+	if (m_dOldZoomValue != m_dZoomValue &&
 		m_rtDisplayedROIOnImage.Width() != nImageWidth &&	// 영상이 전부 보일 때는 고려하지 않는다.
 		m_rtDisplayedROIOnImage.Height() != nImageHeight)
 	{
-		if ((m_rtDisplayedROIOnImage.Width() == rtOldRoiImage.Width()) ||
+		if (m_rtDisplayedROIOnImage.left != rtOldRoiImage.left &&
+			m_rtDisplayedROIOnImage.Width() == rtOldRoiImage.Width())
+		{
+			m_rtDisplayedROIOnImage = rtOldRoiImage;
+			return FALSE; // No need to 
+		}
+
+		if (m_rtDisplayedROIOnImage.top != rtOldRoiImage.top &&
 			(m_rtDisplayedROIOnImage.Height() == rtOldRoiImage.Height()))
 		{
-			
 			m_rtDisplayedROIOnImage = rtOldRoiImage;
 			return FALSE; // No need to 
 		}
 	}
 	
+	m_dOldZoomValue = m_dZoomValue;
 	return TRUE;
 }
 
