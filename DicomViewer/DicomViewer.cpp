@@ -336,7 +336,7 @@ BOOL CDicomViewerApp::PreTranslateMessage(MSG* pMsg)
 {
 	if (pMsg->message == WM_KEYDOWN || pMsg->message == WM_SYSKEYDOWN)
 	{
-		if (m_pLayoutManager->GetStudyViewerCount() > 0)
+		if (m_pLayoutManager->GetStudyViewerCount() > 0 && m_pLayoutManager->GetLoadedStudyCount() > 0)
 		{
 			m_pLayoutManager->GetCurStudyViewer()->ProcessHotKey(pMsg->wParam);
 		}

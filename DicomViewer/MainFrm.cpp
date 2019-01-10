@@ -176,9 +176,10 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	//CMFCToolBar::SetBasicCommands(lstBasicCommands);
 
-	m_wndStatusBar.SetPaneInfo(0, ID_SEPARATOR, SBPS_NORMAL, 200);
-	m_wndStatusBar.SetPaneInfo(1, ID_SEPARATOR, SBPS_STRETCH, 200);
+	m_wndStatusBar.SetPaneInfo(0, ID_SEPARATOR, SBPS_NORMAL, 100);
+	m_wndStatusBar.SetPaneInfo(1, ID_SEPARATOR, SBPS_STRETCH, 150);
 	m_wndStatusBar.SetPaneInfo(2, ID_SEPARATOR, SBPS_STRETCH, 200);
+	m_wndStatusBar.SetPaneInfo(3, ID_SEPARATOR, SBPS_STRETCH, 200);
 
 	SetActiveWindow();
 
@@ -423,8 +424,7 @@ void CMainFrame::OnFileOpen()
 	
 	if (dlgDcm.DoModal() == IDOK)
 	{
-		theApp.OnCloseAll();
-
+		//theApp.OnCloseAll();
 		POSITION pos = dlgDcm.GetStartPosition();
 		while (pos)
 		{
@@ -436,10 +436,10 @@ void CMainFrame::OnFileOpen()
 		}
 	}
 
+	fileName.ReleaseBuffer();
+
 	ParseDicomFile(&aryFilePath);
 	AddStudyToLayoutManager();
-
-	fileName.ReleaseBuffer();
 
 	return;
 }
@@ -457,10 +457,12 @@ void CMainFrame::Init()
 	}
 
 	m_eInterpolationType = eBilinear;
+	SetStatusBarText(1, _T("Bilinear"));
+
 	m_bUseParallelCalc = TRUE;
 
 	m_aryStudy.RemoveAll();
-	m_aryLLDicomds.RemoveAll();
+	//m_aryLLDicomds.RemoveAll();
 }
 
 CStudy* CMainFrame::GetStudy(CString strStudyID)
@@ -507,6 +509,32 @@ void CMainFrame::ParseDicomFile(CStringArray* aryDicomFilePath)
 BOOL CMainFrame::AddStudyToLayoutManager()
 {
 	BOOL bRes = FALSE;
+	if (m_aryStudy.GetCount() > theApp.m_pLayoutManager->GetStudyViewerCount())
+	{
+		INT_PTR nCurStudyViewerCount = theApp.m_pLayoutManager->GetStudyViewerCount();
+		INT_PTR nNeedAddedCount = m_aryStudy.GetCount() - nCurStudyViewerCount;
+		BOOL bFind = FALSE;
+		INT_PTR iCount = 0;
+
+		for (iCount = 1; iCount < 10; iCount++)
+		{
+			if (nNeedAddedCount + nCurStudyViewerCount < iCount * iCount)
+			{
+				bFind = TRUE;
+				nNeedAddedCount = iCount * iCount - nCurStudyViewerCount;
+				break;
+			}
+		}
+
+		if (!bFind)
+			return FALSE;
+
+		for (INT_PTR i = theApp.m_pLayoutManager->GetStudyViewerCount(); i < iCount*iCount ; i++)
+		{
+			theApp.m_pLayoutManager->AddStudyViewer(i, theApp.m_pLayoutManager);
+		}
+	}
+
 	for (INT_PTR iStudy = 0; iStudy < m_aryStudy.GetCount(); iStudy++)
 	{
 		CStudy* pStudy = m_aryStudy.GetAt(iStudy);
@@ -526,63 +554,63 @@ BOOL CMainFrame::AddDicomDS(CLLDicomDS dsLLDicomds)
 {
 	TRY
 	{
-		if (m_aryLLDicomds.GetCount() <= 0)
-		{
-			m_aryLLDicomds.Add(dsLLDicomds);
-			AddStudy(dsLLDicomds);
-			return TRUE;
-		}
+// 		if (m_aryLLDicomds.GetCount() <= 0)
+// 		{
+// 			m_aryLLDicomds.Add(dsLLDicomds);
+// 			AddStudy(dsLLDicomds);
+// 			return TRUE;
+// 		}
 
 		BOOL bFindStudy = FALSE;
-		CLLDicomDS dsStoredLLDicomDS;
-		for (INT_PTR iParser = 0; iParser < m_aryLLDicomds.GetCount(); iParser++)
-		{
-			dsStoredLLDicomDS = m_aryLLDicomds.GetAt(iParser);
-			if (dsStoredLLDicomDS.GetStudyID().CompareNoCase(dsLLDicomds.GetStudyID()) == 0)
-			{
-				bFindStudy = TRUE;
-				break;
-			}
-		}
+// 		CLLDicomDS dsStoredLLDicomDS;
+// 		for (INT_PTR iParser = 0; iParser < m_aryLLDicomds.GetCount(); iParser++)
+// 		{
+// 			dsStoredLLDicomDS = m_aryLLDicomds.GetAt(iParser);
+// 			if (dsStoredLLDicomDS.GetStudyID().CompareNoCase(dsLLDicomds.GetStudyID()) == 0)
+// 			{
+// 				bFindStudy = TRUE;
+// 				break;
+// 			}
+// 		}
 
 		if (bFindStudy == FALSE)
 		{
-			m_aryLLDicomds.Add(dsLLDicomds);
+			//m_aryLLDicomds.Add(dsLLDicomds);
 			AddStudy(dsLLDicomds);
 			return TRUE;
 		}
 
 		BOOL bFindSeries = FALSE;
-		for (INT_PTR iParser = 0; iParser < m_aryLLDicomds.GetCount(); iParser++)
-		{
-			dsStoredLLDicomDS = m_aryLLDicomds.GetAt(iParser);
-			if (dsStoredLLDicomDS.GetSeriesID().CompareNoCase(dsLLDicomds.GetSeriesID()) == 0)
-			{
-				bFindSeries = TRUE;
-				break;
-			}
-		}
+// 		for (INT_PTR iParser = 0; iParser < m_aryLLDicomds.GetCount(); iParser++)
+// 		{
+// 			dsStoredLLDicomDS = m_aryLLDicomds.GetAt(iParser);
+// 			if (dsStoredLLDicomDS.GetSeriesID().CompareNoCase(dsLLDicomds.GetSeriesID()) == 0)
+// 			{
+// 				bFindSeries = TRUE;
+// 				break;
+// 			}
+// 		}
 
 		if (bFindSeries == FALSE)
 		{
-			m_aryLLDicomds.Add(dsLLDicomds);
+			//m_aryLLDicomds.Add(dsLLDicomds);
 			AddSeries(dsLLDicomds);
 			return TRUE;
 		}
 
 		BOOL bFindInstance = FALSE;
-		for (INT_PTR iParser = 0; iParser < m_aryLLDicomds.GetCount(); iParser++)
-		{
-			if (dsStoredLLDicomDS.GetInstanceID().CompareNoCase(dsLLDicomds.GetInstanceID()) == 0)
-			{
-				bFindInstance = TRUE;
-				break;
-			}
-		}
+// 		for (INT_PTR iParser = 0; iParser < m_aryLLDicomds.GetCount(); iParser++)
+// 		{
+// 			if (dsStoredLLDicomDS.GetInstanceID().CompareNoCase(dsLLDicomds.GetInstanceID()) == 0)
+// 			{
+// 				bFindInstance = TRUE;
+// 				break;
+// 			}
+// 		}
 
 		if (bFindInstance == FALSE)
 		{
-			m_aryLLDicomds.Add(dsLLDicomds);
+			//m_aryLLDicomds.Add(dsLLDicomds);
 			AddInstance(dsLLDicomds);
 			return TRUE;
 		}
@@ -714,62 +742,100 @@ void CMainFrame::FindFileInDirectory(CString strPath, CStringArray& aryPath)
 	fileFinder.Close();
 }
 
+void CMainFrame::UpdateStudyViewerInterpolation()
+{
+	if (theApp.m_pLayoutManager->GetStudyViewerCount() < 0)
+		return;
+
+	CStudyViewer* pCurStudyViewer = theApp.m_pLayoutManager->GetCurStudyViewer();
+
+	if (pCurStudyViewer == nullptr)
+		return;
+
+	pCurStudyViewer->SetInterpolationMode(m_eInterpolationType);
+	pCurStudyViewer->RedrawWnd();
+}
+
 
 void CMainFrame::OnInterpolationBilinear()
 {
 	m_eInterpolationType = eBilinear;
+	SetStatusBarText(1, _T("Bilinear"));
+
+	UpdateStudyViewerInterpolation();
 }
 
 
 void CMainFrame::OnInterpolationBicubicPolynomial050()
 {
 	m_eInterpolationType = eBicubicPolynomial_050;
+	SetStatusBarText(1, _T("Bicubic_-0.50"));
+
+	UpdateStudyViewerInterpolation();
 }
 
 void CMainFrame::OnInterpolationBicubicPolynomial075()
 {
 	m_eInterpolationType = eBicubicPolynomial_075;
-}
+	SetStatusBarText(1, _T("Bicubic_-0.75"));
 
+	UpdateStudyViewerInterpolation();
+}
 
 void CMainFrame::OnInterpolationBicubicPolynomial100()
 {
 	m_eInterpolationType = eBicubicPolynomial_100;
-}
+	SetStatusBarText(1, _T("Bicubic_-1.0"));
 
+	UpdateStudyViewerInterpolation();
+}
 
 void CMainFrame::OnInterpolationBicubicPolynomial000()
 {
 	m_eInterpolationType = eBicubicPolynomial_000;
-}
+	SetStatusBarText(1, _T("Bicubic_0.0"));
 
+	UpdateStudyViewerInterpolation();
+}
 
 void CMainFrame::OnInterpolationBicubicPolynomial300()
 {
 	m_eInterpolationType = eBicubicPolynomial_300;
+	SetStatusBarText(1, _T("Bicubic_-3.0"));
+
+	UpdateStudyViewerInterpolation();
 }
-
-
 
 void CMainFrame::OnInterpolationBicubicBSpline()
 {
 	m_eInterpolationType = eBicubicBSpline;
+	SetStatusBarText(1, _T("B-Spline"));
+
+	UpdateStudyViewerInterpolation();
 }
 
 void CMainFrame::OnInterpolationLanczos()
 {
 	m_eInterpolationType = eBicubicLanczos;
-}
+	SetStatusBarText(1, _T("Lanczos"));
 
+	UpdateStudyViewerInterpolation();
+}
 
 void CMainFrame::OnInterpolationMitchell()
 {
 	m_eInterpolationType = eBicubicMichell;
+	SetStatusBarText(1, _T("Mitchell"));
+
+	UpdateStudyViewerInterpolation();
 }
 
 void CMainFrame::OnInterpolationCatmullrom()
 {
 	m_eInterpolationType = eBicubicCatmullRom;
+	SetStatusBarText(1, _T("Catmull-Rom Spline"));
+
+	UpdateStudyViewerInterpolation();
 }
 
 void CMainFrame::OnUpdateInterpolationBilinear(CCmdUI *pCmdUI)
@@ -782,7 +848,7 @@ void CMainFrame::OnUpdateInterpolationBilinear(CCmdUI *pCmdUI)
 	{
 		pCmdUI->SetCheck(FALSE);
 	}
-	
+
 	// TODO: Add your command update UI handler code here
 }
 
@@ -794,11 +860,13 @@ void CMainFrame::OnUpdateInterpolationBicubicPolynomial(CCmdUI *pCmdUI)
 	if (m_eInterpolationType == eBicubicPolynomial_050)
 	{
 		pCmdUI->SetCheck(TRUE);
+		
 	}
 	else
 	{
 		pCmdUI->SetCheck(FALSE);
 	}
+
 }
 
 void CMainFrame::OnUpdateInterpolationBicubicPolynomial075(CCmdUI *pCmdUI)
@@ -808,11 +876,13 @@ void CMainFrame::OnUpdateInterpolationBicubicPolynomial075(CCmdUI *pCmdUI)
 	if (m_eInterpolationType == eBicubicPolynomial_075)
 	{
 		pCmdUI->SetCheck(TRUE);
+		
 	}
 	else
 	{
 		pCmdUI->SetCheck(FALSE);
 	}
+
 }
 
 
@@ -823,11 +893,13 @@ void CMainFrame::OnUpdateInterpolationBicubicPolynomial100(CCmdUI *pCmdUI)
 	if (m_eInterpolationType == eBicubicPolynomial_100)
 	{
 		pCmdUI->SetCheck(TRUE);
+		
 	}
 	else
 	{
 		pCmdUI->SetCheck(FALSE);
 	}
+
 }
 
 
@@ -843,6 +915,7 @@ void CMainFrame::OnUpdateInterpolationBicubicPolynomial000(CCmdUI *pCmdUI)
 	{
 		pCmdUI->SetCheck(FALSE);
 	}
+
 }
 
 void CMainFrame::OnUpdateInterpolationBicubicPolynomial300(CCmdUI *pCmdUI)
@@ -857,6 +930,7 @@ void CMainFrame::OnUpdateInterpolationBicubicPolynomial300(CCmdUI *pCmdUI)
 	{
 		pCmdUI->SetCheck(FALSE);
 	}
+
 }
 
 void CMainFrame::OnUpdateInterpolationBicubicSpline(CCmdUI *pCmdUI)
@@ -866,11 +940,13 @@ void CMainFrame::OnUpdateInterpolationBicubicSpline(CCmdUI *pCmdUI)
 	if (m_eInterpolationType == eBicubicBSpline)
 	{
 		pCmdUI->SetCheck(TRUE);
+		
 	}
 	else
 	{
 		pCmdUI->SetCheck(FALSE);
 	}
+
 }
 
 void CMainFrame::OnUpdateInterpolationLanczos(CCmdUI *pCmdUI)
@@ -880,11 +956,13 @@ void CMainFrame::OnUpdateInterpolationLanczos(CCmdUI *pCmdUI)
 	if (m_eInterpolationType == eBicubicLanczos)
 	{
 		pCmdUI->SetCheck(TRUE);
+		
 	}
 	else
 	{
 		pCmdUI->SetCheck(FALSE);
 	}
+
 }
 
 
@@ -895,11 +973,13 @@ void CMainFrame::OnUpdateInterpolationMitchell(CCmdUI *pCmdUI)
 	if (m_eInterpolationType == eBicubicMichell)
 	{
 		pCmdUI->SetCheck(TRUE);
+		
 	}
 	else
 	{
 		pCmdUI->SetCheck(FALSE);
 	}
+
 }
 
 void CMainFrame::OnUpdateInterpolationCatmullrom(CCmdUI *pCmdUI)
@@ -909,11 +989,13 @@ void CMainFrame::OnUpdateInterpolationCatmullrom(CCmdUI *pCmdUI)
 	if (m_eInterpolationType == eBicubicCatmullRom)
 	{
 		pCmdUI->SetCheck(TRUE);
+		
 	}
 	else
 	{
 		pCmdUI->SetCheck(FALSE);
 	}
+
 }
 
 
@@ -933,5 +1015,4 @@ void CMainFrame::OnUpdateCommandUseparallelcalc(CCmdUI *pCmdUI)
 	{
 		pCmdUI->SetCheck(FALSE);
 	}
-		
 }

@@ -37,7 +37,7 @@ public:
 #endif
 
 public:
-	CArray<CLLDicomDS, CLLDicomDS&> m_aryLLDicomds;
+	//CArray<CLLDicomDS, CLLDicomDS&> m_aryLLDicomds;
 
 protected:
 	CArray<CStudy*, CStudy*> m_aryStudy;
@@ -65,6 +65,7 @@ protected:
 	void AddInstance(CLLDicomDS& dsLLdicomDS);
 
 	void FindFileInDirectory(CString strPath, CStringArray& aryPath);
+	void UpdateStudyViewerInterpolation();
 
 // Generated message map functions
 protected:

@@ -4,12 +4,8 @@
 CMyDicomLanguage CDicomParser::m_dcmLanguage;
 
 CDicomParser::CDicomParser()
-	: m_bInitialized(FALSE)
 {
-	if (!m_bInitialized)
-	{
-		Initialize();
-	}
+	Initialize();
 	m_dcmHeaderInfo.m_strFileName = _T("");
 	m_nCurNLS = -1;
 }
@@ -29,8 +25,6 @@ UINT CDicomParser::Initialize()
 	MoveRootElement();
 
 	UINT ndcmRet = DICOM_SUCCESS;
-
-	m_bInitialized = TRUE;
 
 	m_nCurNLS = -1;
 

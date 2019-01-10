@@ -3,6 +3,7 @@
 #include "Study.h"
 #include "Instance.h"
 #include "DicomImage.h"
+#include "MyInterpolation.h"
 
 #define IDC_IMGLISTCTRL 0
 
@@ -89,6 +90,8 @@ protected:
 	DIBINFO m_DibInfo;
 	INT_PTR m_nOperationMode;
 
+	INTERPOLATION_TYPE m_eInterpolationType;
+
 private:
 	INT_PTR m_nLayoutIndex;
 	CWnd* m_pParent;
@@ -111,6 +114,7 @@ private:
 	
 	double m_dCanvasPerImageRatio;
 	double m_dZoomValue;
+	double m_dOldZoomValue;
 
 	CPoint m_ptPanDelta;
 	CPoint m_ptOldPointBeforePan;
@@ -127,6 +131,7 @@ public:
 	void SetViewOnlySameSeries();
 	void SetViewAllSeries();
 	void SetCurrentInstanceIndex(INT_PTR nInstanceIndex);
+	void SetInterpolationMode(INTERPOLATION_TYPE eMode);
 
 	// Get
 	INT_PTR GetLayoutIndex();
@@ -140,7 +145,7 @@ public:
 	void RedrawWnd();
 
 	// Load
-	void LoadImageFromDcm(CDicomImage& imageDicom);
+	void LoadImageFromDcm(CDicomImage* pDsImage);
 
 		// Operate
 	void ResetPan();

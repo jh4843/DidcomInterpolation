@@ -29,6 +29,7 @@ public:
 	BOOL AddLoadedStudy(CStudy* pStudy);
 	BOOL UpdateStudyToViewer(CStudy* pStudy);
 	INT_PTR GetStudyViewerCount();
+	INT_PTR GetLoadedStudyCount();
 	CStudyViewer* GetCurStudyViewer();
 	
 	void SetSelectedStudyViewer(INT_PTR nSelectedViewerIndex);

@@ -4,7 +4,7 @@
 #include "DicomParser.h"
 #include "LayoutManager.h"
 #include "MainFrm.h"
-#include "MyInterpolation.h"
+
 
 CStudyViewer::CStudyViewer(INT_PTR nLayoutIndex)
 {
@@ -19,6 +19,7 @@ CStudyViewer::CStudyViewer(INT_PTR nLayoutIndex)
 	m_bOnlySeriesViewer = FALSE;
 
 	m_nOperationMode = MODE_NORMAL;
+	m_eInterpolationType = eBilinear;
 }
 
 
@@ -84,10 +85,10 @@ void CStudyViewer::SetDisplayInstance()
 	FreeScreenBuffer();
 	AllocDisplayImage();
 
-	CDicomImage dsInputImage = m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex);
+	CDicomImage* pDsInputImage = &m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex);
 	
-	LoadImageFromDcm(dsInputImage);
-	dsInputImage.GetImageProcessedImage(m_pDisplayImage, &imageDisplayInfo);
+	LoadImageFromDcm(pDsInputImage);
+	pDsInputImage->GetImageProcessedImage(m_pDisplayImage, &imageDisplayInfo);
 }
 
 void CStudyViewer::SetViewOnlySameSeries()
@@ -104,7 +105,11 @@ void CStudyViewer::SetCurrentInstanceIndex(INT_PTR nInstanceIndex)
 {
 	m_nCurInstanceIndex = nInstanceIndex;
 	SetDisplayInstance();
+}
 
+void CStudyViewer::SetInterpolationMode(INTERPOLATION_TYPE eMode)
+{
+	m_eInterpolationType = eMode;
 }
 
 INT_PTR CStudyViewer::GetLayoutIndex()
@@ -143,42 +148,31 @@ void CStudyViewer::RedrawWnd()
 	UpdateWindow();
 }
 
-void CStudyViewer::LoadImageFromDcm(CDicomImage& dsImage)
+void CStudyViewer::LoadImageFromDcm(CDicomImage* pDsImage)
 {
-	CDicomParser* pDicomParser = new CDicomParser;
-
-	pDicomParser->LoadDS((LPTSTR)(LPCTSTR)m_pDisplayDicomDS->m_dcmHeaderInfo.m_strFileName, 0);
-	pDicomParser->SetDcmHeaderInfo(m_pDisplayDicomDS->m_dcmHeaderInfo);
-	pDicomParser->AddDcmImageInfo(m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex));
-
-	BITMAPHANDLE OrgImageBitmapHandle;
-	
-
-	pDICOMELEMENT pElement;
-	dsImage = m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex);
-
-	UINT nFlags = DICOM_GETIMAGE_AUTO_APPLY_MODALITY_LUT | DICOM_GETIMAGE_AUTO_APPLY_VOI_LUT | DICOM_GETIMAGE_AUTO_LOAD_OVERLAYS;
-
-	pElement = pDicomParser->FindLastElement(NULL, TAG_PIXEL_DATA, FALSE);
-	L_UINT16 nResult = pDicomParser->GetImage(pElement,
-		&OrgImageBitmapHandle,
-		sizeof(BITMAPHANDLE),
-		m_nCurFrameIndex,
-		0,
-		ORDER_RGBORGRAY,
-		nFlags,
-		NULL,
-		NULL);
-
-
-	if (nResult == DICOM_ERROR_MEMORY)
+	TRY
 	{
-		AfxThrowMemoryException();
-	}
-	else if (nResult != DICOM_SUCCESS)
-	{
-		Sleep(0);
-		nResult = pDicomParser->GetImage(pElement,
+		CDicomParser dicomParser;
+
+		dicomParser.LoadDS((LPTSTR)(LPCTSTR)m_pDisplayDicomDS->m_dcmHeaderInfo.m_strFileName, 0);
+		dicomParser.ParseDicomHeader();
+		dicomParser.ParseImageInfo();
+
+		BITMAPHANDLE OrgImageBitmapHandle;
+
+		pDICOMELEMENT pElement;
+		UINT nFlags = DICOM_GETIMAGE_AUTO_APPLY_MODALITY_LUT | DICOM_GETIMAGE_AUTO_APPLY_VOI_LUT;
+
+		CString strModality = dicomParser.GetValue(TAG_MODALITY);
+
+		if (strModality.CompareNoCase(_T("CT")) == 0 ||
+			strModality.CompareNoCase(_T("MR")) == 0)
+		{
+			nFlags |= DICOM_GETIMAGE_AUTO_LOAD_OVERLAYS;
+		}
+
+		pElement = dicomParser.FindLastElement(NULL, TAG_PIXEL_DATA, FALSE);
+		L_UINT16 nResult = dicomParser.GetImage(pElement,
 			&OrgImageBitmapHandle,
 			sizeof(BITMAPHANDLE),
 			m_nCurFrameIndex,
@@ -188,10 +182,15 @@ void CStudyViewer::LoadImageFromDcm(CDicomImage& dsImage)
 			NULL,
 			NULL);
 
-		if (nResult != DICOM_SUCCESS)
+
+		if (nResult == DICOM_ERROR_MEMORY)
+		{
+			AfxThrowMemoryException();
+		}
+		else if (nResult != DICOM_SUCCESS)
 		{
 			Sleep(0);
-			nResult = pDicomParser->GetImage(pElement,
+			nResult = dicomParser.GetImage(pElement,
 				&OrgImageBitmapHandle,
 				sizeof(BITMAPHANDLE),
 				m_nCurFrameIndex,
@@ -200,154 +199,180 @@ void CStudyViewer::LoadImageFromDcm(CDicomImage& dsImage)
 				nFlags,
 				NULL,
 				NULL);
-		}
 
-		if (nResult != DICOM_SUCCESS)
-		{
-			AfxThrowUserException();
-		}
+			if (nResult != DICOM_SUCCESS)
+			{
+				Sleep(0);
+				nResult = dicomParser.GetImage(pElement,
+					&OrgImageBitmapHandle,
+					sizeof(BITMAPHANDLE),
+					m_nCurFrameIndex,
+					0,
+					ORDER_RGBORGRAY,
+					nFlags,
+					NULL,
+					NULL);
+			}
 
-		if (OrgImageBitmapHandle.Flags.Allocated != 1)
-		{
-			AfxThrowUserException();
-		}
-
-		if (OrgImageBitmapHandle.Flags.Compressed == 1)
-		{
-			AfxThrowUserException();
-		}
-
-		// Not linear image data.
-		if (OrgImageBitmapHandle.Flags.Tiled == 1)
-		{
-			dsImage.SetTiledPiexlData(TRUE);
-		}
-
-		if (OrgImageBitmapHandle.Flags.SuperCompressed == 1)
-		{
-			AfxThrowUserException();
-		}
-
-		if (OrgImageBitmapHandle.Flags.UseLUT == 1)
-		{
-			if (!OrgImageBitmapHandle.pLUT)
+			if (nResult != DICOM_SUCCESS)
 			{
 				AfxThrowUserException();
 			}
 
-			if (OrgImageBitmapHandle.LUTLength < 1)
+			if (OrgImageBitmapHandle.Flags.Allocated != 1)
+			{
+				AfxThrowUserException();
+			}
+
+			if (OrgImageBitmapHandle.Flags.Compressed == 1)
+			{
+				AfxThrowUserException();
+			}
+
+			// Not linear image data.
+			if (OrgImageBitmapHandle.Flags.Tiled == 1)
+			{
+				pDsImage->SetTiledPiexlData(TRUE);
+			}
+
+			if (OrgImageBitmapHandle.Flags.SuperCompressed == 1)
+			{
+				AfxThrowUserException();
+			}
+
+			if (OrgImageBitmapHandle.Flags.UseLUT == 1)
+			{
+				if (!OrgImageBitmapHandle.pLUT)
+				{
+					AfxThrowUserException();
+				}
+
+				if (OrgImageBitmapHandle.LUTLength < 1)
+				{
+					AfxThrowUserException();
+				}
+			}
+
+			if (!OrgImageBitmapHandle.Addr.Windows.pData)
+			{
+				AfxThrowUserException();
+			}
+
+			if (OrgImageBitmapHandle.Width < 2)
+			{
+				AfxThrowUserException();
+			}
+
+			if (OrgImageBitmapHandle.Height < 2)
+			{
+				AfxThrowUserException();
+			}
+
+			if (OrgImageBitmapHandle.BitsPerPixel < 1)
+			{
+				AfxThrowUserException();
+			}
+
+			if (OrgImageBitmapHandle.BytesPerLine < 4)
+			{
+				AfxThrowUserException();
+			}
+
+			pDsImage->FreeDicomImage();
+			pDsImage->m_stImageInfo.Init();
+
+			if (OrgImageBitmapHandle.HighBit < 1)
+			{
+				AfxThrowUserException();
+			}
+			else
+			{
+				pDsImage->m_stImageInfo.m_nBitsPerPixel = (UINT)(OrgImageBitmapHandle.HighBit + 1);
+			}
+
+			// RGB : SamplesPerPixel = 3
+			if (OrgImageBitmapHandle.BitsPerPixel == 24)
+			{
+				pDsImage->m_stImageInfo.m_nSamplesPerPixel = 3;
+			}
+			// Gray : SamplesPerPixel = 1 (default)
+			else if (OrgImageBitmapHandle.BitsPerPixel > 0 && OrgImageBitmapHandle.BitsPerPixel < 24)
+			{
+				pDsImage->m_stImageInfo.m_nSamplesPerPixel = 1;
+			}
+			else
 			{
 				AfxThrowUserException();
 			}
 		}
 
-		if (!OrgImageBitmapHandle.Addr.Windows.pData)
-		{
-			AfxThrowUserException();
-		}
+		pDsImage->m_stImageInfo.m_nBytesPerPixel = (UINT)Bits2Bytes(pDsImage->m_stImageInfo.m_nBitsPerPixel);
+		pDsImage->m_stImageInfo.m_nTotalAllocatedBytes = (UINT)(pDsImage->m_stImageInfo.m_nBytesPerPixel*pDsImage->m_stImageInfo.m_nSamplesPerPixel);
+		pDsImage->m_stImageInfo.m_nWidth = m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).m_stImageInfo.m_nWidth;
+		pDsImage->m_stImageInfo.m_nHeight = m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).m_stImageInfo.m_nHeight;
+		int nBytesPerLineX = ((pDsImage->m_stImageInfo.m_nWidth * pDsImage->m_stImageInfo.m_nTotalAllocatedBytes) / 4) * 4;
+		int nBytesPerLineY = ((pDsImage->m_stImageInfo.m_nHeight * pDsImage->m_stImageInfo.m_nTotalAllocatedBytes) / 4) * 4;
+		pDsImage->m_stImageInfo.m_nWidth = nBytesPerLineX / pDsImage->m_stImageInfo.m_nTotalAllocatedBytes;	// rounded by four
+		pDsImage->m_stImageInfo.m_nHeight = nBytesPerLineY / pDsImage->m_stImageInfo.m_nTotalAllocatedBytes;	// rounded by four
+		pDsImage->m_stImageInfo.m_nBytesPerLine = pDsImage->m_stImageInfo.m_nWidth * pDsImage->m_stImageInfo.m_nTotalAllocatedBytes;
 
-		if (OrgImageBitmapHandle.Width < 2)
+		pDsImage->m_stImageInfo.m_fW1 = 0.0f;
+		pDsImage->m_stImageInfo.m_fW2 = Bits2MaxValue(pDsImage->m_stImageInfo.m_nBitsPerPixel);
+		//
+		// Get W/L
+		L_DOUBLE dWindowCenter = 0;
+		L_DOUBLE dWindowWidth = 0;
+		// Window Center
+		pElement = dicomParser.FindFirstElement(NULL, TAG_WINDOW_CENTER, FALSE);
+		if (pElement && pElement->nLength)
 		{
-			AfxThrowUserException();
-		}
-
-		if (OrgImageBitmapHandle.Height < 2)
-		{
-			AfxThrowUserException();
-		}
-
-		if (OrgImageBitmapHandle.BitsPerPixel < 1)
-		{
-			AfxThrowUserException();
-		}
-
-		if (OrgImageBitmapHandle.BytesPerLine < 4)
-		{
-			AfxThrowUserException();
-		}
-
-		dsImage.FreeDicomImage();
-		dsImage.m_stImageInfo.Init();
-
-		if (OrgImageBitmapHandle.HighBit < 1)
-		{
-			AfxThrowUserException();
+			dWindowCenter = *(dicomParser.GetDoubleValue(pElement, 0, 1));
+			pDsImage->m_stImageInfo.m_nW1 = (int)dWindowCenter;
 		}
 		else
 		{
-			dsImage.m_stImageInfo.m_nBitsPerPixel = (UINT)(OrgImageBitmapHandle.HighBit + 1);
+			pDsImage->m_stImageInfo.m_nW1 = (int)pDsImage->m_stImageInfo.m_fW1;
 		}
 
-		// RGB : SamplesPerPixel = 3
-		if (OrgImageBitmapHandle.BitsPerPixel == 24)
+		// Window Width
+		pElement = dicomParser.FindFirstElement(NULL, TAG_WINDOW_WIDTH, FALSE);
+		if (pElement && pElement->nLength)
 		{
-			dsImage.m_stImageInfo.m_nSamplesPerPixel = 3;
-		}
-		// Gray : SamplesPerPixel = 1 (default)
-		else if (OrgImageBitmapHandle.BitsPerPixel > 0 && OrgImageBitmapHandle.BitsPerPixel < 24)
-		{
-			dsImage.m_stImageInfo.m_nSamplesPerPixel = 1;
+			dWindowWidth = *(dicomParser.GetDoubleValue(pElement, 0, 1));
+			pDsImage->m_stImageInfo.m_nW2 = (int)dWindowWidth;
 		}
 		else
 		{
-			AfxThrowUserException();
+			pDsImage->m_stImageInfo.m_nW2 = (int)pDsImage->m_stImageInfo.m_fW2;
+		}
+		//
+		BITMAPHANDLE OverlayBitmapHandle;
+		if (dicomParser.GetOverlayImageFromOrigin(&OrgImageBitmapHandle, &OverlayBitmapHandle) > 0)
+		{
+			pDsImage->LoadDicomImage(&OrgImageBitmapHandle, &OverlayBitmapHandle);
+		}
+		else
+		{
+			pDsImage->LoadDicomImage(&OrgImageBitmapHandle);
+		}
+
+
+		L_FreeBitmap(&OrgImageBitmapHandle);
+
+		dicomParser.ResetDS();
+	}
+	CATCH_ALL(e)
+	{
+		if (e->IsKindOf(RUNTIME_CLASS(CMemoryException)))
+		{
+			AfxMessageBox(_T("MEMORY EXCEPTION"));
+		}
+		else
+		{
+			AfxMessageBox(_T("Fail"));
 		}
 	}
-
-	dsImage.m_stImageInfo.m_nBytesPerPixel = (UINT)Bits2Bytes(dsImage.m_stImageInfo.m_nBitsPerPixel);
-	dsImage.m_stImageInfo.m_nTotalAllocatedBytes = (UINT)(dsImage.m_stImageInfo.m_nBytesPerPixel*dsImage.m_stImageInfo.m_nSamplesPerPixel);
-	dsImage.m_stImageInfo.m_nWidth = m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).m_stImageInfo.m_nWidth;
-	dsImage.m_stImageInfo.m_nHeight = m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).m_stImageInfo.m_nHeight;
-	int nBytesPerLineX = ((dsImage.m_stImageInfo.m_nWidth * dsImage.m_stImageInfo.m_nTotalAllocatedBytes) / 4) * 4;
-	int nBytesPerLineY = ((dsImage.m_stImageInfo.m_nHeight * dsImage.m_stImageInfo.m_nTotalAllocatedBytes) / 4) * 4;
-	dsImage.m_stImageInfo.m_nWidth = nBytesPerLineX / dsImage.m_stImageInfo.m_nTotalAllocatedBytes;	// rounded by four
-	dsImage.m_stImageInfo.m_nHeight = nBytesPerLineY / dsImage.m_stImageInfo.m_nTotalAllocatedBytes;	// rounded by four
-	dsImage.m_stImageInfo.m_nBytesPerLine = dsImage.m_stImageInfo.m_nWidth * dsImage.m_stImageInfo.m_nTotalAllocatedBytes;
-
-	dsImage.m_stImageInfo.m_fW1 = 0.0f;
-	dsImage.m_stImageInfo.m_fW2 = Bits2MaxValue(dsImage.m_stImageInfo.m_nBitsPerPixel);
-	//
-	// Get W/L
-	L_DOUBLE dWindowCenter = 0;
-	L_DOUBLE dWindowWidth = 0;
-	// Window Center
-	pElement = pDicomParser->FindFirstElement(NULL, TAG_WINDOW_CENTER, FALSE);
-	if (pElement && pElement->nLength)
-	{
-		dWindowCenter = *(pDicomParser->GetDoubleValue(pElement, 0, 1));
-		dsImage.m_stImageInfo.m_nW1 = (int)dWindowCenter;
-	}
-	else
-	{
-		dsImage.m_stImageInfo.m_nW1 = (int)dsImage.m_stImageInfo.m_fW1;
-	}
-
-	// Window Width
-	pElement = pDicomParser->FindFirstElement(NULL, TAG_WINDOW_WIDTH, FALSE);
-	if (pElement && pElement->nLength)
-	{
-		dWindowWidth = *(pDicomParser->GetDoubleValue(pElement, 0, 1));
-		dsImage.m_stImageInfo.m_nW2 = (int)dWindowWidth;
-	}
-	else
-	{
-		dsImage.m_stImageInfo.m_nW2 = (int)dsImage.m_stImageInfo.m_fW2;
-	}
-	//
-	BITMAPHANDLE OverlayBitmapHandle;
-	if (pDicomParser->GetOverlayImageFromOrigin(&OrgImageBitmapHandle, &OverlayBitmapHandle) > 0)
-	{
-		dsImage.LoadDicomImage(&OrgImageBitmapHandle, &OverlayBitmapHandle);
-	}
-	else
-	{
-		dsImage.LoadDicomImage(&OrgImageBitmapHandle);
-	}
-
-	
-	L_FreeBitmap(&OrgImageBitmapHandle);
-
-	pDicomParser->ResetDS();
+	END_CATCH_ALL
 }
 
 void CStudyViewer::ResetPan()
@@ -359,6 +384,7 @@ void CStudyViewer::ResetPan()
 void CStudyViewer::ResetZoom()
 {
 	m_dZoomValue = 1.0;
+	m_dOldZoomValue = 1.0;
 }
 
 void CStudyViewer::OperatePan(CPoint point)
@@ -518,6 +544,7 @@ void CStudyViewer::Init(INT_PTR nCurSeriesIndex, INT_PTR nCurInstanceIndex, INT_
 
 	m_dCanvasPerImageRatio = 1.0;
 	m_dZoomValue = 1.0;
+	m_dOldZoomValue = 1.0;
 
 	m_ptPanDelta = CPoint(0, 0);
 	m_ptOldPointBeforePan = CPoint(0, 0);
@@ -642,9 +669,7 @@ BOOL CStudyViewer::DrawInstanceImage(CDC* pDC)
 	// 
 	Graphics g(pDC->GetSafeHdc());
 
-	INTERPOLATION_TYPE eInterpolationType = pMainFrm->GetInterpolationType();
-
-	switch (eInterpolationType)
+	switch (m_eInterpolationType)
 	{
 	case eBicubicPolynomial_050:
 	case eBicubicPolynomial_075:
@@ -655,16 +680,16 @@ BOOL CStudyViewer::DrawInstanceImage(CDC* pDC)
 	case eBicubicLanczos:
 	case eBicubicCatmullRom:
 		g.SetInterpolationMode(InterpolationModeBicubic);
-		pMainFrm->SetStatusBarText(0, _T("Bicubic"));
+		pMainFrm->SetStatusBarText(1, _T("Bicubic"));
 		break;
 	case eBicubicBSpline:
 		g.SetInterpolationMode(InterpolationModeHighQualityBicubic);
-		pMainFrm->SetStatusBarText(0, _T("BicubicHighQuality"));
+		pMainFrm->SetStatusBarText(1, _T("BicubicHighQuality"));
 		break;
 	case eBilinear:
 	default:
 		g.SetInterpolationMode(InterpolationModeBilinear);
-		pMainFrm->SetStatusBarText(0, _T("Bilinear"));
+		pMainFrm->SetStatusBarText(1, _T("Bilinear"));
 		break;
 	}
 
@@ -707,7 +732,7 @@ BOOL CStudyViewer::DrawInstanceImage(CDC* pDC)
 	INT nSrcWidth = m_rtImage.Width();
 	INT nSrcHeight = m_rtImage.Height();
 
-	pMainFrm->SetStatusBarText(0, _T("No Interpolation"));
+	pMainFrm->SetStatusBarText(1, _T("No Interpolation"));
 
 	//
 	g.DrawImage(&bitmap,
@@ -719,6 +744,9 @@ BOOL CStudyViewer::DrawInstanceImage(CDC* pDC)
 		UnitPixel);
 #elif SELF_RESIZE
 	UpdateScreenData();
+
+	if (!m_pScreenImage)
+		return FALSE;
 
 	BITMAPINFOHEADER& bih = GetDibInfo()->bmiHeader;
 	bih.biSize = sizeof(BITMAPINFOHEADER);
@@ -750,6 +778,9 @@ BOOL CStudyViewer::DrawInstanceImage(CDC* pDC)
 #else
 	UpdateScreenData();
 
+	if (!m_pScreenImage)
+		return FALSE;
+
 	BITMAPINFOHEADER& bih = GetDibInfo()->bmiHeader;
 	bih.biSize = sizeof(BITMAPINFOHEADER);
 	bih.biWidth = m_rtDisplayedROIOnCanvas.Width();
@@ -777,35 +808,6 @@ BOOL CStudyViewer::DrawInstanceImage(CDC* pDC)
 		(BITMAPINFO*)GetDibInfo(),
 		DIB_RGB_COLORS,
 		SRCCOPY);
-
-
-// 	BITMAPINFOHEADER& bih = GetDibInfo()->bmiHeader;
-// 	bih.biSize = sizeof(BITMAPINFOHEADER);
-// 	bih.biWidth = m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).m_stImageInfo.m_nWidth;
-// 	bih.biHeight = -m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).m_stImageInfo.m_nHeight;
-// 	bih.biPlanes = 1;
-// 	bih.biBitCount = 8 * m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).m_stImageInfo.m_nSamplesPerPixel;
-// 	bih.biCompression = BI_RGB;
-// 	bih.biSizeImage = m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).BytesPerLine((UINT)((double)m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).m_stImageInfo.m_nWidth*(double)m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).m_stImageInfo.m_nSamplesPerPixel), 8) * m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).m_stImageInfo.m_nHeight;
-// 	bih.biXPelsPerMeter = 0;
-// 	bih.biYPelsPerMeter = 0;
-// 	bih.biClrUsed = 0;
-// 	bih.biClrImportant = 0;
-// 
-// 	::SetStretchBltMode(pDC->GetSafeHdc(), COLORONCOLOR);
-// 	::StretchDIBits(pDC->GetSafeHdc(),
-// 		m_rtCanvas.left,
-// 		m_rtCanvas.top,
-// 		m_rtCanvas.Width(),
-// 		m_rtCanvas.Height(),
-// 		m_rtImage.left,
-// 		m_rtImage.top,
-// 		m_rtImage.Width(),
-// 		m_rtImage.Height(),
-// 		(void*)m_pDisplayImage,
-// 		(BITMAPINFO*)GetDibInfo(),
-// 		DIB_RGB_COLORS,
-// 		SRCCOPY);
 #endif
 
 	clockEnd = clock();
@@ -814,121 +816,8 @@ BOOL CStudyViewer::DrawInstanceImage(CDC* pDC)
 	float fResultTime = (float)(clockEnd - clockStart) / 1000;
 
 	strTimeStamp.Format(_T("Update total time : %0.2f sec"), fResultTime);
-	pMainFrm->SetStatusBarText(1, strTimeStamp);
-
-	// TEST1
-// 	UpdateScreenData();
-// 
-// 	BITMAPINFOHEADER& bih = GetDibInfo()->bmiHeader;
-// 	bih.biSize = sizeof(BITMAPINFOHEADER);
-// 	bih.biWidth = m_rtDisplayedROIOnCanvas.Width();
-// 	bih.biHeight = -m_rtDisplayedROIOnCanvas.Height();
-// 	bih.biPlanes = 1;
-// 	bih.biBitCount = 8 * m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).m_stImageInfo.m_nSamplesPerPixel;
-// 	bih.biCompression = BI_RGB;
-// 	bih.biSizeImage = m_rtDisplayedROIOnCanvas.Width() * m_rtDisplayedROIOnCanvas.Height();
-// 	bih.biXPelsPerMeter = 0;
-// 	bih.biYPelsPerMeter = 0;
-// 	bih.biClrUsed = 0;
-// 	bih.biClrImportant = 0;
-// 
-// 	::SetStretchBltMode(pDC->GetSafeHdc(), COLORONCOLOR);
-// 	::StretchDIBits(pDC->GetSafeHdc(),
-// 		m_rtCanvas.left,
-// 		m_rtCanvas.top,
-// 		m_rtCanvas.Width(),
-// 		m_rtCanvas.Height(),
-// 		m_rtDrawRectOnCanvas.left,
-// 		m_rtDrawRectOnCanvas.top,
-// 		m_rtDrawRectOnCanvas.Width(),
-// 		m_rtDrawRectOnCanvas.Height(),
-// 		(void*)m_pScreenImage,
-// 		(BITMAPINFO*)GetDibInfo(),
-// 		DIB_RGB_COLORS,
-// 		SRCCOPY);
-
-
-	//TEST2
-
-// 	BITMAPINFOHEADER& bih = GetDibInfo()->bmiHeader;
-// 	bih.biSize = sizeof(BITMAPINFOHEADER);
-// 	bih.biWidth = m_rtDisplayedROIOnCanvas.Width();
-// 	bih.biHeight = -m_rtDisplayedROIOnCanvas.Height();
-// 	bih.biPlanes = 1;
-// 	bih.biBitCount = 8 * m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).m_stImageInfo.m_nSamplesPerPixel;
-// 	bih.biCompression = BI_RGB;
-// 	bih.biSizeImage = m_rtDisplayedROIOnCanvas.Width() * m_rtDisplayedROIOnCanvas.Height();
-// 	bih.biXPelsPerMeter = 0;
-// 	bih.biYPelsPerMeter = 0;
-// 	bih.biClrUsed = 0;
-// 	bih.biClrImportant = 0;
-// 
-// 	Graphics g(pDC->GetSafeHdc());
-// 
-// 	// 나중에 시간날떄 한번씩 써보자. enum InterpolationMode
-// 	//g.SetInterpolationMode(InterpolationModeBilinear);
-// 
-// 	Gdiplus::Bitmap bitmap((BITMAPINFO*)GetDibInfo(), m_pScreenImage);
-// 
-// 	m_rtImage.OffsetRect(0, 0);
-// 
-// 	//
-// 	g.DrawImage(&bitmap,
-// 		Rect(m_rtCanvas.left, m_rtCanvas.top, m_rtCanvas.Width(), m_rtCanvas.Height()),
-// 		m_rtImageOnCanvas.left,
-// 		m_rtImageOnCanvas.top,
-// 		m_rtImageOnCanvas.Width(),
-// 		m_rtImageOnCanvas.Height(),
-// 		UnitPixel);
-	//
-
-
-
-// 	::SetStretchBltMode(pDC->GetSafeHdc(), COLORONCOLOR);
-// 	::StretchDIBits(pDC->GetSafeHdc(),
-// 		m_rtCanvas.left,
-// 		m_rtCanvas.top,
-// 		m_rtCanvas.Width(),
-// 		m_rtCanvas.Height(),
-// 		m_rtImageOnCanvas.left,
-// 		m_rtImageOnCanvas.top,
-// 		m_rtImageOnCanvas.Width(),
-// 		m_rtImageOnCanvas.Height(),
-// 		(void*)m_pScreenImage,
-// 		(BITMAPINFO*)GetDibInfo(),
-// 		DIB_RGB_COLORS,
-// 		SRCCOPY);
-
-
-	//
-// 	BITMAPINFOHEADER& bih = GetDibInfo()->bmiHeader;
-// 	bih.biSize = sizeof(BITMAPINFOHEADER);
-// 	bih.biWidth = m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).m_stImageInfo.m_nWidth;
-// 	bih.biHeight = -m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).m_stImageInfo.m_nHeight;
-// 	bih.biPlanes = 1;
-// 	bih.biBitCount = 8 * m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).m_stImageInfo.m_nSamplesPerPixel;
-// 	bih.biCompression = BI_RGB;
-// 	bih.biSizeImage = m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).BytesPerLine((UINT)((double)m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).m_stImageInfo.m_nWidth*(double)m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).m_stImageInfo.m_nSamplesPerPixel), 8) * m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).m_stImageInfo.m_nHeight;
-// 	bih.biXPelsPerMeter = 0;
-// 	bih.biYPelsPerMeter = 0;
-// 	bih.biClrUsed = 0;
-// 	bih.biClrImportant = 0;
-// 
-// 	::SetStretchBltMode(pDC->GetSafeHdc(), COLORONCOLOR);
-// 	::StretchDIBits(pDC->GetSafeHdc(),
-// 		m_rtCanvas.left,
-// 		m_rtCanvas.top,
-// 		m_rtCanvas.Width(),
-// 		m_rtCanvas.Height(),
-// 		m_rtImage.left,
-// 		m_rtImage.top,
-// 		m_rtImage.Width(),
-// 		m_rtImage.Height(),
-// 		(void*)m_pDisplayImage,
-// 		(BITMAPINFO*)GetDibInfo(),
-// 		DIB_RGB_COLORS,
-// 		SRCCOPY);
-
+	pMainFrm->SetStatusBarText(2, strTimeStamp);
+	
 	return TRUE;
 }
 
@@ -1447,6 +1336,19 @@ BOOL CStudyViewer::CalcDisplayImageROI(CDicomImage * pImageInfo)
 	double dHeightRatio = (double)nImageHeight / (double)m_rtImageEx.Height;
 
 	CCoordinatorUtill util;
+	CRect rtOldRoiImage = m_rtDisplayedROIOnImage;
+
+	if (m_rtImageEx.GetLeft() > nCanvasWidth || m_rtImageEx.GetTop() > nCanvasHeight ||
+		m_rtImageEx.GetRight() < 0 || m_rtImageEx.GetBottom() < 0)
+	{
+		m_rtDisplayedROIOnImage.left = 0;
+		m_rtDisplayedROIOnImage.right = 0;
+		m_rtDisplayedROIOnImage.top = 0;
+		m_rtDisplayedROIOnImage.bottom = 0;
+
+		return TRUE;
+
+	}
 
 	if (m_rtImageEx.GetLeft() > 0) // 좌측이 다 보이는경우,
 	{
@@ -1473,17 +1375,17 @@ BOOL CStudyViewer::CalcDisplayImageROI(CDicomImage * pImageInfo)
 	}
 	else // 상단이 다 보이지 않는 경우
 	{
-		m_rtDisplayedROIOnImage.top = m_rtImageEx.GetTop() * dWidthRatio * (-1);
+		m_rtDisplayedROIOnImage.top = m_rtImageEx.GetTop() * dHeightRatio * (-1);
 	}
-	
 	
 	if (m_rtImageEx.GetBottom() < nCanvasHeight) // 하단이 다 보이는 경우,
 	{
 		m_rtDisplayedROIOnImage.bottom = nImageHeight;
 	}
+	
 	else // 하단이 다 보이지 않는 경우,
 	{
-		m_rtDisplayedROIOnImage.bottom = nImageHeight - ((m_rtImageEx.GetBottom() - nCanvasHeight) * dWidthRatio);
+		m_rtDisplayedROIOnImage.bottom = nImageHeight - ((m_rtImageEx.GetBottom() - nCanvasHeight) * dHeightRatio);
 	}
 
 	INT_PTR nRoiImageWidth = m_rtDisplayedROIOnImage.Width();
@@ -1502,6 +1404,21 @@ BOOL CStudyViewer::CalcDisplayImageROI(CDicomImage * pImageInfo)
 		m_rtDisplayedROIOnImage.bottom = nImageHeight;
 	}
 	
+	m_dOldZoomValue = m_dZoomValue;
+
+	if (m_dOldZoomValue != m_dZoomValue &&					// Zoom값이 변했을때만 고려한다.
+		m_rtDisplayedROIOnImage.Width() != nImageWidth &&	// 영상이 전부 보일 때는 고려하지 않는다.
+		m_rtDisplayedROIOnImage.Height() != nImageHeight)
+	{
+		if ((m_rtDisplayedROIOnImage.Width() == rtOldRoiImage.Width()) ||
+			(m_rtDisplayedROIOnImage.Height() == rtOldRoiImage.Height()))
+		{
+			
+			m_rtDisplayedROIOnImage = rtOldRoiImage;
+			return FALSE; // No need to 
+		}
+	}
+	
 	return TRUE;
 }
 
@@ -1509,6 +1426,16 @@ BOOL CStudyViewer::CalcDisplayCanvasROI(CDicomImage * pImageInfo)
 {
 	if (!pImageInfo)
 		return FALSE;
+
+	if (m_rtDisplayedROIOnImage.Width() == 0 || m_rtDisplayedROIOnImage.Height() == 0)
+	{
+		m_rtDisplayedROIOnCanvas.left	= 0;
+		m_rtDisplayedROIOnCanvas.right	= 0;
+		m_rtDisplayedROIOnCanvas.top	= 0;
+		m_rtDisplayedROIOnCanvas.bottom = 0;
+
+		return TRUE;
+	}
 
 	CCoordinatorUtill util;
 
@@ -1570,7 +1497,7 @@ BOOL CStudyViewer::CalcDisplayCanvasROI(CDicomImage * pImageInfo)
 	m_stInterpolatedImg.nHeight = m_rtDisplayedROIOnCanvas.Height();
 
 	//////////////////////////////////////////
-	return 0;
+	return TRUE;
 }
 
 
@@ -1578,6 +1505,16 @@ BOOL CStudyViewer::CalcDrawRectOnCanvasRect(CDicomImage * pImageInfo)
 {
 	if (!pImageInfo)
 		return FALSE;
+
+	if (m_rtDisplayedROIOnImage.Width() == 0 || m_rtDisplayedROIOnImage.Height() == 0)
+	{
+		m_rtDrawRectOnCanvas.left = 0;
+		m_rtDrawRectOnCanvas.right = 0;
+		m_rtDrawRectOnCanvas.top = 0;
+		m_rtDrawRectOnCanvas.bottom = 0;
+
+		return TRUE;
+	}
 
 	double nCanvasHeight = (double)m_rtCanvas.Height();
 	double nCanvasWidth = (double)m_rtCanvas.Width();
@@ -1752,10 +1689,7 @@ void CStudyViewer::UpdateScreenData()
 	if (!m_pDisplayImage)
 		return;
 
-
-
 	CMainFrame* pMainFrm = (CMainFrame*)AfxGetMainWnd();
-	INTERPOLATION_TYPE eInterpolationType = pMainFrm->GetInterpolationType();
 
 	CDicomImage imageDisplayInfo;	// different with DICOM information
 	imageDisplayInfo = m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex);
@@ -1765,9 +1699,26 @@ void CStudyViewer::UpdateScreenData()
 	INT_PTR nImgWidthOnCanvas = m_rtCanvas.Width();
 	INT_PTR nImgHeightOnCanvas = m_rtCanvas.Height();
 
-	CalcDisplayImageROI(&imageDisplayInfo);
-	CalcDisplayCanvasROI(&imageDisplayInfo);
-	CalcDrawRectOnCanvasRect(&imageDisplayInfo);
+	if (!CalcDisplayImageROI(&imageDisplayInfo))
+	{
+		return;
+	}
+
+	if (!CalcDisplayCanvasROI(&imageDisplayInfo))
+	{
+		return;
+	}
+
+	if (!CalcDrawRectOnCanvasRect(&imageDisplayInfo))
+	{
+		return;
+	}
+	
+
+	if (m_rtDisplayedROIOnImage.Width() <= 0 || m_rtDisplayedROIOnImage.Height() <= 0)
+	{
+		m_pScreenImage = nullptr;
+	}
 
 	FreeRoiBuffer();
 	AllocRoiBuffer();
@@ -1794,7 +1745,7 @@ void CStudyViewer::UpdateScreenData()
 	CMyInterpolation myInter;
 	myInter.SetUseParallelCalc(pMainFrm->IsUsingParallelCalc());
 
-	switch (eInterpolationType)
+	switch (m_eInterpolationType)
 	{
 	case eBicubicPolynomial_050:
 		myInter.DoBiCubicInterpolation(m_pRoiImage,
@@ -1805,7 +1756,6 @@ void CStudyViewer::UpdateScreenData()
 			m_rtDisplayedROIOnCanvas.Height(),
 			FALSE,
 			-0.5);
-		pMainFrm->SetStatusBarText(0, _T("Bicubic_-0.50"));
 		break;
 	case eBicubicPolynomial_075:
 		myInter.DoBiCubicInterpolation(m_pRoiImage,
@@ -1816,7 +1766,6 @@ void CStudyViewer::UpdateScreenData()
 			m_rtDisplayedROIOnCanvas.Height(),
 			FALSE,
 			-0.75);
-		pMainFrm->SetStatusBarText(0, _T("Bicubic_-0.75"));
 		break;
 	case eBicubicPolynomial_100:
 		myInter.DoBiCubicInterpolation(m_pRoiImage,
@@ -1827,7 +1776,7 @@ void CStudyViewer::UpdateScreenData()
 			m_rtDisplayedROIOnCanvas.Height(),
 			FALSE,
 			-1.0);
-		pMainFrm->SetStatusBarText(0, _T("Bicubic_-1.0"));
+
 		break;
 	case eBicubicPolynomial_000:
 		myInter.DoBiCubicInterpolation(m_pRoiImage,
@@ -1838,7 +1787,6 @@ void CStudyViewer::UpdateScreenData()
 			m_rtDisplayedROIOnCanvas.Height(),
 			FALSE,
 			0.0);
-		pMainFrm->SetStatusBarText(0, _T("Bicubic_0.0"));
 		break;
 	case eBicubicPolynomial_300:
 		myInter.DoBiCubicInterpolation(m_pRoiImage,
@@ -1849,7 +1797,6 @@ void CStudyViewer::UpdateScreenData()
 			m_rtDisplayedROIOnCanvas.Height(),
 			FALSE,
 			-3.0);
-		pMainFrm->SetStatusBarText(0, _T("Bicubic_-3.0"));
 		break;
 	case eBicubicBSpline:
 		myInter.DoBiCubicInterpolation(m_pRoiImage,
@@ -1859,7 +1806,7 @@ void CStudyViewer::UpdateScreenData()
 			m_rtDisplayedROIOnCanvas.Width(),
 			m_rtDisplayedROIOnCanvas.Height(),
 			TRUE);
-		pMainFrm->SetStatusBarText(0, _T("B-Spline"));
+		
 		break;
 	case eBicubicLanczos:
 		myInter.DoLanczosInterpolation(m_pRoiImage,
@@ -1869,7 +1816,7 @@ void CStudyViewer::UpdateScreenData()
 			m_rtDisplayedROIOnCanvas.Width(),
 			m_rtDisplayedROIOnCanvas.Height(),
 			2.0);
-		pMainFrm->SetStatusBarText(0, _T("Lanczos"));
+		
 		break;
 	case eBicubicMichell:
 		myInter.DoMitchellInterpolation(m_pRoiImage,
@@ -1880,7 +1827,7 @@ void CStudyViewer::UpdateScreenData()
 			m_rtDisplayedROIOnCanvas.Height(),
 			0.33333,
 			0.33333);
-		pMainFrm->SetStatusBarText(0, _T("Mitchell"));
+		
 		break;
 	case eBicubicCatmullRom:
 		myInter.DoCatmullRomSplineInterpolation(m_pRoiImage,
@@ -1889,7 +1836,7 @@ void CStudyViewer::UpdateScreenData()
 			m_rtDisplayedROIOnImage.Height(),
 			m_rtDisplayedROIOnCanvas.Width(),
 			m_rtDisplayedROIOnCanvas.Height());
-		pMainFrm->SetStatusBarText(0, _T("Catmull-Rom Spline"));
+		
 		break;
 	case eBilinear:
 	default:
@@ -1899,7 +1846,7 @@ void CStudyViewer::UpdateScreenData()
 			m_rtDisplayedROIOnImage.Height(),
 			m_rtDisplayedROIOnCanvas.Width(),
 			m_rtDisplayedROIOnCanvas.Height());
-		pMainFrm->SetStatusBarText(0, _T("Bilinear"));
+		
 	
 		break;
 	}
@@ -1910,7 +1857,7 @@ void CStudyViewer::UpdateScreenData()
 	float fResultTime = (float)(clockEnd - clockStart) / 1000;
 
 	strTimeStamp.Format(_T("Calc time : %0.2f sec"), fResultTime);
-	pMainFrm->SetStatusBarText(2, strTimeStamp);
+	pMainFrm->SetStatusBarText(3, strTimeStamp);
 
 	return;
 }

@@ -20,7 +20,6 @@ public:
 	CLLDicomDS m_LLDicomDS;
 
 	// to Control
-	BOOL m_bInitialized;
 	pDICOMELEMENT m_pParentElement;
 	pDICOMELEMENT m_pCurrentElement;
 

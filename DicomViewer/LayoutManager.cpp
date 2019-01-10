@@ -95,6 +95,11 @@ INT_PTR CLayoutManager::GetStudyViewerCount()
 	return m_nViewerCount;
 }
 
+INT_PTR CLayoutManager::GetLoadedStudyCount()
+{
+	return m_aryLoadedStudy.GetCount();
+}
+
 CStudyViewer * CLayoutManager::GetCurStudyViewer()
 {
 	if (m_nSelectedViewerIndex < 0 || m_aryStudyViewer.GetCount() <= 0)
@@ -157,7 +162,8 @@ BOOL CLayoutManager::SetStudyToEmptyStudyViewer(CStudy* pStudy)
 			pStudyViewer->Init();
 			pStudyViewer->SetStudy(pStudy);
 			pStudy->AddStudyViewerIndex(iStudyViewer);
-			RedrawStudyViewer(iStudyViewer);
+//			RedrawStudyViewer(iStudyViewer);
+			RedrawWnd();
 			return TRUE;
 		}
 	}
