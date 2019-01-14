@@ -1,7 +1,5 @@
 #pragma once
 
-#include "MyCalc.h"
-
 class CMyInterpolation
 {
 public:
@@ -32,7 +30,6 @@ private:
 	unsigned char GetPixelClamped(unsigned char* pImage, INT_PTR x, INT_PTR y, INT_PTR nWidth, INT_PTR nHeight);
 
 private:
-	CMyCalc m_CalcUtil;
 	BOOL m_bUseParallelCalc;
 };
 

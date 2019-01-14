@@ -456,8 +456,11 @@ void CMainFrame::Init()
 		}
 	}
 
-	m_eInterpolationType = eBilinear;
+	m_eInterpolationType = InterpolationTypeBilinear;
 	SetStatusBarText(1, _T("Bilinear"));
+
+	CMenu *hMenu = GetMenu();
+	hMenu->CheckMenuItem(ID_INTERPOLATION_BILINEAR, TRUE);
 
 	m_bUseParallelCalc = TRUE;
 
@@ -759,7 +762,7 @@ void CMainFrame::UpdateStudyViewerInterpolation()
 
 void CMainFrame::OnInterpolationBilinear()
 {
-	m_eInterpolationType = eBilinear;
+	m_eInterpolationType = InterpolationTypeBilinear;
 	SetStatusBarText(1, _T("Bilinear"));
 
 	UpdateStudyViewerInterpolation();
@@ -768,7 +771,7 @@ void CMainFrame::OnInterpolationBilinear()
 
 void CMainFrame::OnInterpolationBicubicPolynomial050()
 {
-	m_eInterpolationType = eBicubicPolynomial_050;
+	m_eInterpolationType = InterpolationTypeBicubicPolynomial_050;
 	SetStatusBarText(1, _T("Bicubic_-0.50"));
 
 	UpdateStudyViewerInterpolation();
@@ -776,7 +779,7 @@ void CMainFrame::OnInterpolationBicubicPolynomial050()
 
 void CMainFrame::OnInterpolationBicubicPolynomial075()
 {
-	m_eInterpolationType = eBicubicPolynomial_075;
+	m_eInterpolationType = InterpolationTypeBicubicPolynomial_075;
 	SetStatusBarText(1, _T("Bicubic_-0.75"));
 
 	UpdateStudyViewerInterpolation();
@@ -784,7 +787,7 @@ void CMainFrame::OnInterpolationBicubicPolynomial075()
 
 void CMainFrame::OnInterpolationBicubicPolynomial100()
 {
-	m_eInterpolationType = eBicubicPolynomial_100;
+	m_eInterpolationType = InterpolationTypeBicubicPolynomial_100;
 	SetStatusBarText(1, _T("Bicubic_-1.0"));
 
 	UpdateStudyViewerInterpolation();
@@ -792,7 +795,7 @@ void CMainFrame::OnInterpolationBicubicPolynomial100()
 
 void CMainFrame::OnInterpolationBicubicPolynomial000()
 {
-	m_eInterpolationType = eBicubicPolynomial_000;
+	m_eInterpolationType = InterpolationTypeBicubicPolynomial_000;
 	SetStatusBarText(1, _T("Bicubic_0.0"));
 
 	UpdateStudyViewerInterpolation();
@@ -800,7 +803,7 @@ void CMainFrame::OnInterpolationBicubicPolynomial000()
 
 void CMainFrame::OnInterpolationBicubicPolynomial300()
 {
-	m_eInterpolationType = eBicubicPolynomial_300;
+	m_eInterpolationType = InterpolationTypeBicubicPolynomial_300;
 	SetStatusBarText(1, _T("Bicubic_-3.0"));
 
 	UpdateStudyViewerInterpolation();
@@ -808,7 +811,7 @@ void CMainFrame::OnInterpolationBicubicPolynomial300()
 
 void CMainFrame::OnInterpolationBicubicBSpline()
 {
-	m_eInterpolationType = eBicubicBSpline;
+	m_eInterpolationType = InterpolationTypeBicubicBSpline;
 	SetStatusBarText(1, _T("B-Spline"));
 
 	UpdateStudyViewerInterpolation();
@@ -816,7 +819,7 @@ void CMainFrame::OnInterpolationBicubicBSpline()
 
 void CMainFrame::OnInterpolationLanczos()
 {
-	m_eInterpolationType = eBicubicLanczos;
+	m_eInterpolationType = InterpolationTypeBicubicLanczos;
 	SetStatusBarText(1, _T("Lanczos"));
 
 	UpdateStudyViewerInterpolation();
@@ -824,7 +827,7 @@ void CMainFrame::OnInterpolationLanczos()
 
 void CMainFrame::OnInterpolationMitchell()
 {
-	m_eInterpolationType = eBicubicMichell;
+	m_eInterpolationType = InterpolationTypeBicubicMichell;
 	SetStatusBarText(1, _T("Mitchell"));
 
 	UpdateStudyViewerInterpolation();
@@ -832,7 +835,7 @@ void CMainFrame::OnInterpolationMitchell()
 
 void CMainFrame::OnInterpolationCatmullrom()
 {
-	m_eInterpolationType = eBicubicCatmullRom;
+	m_eInterpolationType = InterpolationTypeBicubicCatmullRom;
 	SetStatusBarText(1, _T("Catmull-Rom Spline"));
 
 	UpdateStudyViewerInterpolation();
@@ -840,7 +843,7 @@ void CMainFrame::OnInterpolationCatmullrom()
 
 void CMainFrame::OnUpdateInterpolationBilinear(CCmdUI *pCmdUI)
 {
-	if (m_eInterpolationType == eBilinear)
+	if (m_eInterpolationType == InterpolationTypeBilinear)
 	{
 		pCmdUI->SetCheck(TRUE);
 	}
@@ -855,9 +858,7 @@ void CMainFrame::OnUpdateInterpolationBilinear(CCmdUI *pCmdUI)
 
 void CMainFrame::OnUpdateInterpolationBicubicPolynomial(CCmdUI *pCmdUI)
 {
-	CMenu *hMenu = GetMenu();
-
-	if (m_eInterpolationType == eBicubicPolynomial_050)
+	if (m_eInterpolationType == InterpolationTypeBicubicPolynomial_050)
 	{
 		pCmdUI->SetCheck(TRUE);
 		
@@ -871,9 +872,7 @@ void CMainFrame::OnUpdateInterpolationBicubicPolynomial(CCmdUI *pCmdUI)
 
 void CMainFrame::OnUpdateInterpolationBicubicPolynomial075(CCmdUI *pCmdUI)
 {
-	CMenu *hMenu = GetMenu();
-
-	if (m_eInterpolationType == eBicubicPolynomial_075)
+	if (m_eInterpolationType == InterpolationTypeBicubicPolynomial_075)
 	{
 		pCmdUI->SetCheck(TRUE);
 		
@@ -888,9 +887,7 @@ void CMainFrame::OnUpdateInterpolationBicubicPolynomial075(CCmdUI *pCmdUI)
 
 void CMainFrame::OnUpdateInterpolationBicubicPolynomial100(CCmdUI *pCmdUI)
 {
-	CMenu *hMenu = GetMenu();
-
-	if (m_eInterpolationType == eBicubicPolynomial_100)
+	if (m_eInterpolationType == InterpolationTypeBicubicPolynomial_100)
 	{
 		pCmdUI->SetCheck(TRUE);
 		
@@ -905,9 +902,7 @@ void CMainFrame::OnUpdateInterpolationBicubicPolynomial100(CCmdUI *pCmdUI)
 
 void CMainFrame::OnUpdateInterpolationBicubicPolynomial000(CCmdUI *pCmdUI)
 {
-	CMenu *hMenu = GetMenu();
-
-	if (m_eInterpolationType == eBicubicPolynomial_000)
+	if (m_eInterpolationType == InterpolationTypeBicubicPolynomial_000)
 	{
 		pCmdUI->SetCheck(TRUE);
 	}
@@ -920,9 +915,7 @@ void CMainFrame::OnUpdateInterpolationBicubicPolynomial000(CCmdUI *pCmdUI)
 
 void CMainFrame::OnUpdateInterpolationBicubicPolynomial300(CCmdUI *pCmdUI)
 {
-	CMenu *hMenu = GetMenu();
-
-	if (m_eInterpolationType == eBicubicPolynomial_300)
+	if (m_eInterpolationType == InterpolationTypeBicubicPolynomial_300)
 	{
 		pCmdUI->SetCheck(TRUE);
 	}
@@ -935,9 +928,7 @@ void CMainFrame::OnUpdateInterpolationBicubicPolynomial300(CCmdUI *pCmdUI)
 
 void CMainFrame::OnUpdateInterpolationBicubicSpline(CCmdUI *pCmdUI)
 {
-	CMenu *hMenu = GetMenu();
-
-	if (m_eInterpolationType == eBicubicBSpline)
+	if (m_eInterpolationType == InterpolationTypeBicubicBSpline)
 	{
 		pCmdUI->SetCheck(TRUE);
 		
@@ -951,9 +942,7 @@ void CMainFrame::OnUpdateInterpolationBicubicSpline(CCmdUI *pCmdUI)
 
 void CMainFrame::OnUpdateInterpolationLanczos(CCmdUI *pCmdUI)
 {
-	CMenu *hMenu = GetMenu();
-
-	if (m_eInterpolationType == eBicubicLanczos)
+	if (m_eInterpolationType == InterpolationTypeBicubicLanczos)
 	{
 		pCmdUI->SetCheck(TRUE);
 		
@@ -968,9 +957,7 @@ void CMainFrame::OnUpdateInterpolationLanczos(CCmdUI *pCmdUI)
 
 void CMainFrame::OnUpdateInterpolationMitchell(CCmdUI *pCmdUI)
 {
-	CMenu *hMenu = GetMenu();
-
-	if (m_eInterpolationType == eBicubicMichell)
+	if (m_eInterpolationType == InterpolationTypeBicubicMichell)
 	{
 		pCmdUI->SetCheck(TRUE);
 		
@@ -984,9 +971,7 @@ void CMainFrame::OnUpdateInterpolationMitchell(CCmdUI *pCmdUI)
 
 void CMainFrame::OnUpdateInterpolationCatmullrom(CCmdUI *pCmdUI)
 {
-	CMenu *hMenu = GetMenu();
-
-	if (m_eInterpolationType == eBicubicCatmullRom)
+	if (m_eInterpolationType == InterpolationTypeBicubicCatmullRom)
 	{
 		pCmdUI->SetCheck(TRUE);
 		

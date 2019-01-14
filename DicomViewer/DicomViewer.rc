@@ -94,8 +94,6 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // remains consistent on all systems.
 IDR_MAINFRAME           ICON                    "res\\MainIco.ico"
 
-//IDR_DICOMVIEWERTYPE     ICON                    "res\\DicomViewerDoc.ico"
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -180,7 +178,7 @@ BEGIN
         END
         POPUP "Interpolation",                  65535,MFT_STRING,MFS_ENABLED
         BEGIN
-            MENUITEM "Bilinear",                    ID_INTERPOLATION_BILINEAR,MFT_STRING,MFS_ENABLED
+            MENUITEM "Bilinear",                    ID_INTERPOLATION_BILINEAR,MFT_STRING,MFS_CHECKED
             MENUITEM "Bicubic(Poly_a=-0.5)",        ID_INTERPOLATION_BICUBIC_POLYNOMIAL,MFT_STRING,MFS_ENABLED
             MENUITEM "Bicubic(Poly_a=-0.75)",       ID_INTERPOLATION_BICUBIC_POLYNOMIAL_075,MFT_STRING,MFS_ENABLED
             MENUITEM "Bicubic(Poly_a=-1)",          ID_INTERPOLATION_BICUBIC_POLYNOMIAL_100,MFT_STRING,MFS_ENABLED

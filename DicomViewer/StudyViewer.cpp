@@ -19,7 +19,7 @@ CStudyViewer::CStudyViewer(INT_PTR nLayoutIndex)
 	m_bOnlySeriesViewer = FALSE;
 
 	m_nOperationMode = MODE_NORMAL;
-	m_eInterpolationType = eBilinear;
+	m_eInterpolationType = InterpolationTypeBilinear;
 }
 
 
@@ -82,7 +82,7 @@ void CStudyViewer::SetDisplayInstance()
 
 	FreeDisplayImage();
 	FreeRoiBuffer();
-	FreeScreenBuffer();
+	FreeDispRoiBuffer();
 	AllocDisplayImage();
 
 	CDicomImage* pDsInputImage = &m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex);
@@ -523,12 +523,12 @@ void CStudyViewer::Init(INT_PTR nCurSeriesIndex, INT_PTR nCurInstanceIndex, INT_
 {
 	m_pStudy = nullptr;
 	m_pDisplayImage = nullptr;
-	m_pScreenImage = nullptr;
+	m_pDispRoiImage = nullptr;
 	m_pRoiImage = nullptr;
 	m_pDisplayDicomDS = nullptr;
 	
 	FreeDisplayImage();
-	FreeScreenBuffer();
+	FreeDispRoiBuffer();
 	FreeRoiBuffer();
 	
 	m_nCurSeriesIndex = nCurSeriesIndex;
@@ -671,22 +671,22 @@ BOOL CStudyViewer::DrawInstanceImage(CDC* pDC)
 
 	switch (m_eInterpolationType)
 	{
-	case eBicubicPolynomial_050:
-	case eBicubicPolynomial_075:
-	case eBicubicPolynomial_100:
-	case eBicubicPolynomial_000:
-	case eBicubicPolynomial_300:
-	case eBicubicMichell:
-	case eBicubicLanczos:
-	case eBicubicCatmullRom:
+	case InterpolationTypeBicubicPolynomial_050:
+	case InterpolationTypeBicubicPolynomial_075:
+	case InterpolationTypeBicubicPolynomial_100:
+	case InterpolationTypeBicubicPolynomial_000:
+	case InterpolationTypeBicubicPolynomial_300:
+	case InterpolationTypeBicubicMichell:
+	case InterpolationTypeBicubicLanczos:
+	case InterpolationTypeBicubicCatmullRom:
 		g.SetInterpolationMode(InterpolationModeBicubic);
 		pMainFrm->SetStatusBarText(1, _T("Bicubic"));
 		break;
-	case eBicubicBSpline:
+	case InterpolationTypeBicubicBSpline:
 		g.SetInterpolationMode(InterpolationModeHighQualityBicubic);
 		pMainFrm->SetStatusBarText(1, _T("BicubicHighQuality"));
 		break;
-	case eBilinear:
+	case InterpolationTypeBilinear:
 	default:
 		g.SetInterpolationMode(InterpolationModeBilinear);
 		pMainFrm->SetStatusBarText(1, _T("Bilinear"));
@@ -745,7 +745,7 @@ BOOL CStudyViewer::DrawInstanceImage(CDC* pDC)
 #elif SELF_RESIZE
 	UpdateScreenData();
 
-	if (!m_pScreenImage)
+	if (!m_pDispRoiImage)
 		return FALSE;
 
 	BITMAPINFOHEADER& bih = GetDibInfo()->bmiHeader;
@@ -778,7 +778,7 @@ BOOL CStudyViewer::DrawInstanceImage(CDC* pDC)
 #else
 	UpdateScreenData();
 
-	if (!m_pScreenImage)
+	if (!m_pDispRoiImage)
 		return FALSE;
 
 	BITMAPINFOHEADER& bih = GetDibInfo()->bmiHeader;
@@ -804,7 +804,7 @@ BOOL CStudyViewer::DrawInstanceImage(CDC* pDC)
 		m_rtDrawRectOnCanvas.top,
 		m_rtDrawRectOnCanvas.Width(),
 		m_rtDrawRectOnCanvas.Height(),
-		(void*)m_pScreenImage,
+		(void*)m_pDispRoiImage,
 		(BITMAPINFO*)GetDibInfo(),
 		DIB_RGB_COLORS,
 		SRCCOPY);
@@ -1277,9 +1277,6 @@ BOOL CStudyViewer::CalcImageRectEx(CDicomImage * pImageInfo)
 	double dRatioBasedOnHeight = 0.;
 	double dRatioBasedOnWidth = 0.;
 
-	CPoint ptCenterImg = CPoint(0,0);
-	CPoint ptCenterCanvas = CPoint(0, 0);
-
 	//
 	dImgWidth = pImageInfo->m_stImageInfo.m_nWidth;
 	dImgHeight = pImageInfo->m_stImageInfo.m_nHeight;
@@ -1301,29 +1298,13 @@ BOOL CStudyViewer::CalcImageRectEx(CDicomImage * pImageInfo)
 	dImgWidthOnCanvas = dImgWidth * dRatio * m_dZoomValue;
 	dImgHeightOnCanvas = dImgHeight * dRatio * m_dZoomValue;
 
-	ptCenterImg = CPoint((int)((dImgWidth)*0.5f), (int)((dImgHeight)*0.5f));
-	ptCenterCanvas = CPoint((int)((dCanvasWidth)*0.5f), (int)((dCanvasHeight)*0.5f));
-
-	m_rtImageEx.X = ptCenterCanvas.x - (int)(dImgWidthOnCanvas / 2);
+	m_rtImageEx.X = (dCanvasWidth * 0.5f) - (dImgWidthOnCanvas * 0.5);
 	m_rtImageEx.Width = dImgWidthOnCanvas;
-	m_rtImageEx.Y = ptCenterCanvas.y - (int)(dImgHeightOnCanvas / 2);
+	m_rtImageEx.Y = (dCanvasHeight * 0.5f) - (dImgHeightOnCanvas * 0.5);
 	m_rtImageEx.Height = dImgHeightOnCanvas;
-
-	// panning
-// 	double dPannedDeltaX = -1 * (double)m_ptPanDelta.x / m_dZoomValue;
-// 	double dPannedDeltaY = (double)m_ptPanDelta.y / m_dZoomValue;
 
 	m_rtImageEx.X	+= (double)m_ptPanDelta.x;
 	m_rtImageEx.Y	+= (double)m_ptPanDelta.y;
-
-//	m_rtImageEx.OffsetRect((int)(dPannedDeltaX + 0.5f), (int)(dPannedDeltaY + 0.5f));
-
-// 	m_rtImageEx.left = (int)(dImgWidthOnCanvas / 2) - (int)(dCanvasWidth / 2);
-// 	m_rtImageEx.right =  (int)(dCanvasWidth + 0.5f) + m_rtImageEx.left;
-// 	m_rtImageEx.top = (int)(dImgHeightOnCanvas / 2) - (int)(dCanvasHeight / 2);
-// 	m_rtImageEx.bottom = (int)(dCanvasHeight + 0.5f) + m_rtImageEx.top;
-
-	//m_dCanvasPerImageRatio = dCanvasWidth / m_rtImageEx.Width();
 
 	return TRUE;
 }
@@ -1342,7 +1323,6 @@ BOOL CStudyViewer::CalcDisplayImageROI(CDicomImage * pImageInfo)
 	double dWidthRatio = (double)nImageWidth / (double)m_rtImageEx.Width;
 	double dHeightRatio = (double)nImageHeight / (double)m_rtImageEx.Height;
 
-	CCoordinatorUtill util;
 	CRect rtOldRoiImage = m_rtDisplayedROIOnImage;
 
 	if (m_rtImageEx.GetLeft() > nCanvasWidth || m_rtImageEx.GetTop() > nCanvasHeight ||
@@ -1354,7 +1334,6 @@ BOOL CStudyViewer::CalcDisplayImageROI(CDicomImage * pImageInfo)
 		m_rtDisplayedROIOnImage.bottom = 0;
 
 		return TRUE;
-
 	}
 
 	if (m_rtImageEx.GetLeft() > 0) // 좌측이 다 보이는경우,
@@ -1418,15 +1397,31 @@ BOOL CStudyViewer::CalcDisplayImageROI(CDicomImage * pImageInfo)
 		if (m_rtDisplayedROIOnImage.left != rtOldRoiImage.left &&
 			m_rtDisplayedROIOnImage.Width() == rtOldRoiImage.Width())
 		{
-			m_rtDisplayedROIOnImage = rtOldRoiImage;
-			return FALSE; // No need to 
+			double dRatio = (double)rtOldRoiImage.Height() / (double)rtOldRoiImage.Width();
+			INT_PTR nDiff = m_rtDisplayedROIOnImage.left - rtOldRoiImage.left;
+			m_rtDisplayedROIOnImage.right = rtOldRoiImage.right - nDiff;
+
+			double dHeight = (double)m_rtDisplayedROIOnImage.Width() * dRatio;
+			m_rtDisplayedROIOnImage.top = ((double)m_rtDisplayedROIOnImage.top + (double)m_rtDisplayedROIOnImage.bottom - dHeight) / 2;
+			m_rtDisplayedROIOnImage.bottom = (double)m_rtDisplayedROIOnImage.top + dHeight;
+
+//			m_rtDisplayedROIOnImage = rtOldRoiImage;
+			return FALSE;  
 		}
 
 		if (m_rtDisplayedROIOnImage.top != rtOldRoiImage.top &&
 			(m_rtDisplayedROIOnImage.Height() == rtOldRoiImage.Height()))
 		{
-			m_rtDisplayedROIOnImage = rtOldRoiImage;
-			return FALSE; // No need to 
+			double dRatio = (double)rtOldRoiImage.Width() / (double)rtOldRoiImage.Height();
+			INT_PTR nDiff = m_rtDisplayedROIOnImage.top - rtOldRoiImage.top;
+			m_rtDisplayedROIOnImage.bottom = rtOldRoiImage.bottom - nDiff;
+
+			double dWidth = (double)m_rtDisplayedROIOnImage.Height() * dRatio;
+			m_rtDisplayedROIOnImage.left = ((double)m_rtDisplayedROIOnImage.left + (double)m_rtDisplayedROIOnImage.right - dWidth) / 2;
+			m_rtDisplayedROIOnImage.right = (double)m_rtDisplayedROIOnImage.left + dWidth;
+
+//			m_rtDisplayedROIOnImage = rtOldRoiImage;
+			return FALSE;  
 		}
 	}
 	
@@ -1449,8 +1444,6 @@ BOOL CStudyViewer::CalcDisplayCanvasROI(CDicomImage * pImageInfo)
 		return TRUE;
 	}
 
-	CCoordinatorUtill util;
-
 	INT_PTR nImageWidth = (INT_PTR)pImageInfo->m_stImageInfo.m_nWidth;
 	INT_PTR nImageHeight = (INT_PTR)pImageInfo->m_stImageInfo.m_nHeight;
 
@@ -1463,18 +1456,6 @@ BOOL CStudyViewer::CalcDisplayCanvasROI(CDicomImage * pImageInfo)
 	m_rtDisplayedROIOnCanvas.right = m_rtImageEx.Width + m_rtImageEx.X;
 	m_rtDisplayedROIOnCanvas.top = m_rtImageEx.Y;
 	m_rtDisplayedROIOnCanvas.bottom = m_rtImageEx.Height + m_rtImageEx.Y;
-
-	double dWidthRatio = (double)m_rtImageEx.Width / (double)nImageWidth;
-	double dHeightRatio = (double)m_rtImageEx.Height / (double)nImageHeight;
-
-	double dExpectedWidth = m_rtDisplayedROIOnImage.Width() * dWidthRatio;
-	double dExpectedHeight = m_rtDisplayedROIOnImage.Height() * dHeightRatio;
-
-// 	Gdiplus::PointF ptCenter = Gdiplus::PointF(((m_rtImageEx.GetLeft() + m_rtImageEx.GetRight()) * 0.5), ((m_rtImageEx.GetTop() + m_rtImageEx.GetBottom()) * 0.5));
-// 	m_rtDisplayedROIOnCanvas.left = ptCenter.X - (dExpectedWidth * 0.5);
-// 	m_rtDisplayedROIOnCanvas.right = ptCenter.X + (dExpectedWidth * 0.5);
-// 	m_rtDisplayedROIOnCanvas.top = ptCenter.Y - (dExpectedHeight * 0.5);
-// 	m_rtDisplayedROIOnCanvas.bottom = ptCenter.Y + (dExpectedHeight * 0.5);
 
 	if (m_rtDisplayedROIOnCanvas.left < 0)
 	{
@@ -1623,7 +1604,7 @@ BOOL CStudyViewer::AllocDisplayImage()
 	return bRes;
 }
 
-BOOL CStudyViewer::AllocScreenBuffer()
+BOOL CStudyViewer::AllocDispRoiBuffer()
 {
 	BOOL bRes = TRUE;
 
@@ -1632,16 +1613,18 @@ BOOL CStudyViewer::AllocScreenBuffer()
 	if (nSceenSize <= 0)
 		return FALSE;
 
-	m_pScreenImage = new BYTE[nSceenSize];
+	m_pDispRoiImage = new BYTE[nSceenSize];
 
-	if (!m_pScreenImage)
+	if (!m_pDispRoiImage)
 	{
 		return FALSE;
 	}
 
-	m_stInterpolatedImg.pImage = m_pScreenImage;
+	m_stInterpolatedImg.pImage = m_pDispRoiImage;
 
-	memset(m_pScreenImage, 0, nSceenSize);
+	memset(m_pDispRoiImage, 0, nSceenSize);
+
+	return bRes;
 }
 
 BOOL CStudyViewer::AllocRoiBuffer()
@@ -1678,12 +1661,12 @@ void CStudyViewer::FreeDisplayImage()
 	}
 }
 
-void CStudyViewer::FreeScreenBuffer()
+void CStudyViewer::FreeDispRoiBuffer()
 {
-	if (m_pScreenImage)
+	if (m_pDispRoiImage)
 	{
-		delete[] m_pScreenImage;
-		m_pScreenImage = nullptr;
+		delete[] m_pDispRoiImage;
+		m_pDispRoiImage = nullptr;
 	}
 }
 
@@ -1729,7 +1712,7 @@ void CStudyViewer::UpdateScreenData()
 
 	if (m_rtDisplayedROIOnImage.Width() <= 0 || m_rtDisplayedROIOnImage.Height() <= 0)
 	{
-		m_pScreenImage = nullptr;
+		m_pDispRoiImage = nullptr;
 	}
 
 	FreeRoiBuffer();
@@ -1745,10 +1728,10 @@ void CStudyViewer::UpdateScreenData()
 	m_stROIImg.nHeight = m_rtDisplayedROIOnImage.Height();
 	m_stROIImg.pImage = m_pRoiImage;
 
-	FreeScreenBuffer();
-	AllocScreenBuffer();
+	FreeDispRoiBuffer();
+	AllocDispRoiBuffer();
 
-	if (!m_pScreenImage)
+	if (!m_pDispRoiImage)
 		return;
 
 	clock_t clockStart, clockEnd;
@@ -1759,9 +1742,9 @@ void CStudyViewer::UpdateScreenData()
 
 	switch (m_eInterpolationType)
 	{
-	case eBicubicPolynomial_050:
+	case InterpolationTypeBicubicPolynomial_050:
 		myInter.DoBiCubicInterpolation(m_pRoiImage,
-			m_pScreenImage,
+			m_pDispRoiImage,
 			m_rtDisplayedROIOnImage.Width(),
 			m_rtDisplayedROIOnImage.Height(),
 			m_rtDisplayedROIOnCanvas.Width(),
@@ -1769,9 +1752,9 @@ void CStudyViewer::UpdateScreenData()
 			FALSE,
 			-0.5);
 		break;
-	case eBicubicPolynomial_075:
+	case InterpolationTypeBicubicPolynomial_075:
 		myInter.DoBiCubicInterpolation(m_pRoiImage,
-			m_pScreenImage,
+			m_pDispRoiImage,
 			m_rtDisplayedROIOnImage.Width(),
 			m_rtDisplayedROIOnImage.Height(),
 			m_rtDisplayedROIOnCanvas.Width(),
@@ -1779,9 +1762,9 @@ void CStudyViewer::UpdateScreenData()
 			FALSE,
 			-0.75);
 		break;
-	case eBicubicPolynomial_100:
+	case InterpolationTypeBicubicPolynomial_100:
 		myInter.DoBiCubicInterpolation(m_pRoiImage,
-			m_pScreenImage,
+			m_pDispRoiImage,
 			m_rtDisplayedROIOnImage.Width(),
 			m_rtDisplayedROIOnImage.Height(),
 			m_rtDisplayedROIOnCanvas.Width(),
@@ -1790,9 +1773,9 @@ void CStudyViewer::UpdateScreenData()
 			-1.0);
 
 		break;
-	case eBicubicPolynomial_000:
+	case InterpolationTypeBicubicPolynomial_000:
 		myInter.DoBiCubicInterpolation(m_pRoiImage,
-			m_pScreenImage,
+			m_pDispRoiImage,
 			m_rtDisplayedROIOnImage.Width(),
 			m_rtDisplayedROIOnImage.Height(),
 			m_rtDisplayedROIOnCanvas.Width(),
@@ -1800,9 +1783,9 @@ void CStudyViewer::UpdateScreenData()
 			FALSE,
 			0.0);
 		break;
-	case eBicubicPolynomial_300:
+	case InterpolationTypeBicubicPolynomial_300:
 		myInter.DoBiCubicInterpolation(m_pRoiImage,
-			m_pScreenImage,
+			m_pDispRoiImage,
 			m_rtDisplayedROIOnImage.Width(),
 			m_rtDisplayedROIOnImage.Height(),
 			m_rtDisplayedROIOnCanvas.Width(),
@@ -1810,9 +1793,9 @@ void CStudyViewer::UpdateScreenData()
 			FALSE,
 			-3.0);
 		break;
-	case eBicubicBSpline:
+	case InterpolationTypeBicubicBSpline:
 		myInter.DoBiCubicInterpolation(m_pRoiImage,
-			m_pScreenImage,
+			m_pDispRoiImage,
 			m_rtDisplayedROIOnImage.Width(),
 			m_rtDisplayedROIOnImage.Height(),
 			m_rtDisplayedROIOnCanvas.Width(),
@@ -1820,9 +1803,9 @@ void CStudyViewer::UpdateScreenData()
 			TRUE);
 		
 		break;
-	case eBicubicLanczos:
+	case InterpolationTypeBicubicLanczos:
 		myInter.DoLanczosInterpolation(m_pRoiImage,
-			m_pScreenImage,
+			m_pDispRoiImage,
 			m_rtDisplayedROIOnImage.Width(),
 			m_rtDisplayedROIOnImage.Height(),
 			m_rtDisplayedROIOnCanvas.Width(),
@@ -1830,9 +1813,9 @@ void CStudyViewer::UpdateScreenData()
 			2.0);
 		
 		break;
-	case eBicubicMichell:
+	case InterpolationTypeBicubicMichell:
 		myInter.DoMitchellInterpolation(m_pRoiImage,
-			m_pScreenImage,
+			m_pDispRoiImage,
 			m_rtDisplayedROIOnImage.Width(),
 			m_rtDisplayedROIOnImage.Height(),
 			m_rtDisplayedROIOnCanvas.Width(),
@@ -1841,19 +1824,19 @@ void CStudyViewer::UpdateScreenData()
 			0.33333);
 		
 		break;
-	case eBicubicCatmullRom:
+	case InterpolationTypeBicubicCatmullRom:
 		myInter.DoCatmullRomSplineInterpolation(m_pRoiImage,
-			m_pScreenImage,
+			m_pDispRoiImage,
 			m_rtDisplayedROIOnImage.Width(),
 			m_rtDisplayedROIOnImage.Height(),
 			m_rtDisplayedROIOnCanvas.Width(),
 			m_rtDisplayedROIOnCanvas.Height());
 		
 		break;
-	case eBilinear:
+	case InterpolationTypeBilinear:
 	default:
 		myInter.DoBilinearInterpolation(m_pRoiImage,
-			m_pScreenImage,
+			m_pDispRoiImage,
 			m_rtDisplayedROIOnImage.Width(),
 			m_rtDisplayedROIOnImage.Height(),
 			m_rtDisplayedROIOnCanvas.Width(),
@@ -1883,11 +1866,9 @@ void CStudyViewer::CopyROIImageFromOrigin(BYTE* pSrc, BYTE* pDest, INT_PTR nSrcW
 {
 	UINT nLine = 0, nTotalSize = 0;
 	UINT nDestLine, nSrcLine;
-	UINT nCopySize;
 	nTotalSize = nROIHeight;
 	nDestLine = nROIWidth;
 	nSrcLine = (UINT)nSrcWidth;
-	nCopySize = (UINT)nROIWidth;
 
 	pSrc += m_rtDisplayedROIOnImage.top * nSrcWidth;
 	pSrc += m_rtDisplayedROIOnImage.left;
@@ -2122,7 +2103,7 @@ void CStudyViewer::OnLButtonDown(UINT nFlags, CPoint point)
 void CStudyViewer::OnDestroy()
 {
 	FreeDisplayImage();
-	FreeScreenBuffer();
+	FreeDispRoiBuffer();
 	FreeRoiBuffer();
 
 	CWnd::OnDestroy();

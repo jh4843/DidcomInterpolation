@@ -683,11 +683,6 @@ unsigned char CMyInterpolation::DoLanczos(unsigned char ucImg[4], double x, doub
 	double dTwoMinusX = 2 - x; // 1 < |2  - x| <  2
 
 	// Lanczos convolution algorithm (ref https://en.wikipedia.org/wiki/Lanczos_resampling)
-// 	double w0 = (dXPlusOne == 0) ? 1 : (a * m_CalcUtil.SineTaylor(PI * dXPlusOne) * m_CalcUtil.SineTaylor((PI * dXPlusOne) / a)) / (PI * PI * dXPlusOne * dXPlusOne);
-// 	double w1 = (x == 0) ? 1 : (a * m_CalcUtil.SineTaylor(PI * x) * m_CalcUtil.SineTaylor((PI * x) / a)) / (PI * PI * x * x);
-// 	double w2 = (dOneMinusX == 0) ? 1 : (a * m_CalcUtil.SineTaylor(PI * dOneMinusX) * m_CalcUtil.SineTaylor((PI * dOneMinusX) / a)) / (PI * PI * dOneMinusX * dOneMinusX);
-// 	double w3 = (dTwoMinusX == 0) ? 1 : (a * m_CalcUtil.SineTaylor(PI * dTwoMinusX) * m_CalcUtil.SineTaylor((PI * dTwoMinusX) / a)) / (PI * PI * dTwoMinusX * dTwoMinusX);
-
 	double w0 = (dXPlusOne == 0) ? 1 : (a * sin(PI * dXPlusOne) * sin((PI * dXPlusOne) / a)) / (PI * PI * dXPlusOne * dXPlusOne);
 	double w1 = (x == 0) ? 1 : (a * sin(PI * x) * sin((PI * x) / a)) / (PI * PI * x * x);
 	double w2 = (dOneMinusX == 0) ? 1 : (a * sin(PI * dOneMinusX) * sin((PI * dOneMinusX) / a)) / (PI * PI * dOneMinusX * dOneMinusX);

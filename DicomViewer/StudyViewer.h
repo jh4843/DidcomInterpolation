@@ -102,13 +102,13 @@ private:
 	IMAGE_INFO_EX m_stInterpolatedImg;
 			
 	BYTE* m_pDisplayImage;				// image processed image
-	BYTE* m_pScreenImage;				// Screen image
+	BYTE* m_pDispRoiImage;				// Screen image
 	BYTE* m_pRoiImage;					// image for ROI
 
 	CRect m_rtImage;
+	CRect m_rtCanvas;
 	Gdiplus::RectF m_rtImageEx;
 	CRect m_rtDrawRectOnCanvas;
-	CRect m_rtCanvas;
 	CRect m_rtDisplayedROIOnImage;
 	CRect m_rtDisplayedROIOnCanvas;
 	
@@ -192,10 +192,10 @@ protected:
 	virtual BOOL CalcDrawRectOnCanvasRect(CDicomImage* imageInfo);
 	virtual void CalcZoomAndPan();
 	virtual BOOL AllocDisplayImage();
-	virtual BOOL AllocScreenBuffer();
+	virtual BOOL AllocDispRoiBuffer();
 	virtual BOOL AllocRoiBuffer();
 	virtual void FreeDisplayImage();
-	virtual void FreeScreenBuffer();
+	virtual void FreeDispRoiBuffer();
 	virtual void FreeRoiBuffer();
 	virtual void UpdateScreenData();
 	virtual void CreateDragDropObjects();
