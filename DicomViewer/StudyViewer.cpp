@@ -1691,8 +1691,6 @@ void CStudyViewer::UpdateScreenData()
 
 	INT_PTR nOrgWidth = BytesPerLine((UINT)imageDisplayInfo.m_stImageInfo.m_nWidth, 8) ;
 	INT_PTR nOrgHeight = BytesPerLine((UINT)imageDisplayInfo.m_stImageInfo.m_nHeight, 8);
-	INT_PTR nImgWidthOnCanvas = m_rtCanvas.Width();
-	INT_PTR nImgHeightOnCanvas = m_rtCanvas.Height();
 
 	if (!CalcDisplayImageROI(&imageDisplayInfo))
 	{
