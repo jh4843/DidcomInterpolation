@@ -77,6 +77,9 @@
       <Filter>Utill</Filter>
     </ClCompile>
     <ClCompile Include="MyCalc.cpp" />
+    <ClCompile Include="MyImageInterpolationDrawUtils.cpp">
+      <Filter>Utill</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h" />
@@ -168,6 +171,9 @@
       <Filter>Res</Filter>
     </ClInclude>
     <ClInclude Include="MyCalc.h" />
+    <ClInclude Include="MyImageInterpolationDrawUtils.h">
+      <Filter>Utill</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\DicomViewer.ico">

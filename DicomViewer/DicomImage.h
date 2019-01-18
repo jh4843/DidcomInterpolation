@@ -105,7 +105,7 @@ public:
 			return TRUE;
 		}
 
-	}IMAGE_INFO_;
+	}IMAGE_INFO;
 
 	
 
@@ -115,7 +115,7 @@ public:
 	~CDicomImage();
 
 public:
-	IMAGE_INFO_ m_stImageInfo;
+	IMAGE_INFO m_stImageInfo;
 	BYTE* m_pImageData;
 
 protected:

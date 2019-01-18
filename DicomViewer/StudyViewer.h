@@ -197,10 +197,10 @@ protected:
 	virtual void FreeDisplayImage();
 	virtual void FreeDispRoiBuffer();
 	virtual void FreeRoiBuffer();
-	virtual void UpdateScreenData();
+	//virtual void UpdateScreenData();
 	virtual void CreateDragDropObjects();
-	virtual void CopyROIImageFromOrigin(BYTE* pSrc, BYTE* pDest, INT_PTR nSrcWidth, INT_PTR nSrcHeight, INT_PTR nROIWidth, INT_PTR nROIHeight);
-	virtual BOOL DoInterpolate(BYTE* pSrcImage, BYTE* pDestImage, UINT nSrcWidth, UINT nSrcHeight, UINT nDestWidth, UINT nDestHeight);
+	//virtual void CopyROIImageFromOrigin(BYTE* pSrc, BYTE* pDest, INT_PTR nSrcWidth, INT_PTR nSrcHeight, INT_PTR nROIWidth, INT_PTR nROIHeight);
+	//virtual BOOL DoInterpolate(BYTE* pSrcImage, BYTE* pDestImage, UINT nSrcWidth, UINT nSrcHeight, UINT nDestWidth, UINT nDestHeight);
 
 public:
 	DECLARE_MESSAGE_MAP()

@@ -4,6 +4,7 @@
 #include "DicomParser.h"
 #include "LayoutManager.h"
 #include "MainFrm.h"
+#include "MyImageInterpolationDrawUtils.h"
 
 
 CStudyViewer::CStudyViewer(INT_PTR nLayoutIndex)
@@ -648,6 +649,12 @@ BOOL CStudyViewer::DrawInstanceImage(CDC* pDC)
 		return FALSE;
 	}
 
+	if (!m_pDisplayImage)
+	{
+		return FALSE;
+	}
+		
+
 	CMainFrame* pMainFrm = (CMainFrame*)AfxGetMainWnd();
 	clock_t clockStart, clockEnd;
 
@@ -742,73 +749,55 @@ BOOL CStudyViewer::DrawInstanceImage(CDC* pDC)
 		nSrcWidth,
 		nSrcHeight,
 		UnitPixel);
-#elif SELF_RESIZE
-	UpdateScreenData();
 
-	if (!m_pDispRoiImage)
-		return FALSE;
-
-	BITMAPINFOHEADER& bih = GetDibInfo()->bmiHeader;
-	bih.biSize = sizeof(BITMAPINFOHEADER);
-	bih.biWidth = m_rtDisplayedROIOnImage.Width();
-	bih.biHeight = -m_rtDisplayedROIOnImage.Height();
-	bih.biPlanes = 1;
-	bih.biBitCount = 8 * m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).m_stImageInfo.m_nSamplesPerPixel;
-	bih.biCompression = BI_RGB;
-	bih.biSizeImage = m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).BytesPerLine((UINT)((double)m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).m_stImageInfo.m_nWidth*(double)m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).m_stImageInfo.m_nSamplesPerPixel), 8) * m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).m_stImageInfo.m_nHeight;
-	bih.biXPelsPerMeter = 0;
-	bih.biYPelsPerMeter = 0;
-	bih.biClrUsed = 0;
-	bih.biClrImportant = 0;
-	// 
-	Graphics g(pDC->GetSafeHdc());
-
-	Gdiplus::Bitmap bitmap((BITMAPINFO*)GetDibInfo(), m_pRoiImage);
-
-	m_rtImage.OffsetRect(0, 0);
-
-	//
-// 	g.DrawImage(&bitmap,
-// 		Rect(m_rtCanvas.left, m_rtCanvas.top, m_rtCanvas.Width(), m_rtCanvas.Height()),
-// 		m_rtImage.left,
-// 		m_rtImage.top,
-// 		m_rtDisplayedROIOnImage.Width(),
-// 		m_rtDisplayedROIOnImage.Height(),
-// 		UnitPixel);
 #else
-	UpdateScreenData();
+	CDicomImage::IMAGE_INFO* pImageInfo = &m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).m_stImageInfo;
 
-	if (!m_pDispRoiImage)
-		return FALSE;
+	CMyImageInterpolationDrawUtils interDrawUtil(pImageInfo,
+		m_pDisplayImage, 
+		m_rtCanvas, 
+		m_ptPanDelta,
+		m_dCanvasPerImageRatio,
+		m_dZoomValue,
+		m_eInterpolationType);
 
-	BITMAPINFOHEADER& bih = GetDibInfo()->bmiHeader;
-	bih.biSize = sizeof(BITMAPINFOHEADER);
-	bih.biWidth = m_rtDisplayedROIOnCanvas.Width();
-	bih.biHeight = -m_rtDisplayedROIOnCanvas.Height();
-	bih.biPlanes = 1;
-	bih.biBitCount = 8 * m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).m_stImageInfo.m_nSamplesPerPixel;
-	bih.biCompression = BI_RGB;
-	bih.biSizeImage = m_rtDisplayedROIOnCanvas.Width() * m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).m_stImageInfo.m_nSamplesPerPixel * m_rtDisplayedROIOnCanvas.Height();
-	bih.biXPelsPerMeter = 0;
-	bih.biYPelsPerMeter = 0;
-	bih.biClrUsed = 0;
-	bih.biClrImportant = 0;
+	BOOL bRes = interDrawUtil.UpdateDisplayRoiImage();
 
-	::SetStretchBltMode(pDC->GetSafeHdc(), COLORONCOLOR);
-	::StretchDIBits(pDC->GetSafeHdc(),
-		m_rtCanvas.left,
-		m_rtCanvas.top,
-		m_rtCanvas.Width(),
-		m_rtCanvas.Height(),
-		m_rtDrawRectOnCanvas.left,
-		m_rtDrawRectOnCanvas.top,
-		m_rtDrawRectOnCanvas.Width(),
-		m_rtDrawRectOnCanvas.Height(),
-		(void*)m_pDispRoiImage,
-		(BITMAPINFO*)GetDibInfo(),
-		DIB_RGB_COLORS,
-		SRCCOPY);
+	if (bRes)
+	{
+		CRect rtDisplayedRoiOnCanvas = interDrawUtil.GetDisplayedRoiRectOnCanvas();
+
+		BITMAPINFOHEADER& bih = GetDibInfo()->bmiHeader;
+		bih.biSize = sizeof(BITMAPINFOHEADER);
+		bih.biWidth = rtDisplayedRoiOnCanvas.Width();
+		bih.biHeight = -1 * rtDisplayedRoiOnCanvas.Height();
+		bih.biPlanes = 1;
+		bih.biBitCount = 8 * m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex).m_stImageInfo.m_nSamplesPerPixel;
+		bih.biCompression = BI_RGB;
+		bih.biSizeImage = interDrawUtil.CalcScreenImageSize();
+		bih.biXPelsPerMeter = 0;
+		bih.biYPelsPerMeter = 0;
+		bih.biClrUsed = 0;
+		bih.biClrImportant = 0;
+
+		CRect rtDrawRectOnCanvas = interDrawUtil.GetDrawRectOnCanvas();
+		//
+		::SetStretchBltMode(pDC->GetSafeHdc(), COLORONCOLOR);
+		::StretchDIBits(pDC->GetSafeHdc(),
+			m_rtCanvas.left,
+			m_rtCanvas.top,
+			m_rtCanvas.Width(),
+			m_rtCanvas.Height(),
+			rtDrawRectOnCanvas.left,
+			rtDrawRectOnCanvas.top,
+			rtDrawRectOnCanvas.Width(),
+			rtDrawRectOnCanvas.Height(),
+			(void*)interDrawUtil.GetScreenImage(),
+			(BITMAPINFO*)GetDibInfo(),
+			DIB_RGB_COLORS,
+			SRCCOPY);
 #endif
+	}
 
 	clockEnd = clock();
 
@@ -1679,311 +1668,311 @@ void CStudyViewer::FreeRoiBuffer()
 	}
 }
 
-void CStudyViewer::UpdateScreenData()
-{
-	if (!m_pDisplayImage)
-		return;
-
-	CMainFrame* pMainFrm = (CMainFrame*)AfxGetMainWnd();
-
-	CDicomImage imageDisplayInfo;	// different with DICOM information
-	imageDisplayInfo = m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex);
-
-	INT_PTR nOrgWidth = BytesPerLine((UINT)imageDisplayInfo.m_stImageInfo.m_nWidth, 8) ;
-	INT_PTR nOrgHeight = BytesPerLine((UINT)imageDisplayInfo.m_stImageInfo.m_nHeight, 8);
-
-	if (!CalcDisplayImageROI(&imageDisplayInfo))
-	{
-		return;
-	}
-
-	if (!CalcDisplayCanvasROI(&imageDisplayInfo))
-	{
-		return;
-	}
-
-	if (!CalcDrawRectOnCanvasRect(&imageDisplayInfo))
-	{
-		return;
-	}
-	
-
-	if (m_rtDisplayedROIOnImage.Width() <= 0 || m_rtDisplayedROIOnImage.Height() <= 0)
-	{
-		m_pDispRoiImage = nullptr;
-	}
-
-	FreeRoiBuffer();
-	AllocRoiBuffer();
-
-	CopyROIImageFromOrigin(m_pDisplayImage, m_pRoiImage,
-		nOrgWidth, nOrgHeight,
-		m_rtDisplayedROIOnImage.Width(), m_rtDisplayedROIOnImage.Height());
-
-	m_stROIImg.Init();
-	m_stROIImg.nChannel = 1;
-	m_stROIImg.nWidth = m_rtDisplayedROIOnImage.Width();
-	m_stROIImg.nHeight = m_rtDisplayedROIOnImage.Height();
-	m_stROIImg.pImage = m_pRoiImage;
-
-	FreeDispRoiBuffer();
-	AllocDispRoiBuffer();
-
-	if (!m_pDispRoiImage)
-		return;
-
-	clock_t clockStart, clockEnd;
-	clockStart = clock();
-
-	CMyInterpolation myInter;
-	myInter.SetUseParallelCalc(pMainFrm->IsUsingParallelCalc());
-
-	switch (m_eInterpolationType)
-	{
-	case InterpolationTypeBicubicPolynomial_050:
-		myInter.DoBiCubicInterpolation(m_pRoiImage,
-			m_pDispRoiImage,
-			m_rtDisplayedROIOnImage.Width(),
-			m_rtDisplayedROIOnImage.Height(),
-			m_rtDisplayedROIOnCanvas.Width(),
-			m_rtDisplayedROIOnCanvas.Height(),
-			FALSE,
-			-0.5);
-		break;
-	case InterpolationTypeBicubicPolynomial_075:
-		myInter.DoBiCubicInterpolation(m_pRoiImage,
-			m_pDispRoiImage,
-			m_rtDisplayedROIOnImage.Width(),
-			m_rtDisplayedROIOnImage.Height(),
-			m_rtDisplayedROIOnCanvas.Width(),
-			m_rtDisplayedROIOnCanvas.Height(),
-			FALSE,
-			-0.75);
-		break;
-	case InterpolationTypeBicubicPolynomial_100:
-		myInter.DoBiCubicInterpolation(m_pRoiImage,
-			m_pDispRoiImage,
-			m_rtDisplayedROIOnImage.Width(),
-			m_rtDisplayedROIOnImage.Height(),
-			m_rtDisplayedROIOnCanvas.Width(),
-			m_rtDisplayedROIOnCanvas.Height(),
-			FALSE,
-			-1.0);
-
-		break;
-	case InterpolationTypeBicubicPolynomial_000:
-		myInter.DoBiCubicInterpolation(m_pRoiImage,
-			m_pDispRoiImage,
-			m_rtDisplayedROIOnImage.Width(),
-			m_rtDisplayedROIOnImage.Height(),
-			m_rtDisplayedROIOnCanvas.Width(),
-			m_rtDisplayedROIOnCanvas.Height(),
-			FALSE,
-			0.0);
-		break;
-	case InterpolationTypeBicubicPolynomial_300:
-		myInter.DoBiCubicInterpolation(m_pRoiImage,
-			m_pDispRoiImage,
-			m_rtDisplayedROIOnImage.Width(),
-			m_rtDisplayedROIOnImage.Height(),
-			m_rtDisplayedROIOnCanvas.Width(),
-			m_rtDisplayedROIOnCanvas.Height(),
-			FALSE,
-			-3.0);
-		break;
-	case InterpolationTypeBicubicBSpline:
-		myInter.DoBiCubicInterpolation(m_pRoiImage,
-			m_pDispRoiImage,
-			m_rtDisplayedROIOnImage.Width(),
-			m_rtDisplayedROIOnImage.Height(),
-			m_rtDisplayedROIOnCanvas.Width(),
-			m_rtDisplayedROIOnCanvas.Height(),
-			TRUE);
-		
-		break;
-	case InterpolationTypeBicubicLanczos:
-		myInter.DoLanczosInterpolation(m_pRoiImage,
-			m_pDispRoiImage,
-			m_rtDisplayedROIOnImage.Width(),
-			m_rtDisplayedROIOnImage.Height(),
-			m_rtDisplayedROIOnCanvas.Width(),
-			m_rtDisplayedROIOnCanvas.Height(),
-			2.0);
-		
-		break;
-	case InterpolationTypeBicubicMichell:
-		myInter.DoMitchellInterpolation(m_pRoiImage,
-			m_pDispRoiImage,
-			m_rtDisplayedROIOnImage.Width(),
-			m_rtDisplayedROIOnImage.Height(),
-			m_rtDisplayedROIOnCanvas.Width(),
-			m_rtDisplayedROIOnCanvas.Height(),
-			0.33333,
-			0.33333);
-		
-		break;
-	case InterpolationTypeBicubicCatmullRom:
-		myInter.DoCatmullRomSplineInterpolation(m_pRoiImage,
-			m_pDispRoiImage,
-			m_rtDisplayedROIOnImage.Width(),
-			m_rtDisplayedROIOnImage.Height(),
-			m_rtDisplayedROIOnCanvas.Width(),
-			m_rtDisplayedROIOnCanvas.Height());
-		
-		break;
-	case InterpolationTypeBilinear:
-	default:
-		myInter.DoBilinearInterpolation(m_pRoiImage,
-			m_pDispRoiImage,
-			m_rtDisplayedROIOnImage.Width(),
-			m_rtDisplayedROIOnImage.Height(),
-			m_rtDisplayedROIOnCanvas.Width(),
-			m_rtDisplayedROIOnCanvas.Height());
-		
-	
-		break;
-	}
-
-	clockEnd = clock();
-
-	CString strTimeStamp;
-	float fResultTime = (float)(clockEnd - clockStart) / 1000;
-
-	strTimeStamp.Format(_T("Calc time : %0.2f sec"), fResultTime);
-	pMainFrm->SetStatusBarText(3, strTimeStamp);
-
-	return;
-}
+// void CStudyViewer::UpdateScreenData()
+// {
+// 	if (!m_pDisplayImage)
+// 		return;
+// 
+// 	CMainFrame* pMainFrm = (CMainFrame*)AfxGetMainWnd();
+// 
+// 	CDicomImage imageDisplayInfo;	// different with DICOM information
+// 	imageDisplayInfo = m_pDisplayDicomDS->m_aryDicomImage.GetAt(m_nCurFrameIndex);
+// 
+// 	INT_PTR nOrgWidth = BytesPerLine((UINT)imageDisplayInfo.m_stImageInfo.m_nWidth, 8) ;
+// 	INT_PTR nOrgHeight = BytesPerLine((UINT)imageDisplayInfo.m_stImageInfo.m_nHeight, 8);
+// 
+// 	if (!CalcDisplayImageROI(&imageDisplayInfo))
+// 	{
+// 		return;
+// 	}
+// 
+// 	if (!CalcDisplayCanvasROI(&imageDisplayInfo))
+// 	{
+// 		return;
+// 	}
+// 
+// 	if (!CalcDrawRectOnCanvasRect(&imageDisplayInfo))
+// 	{
+// 		return;
+// 	}
+// 	
+// 
+// 	if (m_rtDisplayedROIOnImage.Width() <= 0 || m_rtDisplayedROIOnImage.Height() <= 0)
+// 	{
+// 		m_pDispRoiImage = nullptr;
+// 	}
+// 
+// 	FreeRoiBuffer();
+// 	AllocRoiBuffer();
+// 
+// 	CopyROIImageFromOrigin(m_pDisplayImage, m_pRoiImage,
+// 		nOrgWidth, nOrgHeight,
+// 		m_rtDisplayedROIOnImage.Width(), m_rtDisplayedROIOnImage.Height());
+// 
+// 	m_stROIImg.Init();
+// 	m_stROIImg.nChannel = 1;
+// 	m_stROIImg.nWidth = m_rtDisplayedROIOnImage.Width();
+// 	m_stROIImg.nHeight = m_rtDisplayedROIOnImage.Height();
+// 	m_stROIImg.pImage = m_pRoiImage;
+// 
+// 	FreeDispRoiBuffer();
+// 	AllocDispRoiBuffer();
+// 
+// 	if (!m_pDispRoiImage)
+// 		return;
+// 
+// 	clock_t clockStart, clockEnd;
+// 	clockStart = clock();
+// 
+// 	CMyInterpolation myInter;
+// 	myInter.SetUseParallelCalc(pMainFrm->IsUsingParallelCalc());
+// 
+// 	switch (m_eInterpolationType)
+// 	{
+// 	case InterpolationTypeBicubicPolynomial_050:
+// 		myInter.DoBiCubicInterpolation(m_pRoiImage,
+// 			m_pDispRoiImage,
+// 			m_rtDisplayedROIOnImage.Width(),
+// 			m_rtDisplayedROIOnImage.Height(),
+// 			m_rtDisplayedROIOnCanvas.Width(),
+// 			m_rtDisplayedROIOnCanvas.Height(),
+// 			FALSE,
+// 			-0.5);
+// 		break;
+// 	case InterpolationTypeBicubicPolynomial_075:
+// 		myInter.DoBiCubicInterpolation(m_pRoiImage,
+// 			m_pDispRoiImage,
+// 			m_rtDisplayedROIOnImage.Width(),
+// 			m_rtDisplayedROIOnImage.Height(),
+// 			m_rtDisplayedROIOnCanvas.Width(),
+// 			m_rtDisplayedROIOnCanvas.Height(),
+// 			FALSE,
+// 			-0.75);
+// 		break;
+// 	case InterpolationTypeBicubicPolynomial_100:
+// 		myInter.DoBiCubicInterpolation(m_pRoiImage,
+// 			m_pDispRoiImage,
+// 			m_rtDisplayedROIOnImage.Width(),
+// 			m_rtDisplayedROIOnImage.Height(),
+// 			m_rtDisplayedROIOnCanvas.Width(),
+// 			m_rtDisplayedROIOnCanvas.Height(),
+// 			FALSE,
+// 			-1.0);
+// 
+// 		break;
+// 	case InterpolationTypeBicubicPolynomial_000:
+// 		myInter.DoBiCubicInterpolation(m_pRoiImage,
+// 			m_pDispRoiImage,
+// 			m_rtDisplayedROIOnImage.Width(),
+// 			m_rtDisplayedROIOnImage.Height(),
+// 			m_rtDisplayedROIOnCanvas.Width(),
+// 			m_rtDisplayedROIOnCanvas.Height(),
+// 			FALSE,
+// 			0.0);
+// 		break;
+// 	case InterpolationTypeBicubicPolynomial_300:
+// 		myInter.DoBiCubicInterpolation(m_pRoiImage,
+// 			m_pDispRoiImage,
+// 			m_rtDisplayedROIOnImage.Width(),
+// 			m_rtDisplayedROIOnImage.Height(),
+// 			m_rtDisplayedROIOnCanvas.Width(),
+// 			m_rtDisplayedROIOnCanvas.Height(),
+// 			FALSE,
+// 			-3.0);
+// 		break;
+// 	case InterpolationTypeBicubicBSpline:
+// 		myInter.DoBiCubicInterpolation(m_pRoiImage,
+// 			m_pDispRoiImage,
+// 			m_rtDisplayedROIOnImage.Width(),
+// 			m_rtDisplayedROIOnImage.Height(),
+// 			m_rtDisplayedROIOnCanvas.Width(),
+// 			m_rtDisplayedROIOnCanvas.Height(),
+// 			TRUE);
+// 		
+// 		break;
+// 	case InterpolationTypeBicubicLanczos:
+// 		myInter.DoLanczosInterpolation(m_pRoiImage,
+// 			m_pDispRoiImage,
+// 			m_rtDisplayedROIOnImage.Width(),
+// 			m_rtDisplayedROIOnImage.Height(),
+// 			m_rtDisplayedROIOnCanvas.Width(),
+// 			m_rtDisplayedROIOnCanvas.Height(),
+// 			2.0);
+// 		
+// 		break;
+// 	case InterpolationTypeBicubicMichell:
+// 		myInter.DoMitchellInterpolation(m_pRoiImage,
+// 			m_pDispRoiImage,
+// 			m_rtDisplayedROIOnImage.Width(),
+// 			m_rtDisplayedROIOnImage.Height(),
+// 			m_rtDisplayedROIOnCanvas.Width(),
+// 			m_rtDisplayedROIOnCanvas.Height(),
+// 			0.33333,
+// 			0.33333);
+// 		
+// 		break;
+// 	case InterpolationTypeBicubicCatmullRom:
+// 		myInter.DoCatmullRomSplineInterpolation(m_pRoiImage,
+// 			m_pDispRoiImage,
+// 			m_rtDisplayedROIOnImage.Width(),
+// 			m_rtDisplayedROIOnImage.Height(),
+// 			m_rtDisplayedROIOnCanvas.Width(),
+// 			m_rtDisplayedROIOnCanvas.Height());
+// 		
+// 		break;
+// 	case InterpolationTypeBilinear:
+// 	default:
+// 		myInter.DoBilinearInterpolation(m_pRoiImage,
+// 			m_pDispRoiImage,
+// 			m_rtDisplayedROIOnImage.Width(),
+// 			m_rtDisplayedROIOnImage.Height(),
+// 			m_rtDisplayedROIOnCanvas.Width(),
+// 			m_rtDisplayedROIOnCanvas.Height());
+// 		
+// 	
+// 		break;
+// 	}
+// 
+// 	clockEnd = clock();
+// 
+// 	CString strTimeStamp;
+// 	float fResultTime = (float)(clockEnd - clockStart) / 1000;
+// 
+// 	strTimeStamp.Format(_T("Calc time : %0.2f sec"), fResultTime);
+// 	pMainFrm->SetStatusBarText(3, strTimeStamp);
+// 
+// 	return;
+// }
 
 void CStudyViewer::CreateDragDropObjects()
 {
 
 }
 
-void CStudyViewer::CopyROIImageFromOrigin(BYTE* pSrc, BYTE* pDest, INT_PTR nSrcWidth, INT_PTR nSrcHeight, INT_PTR nROIWidth, INT_PTR nROIHeight)
-{
-	UINT nLine = 0, nTotalSize = 0;
-	UINT nDestLine, nSrcLine;
-	nTotalSize = nROIHeight;
-	nDestLine = nROIWidth;
-	nSrcLine = (UINT)nSrcWidth;
-
-	pSrc += m_rtDisplayedROIOnImage.top * nSrcWidth;
-	pSrc += m_rtDisplayedROIOnImage.left;
-	
-	for (nLine = 0; nLine < nTotalSize; nLine++, pDest += nDestLine, pSrc += nSrcLine)
-	{
-		memcpy_s(pDest, nDestLine, pSrc, nROIWidth);
-	}
-}
-
-BOOL CStudyViewer::DoInterpolate(BYTE * pSrcImage, BYTE * pDestImage, UINT nSrcWidth, UINT nSrcHeight, UINT nDestWidth, UINT nDestHeight)
-{
-	UINT nrow, ncol, nIndex, nAllow1, nAllow2;
-	double dEWweight, dNSweight, dEWtop, dEWbottom;
-	INT_PTR nSrcCol, nSrcRow;
-	double dDestCol, dDestRow;
-	INT_PTR nSrcNextCol, nSrcNextRow;
-	double dDestNextCol, dDestNextRow;
-	double dWidthScale, dHeightScale;
-	double dInWidth, dOutWidth, dInHeight, dOutHeight;
-	UCHAR NW, NE, SW, SE;
-	ULONG nAddress, nSrcImageLength;
-	BYTE* pLineBuffer = NULL;
-
-	TRY
-	{
-		pLineBuffer = new BYTE[nDestWidth];	memset(pLineBuffer, 0, nDestWidth);
-
-		dInWidth = (double)nSrcWidth;	dOutWidth = (double)nDestWidth;
-		dInHeight = (double)nSrcHeight;	dOutHeight = (double)nDestHeight;
-
-		dWidthScale = dOutWidth / dInWidth;
-		dHeightScale = dOutHeight / dInHeight;
-
-		nAllow1 = (dWidthScale > 1) ? (UINT)dWidthScale + 1 : (2);
-		nAllow2 = (dHeightScale > 1) ? (UINT)dHeightScale + 1 : (2);
-
-		nSrcImageLength = nDestWidth * nDestHeight;
-
-		for (nrow = 0; nrow < nDestHeight; nrow++)
-		{
-			nIndex = 0;
-			for (ncol = 0; ncol < nDestWidth; ncol++)
-			{
-				dDestCol = (double)(ncol / dWidthScale);
-				dDestRow = (double)(nrow / dHeightScale);
-
-				nSrcCol = (int)dDestCol;
-				nSrcRow = (int)dDestRow;
-
-				dDestNextCol = dDestCol + 1;
-				dDestNextRow = dDestRow + 1;
-
-				if (dDestNextCol > (nSrcWidth-1))
-					dDestNextCol = nSrcWidth-1;
-
-				if (dDestNextRow > (nSrcHeight-1))
-					dDestNextRow = nSrcHeight-1;
-
-				nSrcNextCol = (int)dDestNextCol;
-				nSrcNextRow = (int)dDestNextRow;
-
-				dEWweight = dDestCol - (int)nSrcCol;
-				dNSweight = dDestRow - (int)nSrcRow;
-
-				if (ncol >= (nDestWidth - nAllow1) || nrow >= (nDestHeight - nAllow2))
-				{
-					nAddress = (int)nSrcRow     * nSrcWidth + (int)nSrcCol;
-					nAddress = (0 < nAddress && nAddress < nSrcImageLength) ? nAddress : 0;
-					NW = (UCHAR)*(pSrcImage + nAddress);
-
-					nAddress = (int)nSrcRow     * nSrcWidth + ((int)nSrcNextCol);
-					nAddress = (0 < nAddress && nAddress < nSrcImageLength) ? nAddress : 0;
-					NE = (UCHAR)*(pSrcImage + nAddress);
-
-					nAddress = ((int)nSrcNextRow) * nSrcWidth + (int)nSrcCol;
-					nAddress = (0 < nAddress && nAddress < nSrcImageLength) ? nAddress : 0;
-					SW = (UCHAR)*(pSrcImage + nAddress);
-
-					nAddress = ((int)nSrcNextRow) * nSrcWidth + ((int)nSrcNextCol);
-					nAddress = (0 < nAddress && nAddress < nSrcImageLength) ? nAddress : 0;
-					SE = (UCHAR)*(pSrcImage + nAddress);
-				}
-				else
-				{
-					NW = (UCHAR)*(pSrcImage + (int)nSrcRow     * nSrcWidth + (int)nSrcCol);
-					NE = (UCHAR)*(pSrcImage + (int)nSrcRow     * nSrcWidth + (int)nSrcNextCol);
-					SW = (UCHAR)*(pSrcImage + ((int)nSrcNextRow) * nSrcWidth + (int)nSrcCol);
-					SE = (UCHAR)*(pSrcImage + ((int)nSrcNextRow) * nSrcWidth + (int)nSrcNextCol);
-				}
-
-				dEWtop = NW + dEWweight * (NE - NW);
-				dEWbottom = SW + dEWweight * (SE - SW);
-
-				*(pLineBuffer + nIndex) = (BYTE)(dEWtop + dNSweight * (dEWbottom - dEWtop));
-				nIndex++;
-			}
-			memcpy(pDestImage + nrow * nDestWidth, pLineBuffer, nDestWidth);
-		}
-
-		delete[] pLineBuffer;
-	}
-	CATCH_ALL(e)
-	{
-		if (e->IsKindOf(RUNTIME_CLASS(CUserException)))
-		{
-			return 0L;
-		}
-		else
-		{
-			return (LRESULT)e;
-		}
-	}
-	END_CATCH_ALL
-
-	return TRUE;
-}
+// void CStudyViewer::CopyROIImageFromOrigin(BYTE* pSrc, BYTE* pDest, INT_PTR nSrcWidth, INT_PTR nSrcHeight, INT_PTR nROIWidth, INT_PTR nROIHeight)
+// {
+// 	UINT nLine = 0, nTotalSize = 0;
+// 	UINT nDestLine, nSrcLine;
+// 	nTotalSize = nROIHeight;
+// 	nDestLine = nROIWidth;
+// 	nSrcLine = (UINT)nSrcWidth;
+// 
+// 	pSrc += m_rtDisplayedROIOnImage.top * nSrcWidth;
+// 	pSrc += m_rtDisplayedROIOnImage.left;
+// 	
+// 	for (nLine = 0; nLine < nTotalSize; nLine++, pDest += nDestLine, pSrc += nSrcLine)
+// 	{
+// 		memcpy_s(pDest, nDestLine, pSrc, nROIWidth);
+// 	}
+// }
+// 
+// BOOL CStudyViewer::DoInterpolate(BYTE * pSrcImage, BYTE * pDestImage, UINT nSrcWidth, UINT nSrcHeight, UINT nDestWidth, UINT nDestHeight)
+// {
+// 	UINT nrow, ncol, nIndex, nAllow1, nAllow2;
+// 	double dEWweight, dNSweight, dEWtop, dEWbottom;
+// 	INT_PTR nSrcCol, nSrcRow;
+// 	double dDestCol, dDestRow;
+// 	INT_PTR nSrcNextCol, nSrcNextRow;
+// 	double dDestNextCol, dDestNextRow;
+// 	double dWidthScale, dHeightScale;
+// 	double dInWidth, dOutWidth, dInHeight, dOutHeight;
+// 	UCHAR NW, NE, SW, SE;
+// 	ULONG nAddress, nSrcImageLength;
+// 	BYTE* pLineBuffer = NULL;
+// 
+// 	TRY
+// 	{
+// 		pLineBuffer = new BYTE[nDestWidth];	memset(pLineBuffer, 0, nDestWidth);
+// 
+// 		dInWidth = (double)nSrcWidth;	dOutWidth = (double)nDestWidth;
+// 		dInHeight = (double)nSrcHeight;	dOutHeight = (double)nDestHeight;
+// 
+// 		dWidthScale = dOutWidth / dInWidth;
+// 		dHeightScale = dOutHeight / dInHeight;
+// 
+// 		nAllow1 = (dWidthScale > 1) ? (UINT)dWidthScale + 1 : (2);
+// 		nAllow2 = (dHeightScale > 1) ? (UINT)dHeightScale + 1 : (2);
+// 
+// 		nSrcImageLength = nDestWidth * nDestHeight;
+// 
+// 		for (nrow = 0; nrow < nDestHeight; nrow++)
+// 		{
+// 			nIndex = 0;
+// 			for (ncol = 0; ncol < nDestWidth; ncol++)
+// 			{
+// 				dDestCol = (double)(ncol / dWidthScale);
+// 				dDestRow = (double)(nrow / dHeightScale);
+// 
+// 				nSrcCol = (int)dDestCol;
+// 				nSrcRow = (int)dDestRow;
+// 
+// 				dDestNextCol = dDestCol + 1;
+// 				dDestNextRow = dDestRow + 1;
+// 
+// 				if (dDestNextCol > (nSrcWidth-1))
+// 					dDestNextCol = nSrcWidth-1;
+// 
+// 				if (dDestNextRow > (nSrcHeight-1))
+// 					dDestNextRow = nSrcHeight-1;
+// 
+// 				nSrcNextCol = (int)dDestNextCol;
+// 				nSrcNextRow = (int)dDestNextRow;
+// 
+// 				dEWweight = dDestCol - (int)nSrcCol;
+// 				dNSweight = dDestRow - (int)nSrcRow;
+// 
+// 				if (ncol >= (nDestWidth - nAllow1) || nrow >= (nDestHeight - nAllow2))
+// 				{
+// 					nAddress = (int)nSrcRow     * nSrcWidth + (int)nSrcCol;
+// 					nAddress = (0 < nAddress && nAddress < nSrcImageLength) ? nAddress : 0;
+// 					NW = (UCHAR)*(pSrcImage + nAddress);
+// 
+// 					nAddress = (int)nSrcRow     * nSrcWidth + ((int)nSrcNextCol);
+// 					nAddress = (0 < nAddress && nAddress < nSrcImageLength) ? nAddress : 0;
+// 					NE = (UCHAR)*(pSrcImage + nAddress);
+// 
+// 					nAddress = ((int)nSrcNextRow) * nSrcWidth + (int)nSrcCol;
+// 					nAddress = (0 < nAddress && nAddress < nSrcImageLength) ? nAddress : 0;
+// 					SW = (UCHAR)*(pSrcImage + nAddress);
+// 
+// 					nAddress = ((int)nSrcNextRow) * nSrcWidth + ((int)nSrcNextCol);
+// 					nAddress = (0 < nAddress && nAddress < nSrcImageLength) ? nAddress : 0;
+// 					SE = (UCHAR)*(pSrcImage + nAddress);
+// 				}
+// 				else
+// 				{
+// 					NW = (UCHAR)*(pSrcImage + (int)nSrcRow     * nSrcWidth + (int)nSrcCol);
+// 					NE = (UCHAR)*(pSrcImage + (int)nSrcRow     * nSrcWidth + (int)nSrcNextCol);
+// 					SW = (UCHAR)*(pSrcImage + ((int)nSrcNextRow) * nSrcWidth + (int)nSrcCol);
+// 					SE = (UCHAR)*(pSrcImage + ((int)nSrcNextRow) * nSrcWidth + (int)nSrcNextCol);
+// 				}
+// 
+// 				dEWtop = NW + dEWweight * (NE - NW);
+// 				dEWbottom = SW + dEWweight * (SE - SW);
+// 
+// 				*(pLineBuffer + nIndex) = (BYTE)(dEWtop + dNSweight * (dEWbottom - dEWtop));
+// 				nIndex++;
+// 			}
+// 			memcpy(pDestImage + nrow * nDestWidth, pLineBuffer, nDestWidth);
+// 		}
+// 
+// 		delete[] pLineBuffer;
+// 	}
+// 	CATCH_ALL(e)
+// 	{
+// 		if (e->IsKindOf(RUNTIME_CLASS(CUserException)))
+// 		{
+// 			return 0L;
+// 		}
+// 		else
+// 		{
+// 			return (LRESULT)e;
+// 		}
+// 	}
+// 	END_CATCH_ALL
+// 
+// 	return TRUE;
+// }
 
 
 
